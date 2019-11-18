@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Downloader from '@/modules/Downloader';
+import Download from '@/modules/Download';
 import WindowManager from '@/modules/WindowManager';
 
 /**
@@ -25,14 +25,19 @@ class WorkDownloader extends EventEmitter {
     this.windowManager = WindowManager.getManager();
 
     /**
-     * @type {Downloader}
+     * @type {Download}
      */
-    this.downloader = null;
+    this.download = null;
 
     /**
      * @type {string}
      */
     this.id = null;
+
+    /**
+     * @type {string}
+     */
+    this.title = '';
 
     /**
      * @type {WorkDownloader.state}

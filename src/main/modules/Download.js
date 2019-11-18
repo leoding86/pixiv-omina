@@ -1,56 +1,57 @@
-import { app, net } from 'electron';
+import EventEmitter from 'events';
+import {
+  app,
+  net
+} from 'electron';
 import fs from 'fs';
 import path from 'path';
-import _url from 'url';
+import formatUrl from 'url';
 import WindowManager from './WindowManager';
 
-/**
- * @class
- * @param {string} url
- * @param {object} options
- */
-function Downloader(url, options) {
-  /**
-   * @type {WindowManager}
-   */
-  this.windowManager = WindowManager.getManager();
+class Download extends EventEmitter {
+  constructor(url, options) {
+    super();
 
-  /**
-   * @type {string}
-   */
-  this.url = url;
+    /**
+     * @type {WindowManager}
+     */
+    this.windowManager = WindowManager.getManager();
 
-  /**
-   * @type {object}
-   */
-  this.options = options || {};
+    /**
+     * @type {string}
+     */
+    this.url = url;
 
-  /**
-   * @type {Electron.ClientRequest}
-   */
-  this.request = null;
+    /**
+     * @type {object}
+     */
+    this.options = options || {};
 
-  /**
-   * @type {string}
-   */
-  this.saveDir = app.getPath('downloads');
-}
+    /**
+     * @type {Electron.ClientRequest}
+     */
+    this.request = null;
 
-Downloader.download = (url, options) => {
-  let downloader = new Downloader(url, options);
+    /**
+     * @type {string}
+     */
+    this.saveDir = app.getPath('downloads');
+  }
 
-  downloader.download();
+  static globalHeaders = {};
 
-  return downloader;
-}
+  static setGlobalHeaders(headers) {
+    Download.globalHeaders = headers;
+  }
 
-Downloader.globalHeaders = {};
+  static download(url, options, listeners = {}) {
+    let download = new Download(url, options);
 
-Downloader.setGlobalHeaders = headers => {
-  Downloader.globalHeaders = headers;
-}
+    download.download();
 
-Downloader.prototype = {
+    return download;
+  }
+
   /**
    * @returns {string}
    */
@@ -58,7 +59,7 @@ Downloader.prototype = {
     let filename = this.options.filename;
 
     if (!filename) {
-      let urlObj = _url.parse(this.url);
+      let urlObj = formatUrl.parse(this.url);
 
       if (urlObj.pathname) {
         let parts = urlObj.pathname.split('/');
@@ -70,7 +71,7 @@ Downloader.prototype = {
     }
 
     filename = filename || 'file';
-  },
+  }
 
   download() {
     /**
@@ -119,12 +120,16 @@ Downloader.prototype = {
       Error(error.message);
     });
 
+    this.request.on('abort', () => {
+      this.emit('abort');
+    });
+
     this.request.end();
-  },
+  }
 
   abort() {
     this.request.abort();
   }
 }
 
-export default Downloader;
+export default Download;

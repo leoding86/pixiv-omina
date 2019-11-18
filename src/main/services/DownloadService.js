@@ -1,7 +1,7 @@
 import {
   ipcMain
 } from 'electron';
-import Downloader from '@/modules/Downloader';
+import Download from '@/modules/Download';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 
 class DownloadService {
@@ -19,9 +19,9 @@ class DownloadService {
 
   constructor() {
     /**
-     * Configurate downloader
+     * Configurate download
      */
-    Downloader.setGlobalHeaders({
+    Download.setGlobalHeaders({
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36',
     });
 
@@ -70,15 +70,15 @@ class DownloadService {
   }
 
   deleteDownloadAction({downloadId}) {
-    //
+    this.downloadManager.deleteWorkDownloader({downloadId});
   }
 
   stopDownloadAction({downloadId}) {
-    //
+    this.downloadManager.stopWorkDownloader({downloadId});
   }
 
   startDownloadAction({downloadId}) {
-    //
+    this.downloadManager.startWorkDownloader({downloadId});
   }
 }
 

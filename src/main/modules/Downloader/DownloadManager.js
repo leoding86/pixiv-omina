@@ -11,6 +11,8 @@ class DownloadManager extends EventEmitter {
      * @type {Map<number|string, WorkDownloader>}
      */
     this.workDownloaderPool = new Map();
+
+    this.maxProcessing = 2;
   }
 
   static instance = null;
@@ -46,10 +48,25 @@ class DownloadManager extends EventEmitter {
     return this;
   }
 
+  reachMaxProcessing() {
+    let processingCount = 0;
+
+    this.workDownloaderPool.forEach(workDownloader => {
+      if (workDownloader.isProcessing()) {
+        processingCount++;
+      }
+    });
+
+    return processingCount >= this.maxProcessing;
+  }
+
   /**
    * Find next downloader and start download.
+   * @returns {void}
    */
   downloadNext() {
+    let processingWorksCount = 0;
+
     if (this.workDownloaderPool.size() < 1) {
       return;
     }
@@ -57,12 +74,18 @@ class DownloadManager extends EventEmitter {
     let nextWorkDownloader;
 
     this.workDownloaderPool.forEach(workDownloader => {
-      if (workDownloader.isPending()) {
+      if (!nextWorkDownloader && workDownloader.isPending()) {
         nextWorkDownloader = workDownloader;
+      }
+
+      if (workDownloader.isProcessing()) {
+        processingWorksCount++;
       }
     });
 
-    nextWorkDownloader.start();
+    if (processingWorksCount < this.maxProcessing) {
+      nextWorkDownloader.start();
+    }
   }
 
   /**
@@ -71,8 +94,6 @@ class DownloadManager extends EventEmitter {
    */
   workDownloaderStartHandler({workDownloader}) {
     this.emit('start', {workDownloader});
-
-    this.downloadNext();
   }
 
   /**
@@ -81,6 +102,8 @@ class DownloadManager extends EventEmitter {
    */
   workDownloaderStopHandler({workDownloader}) {
     this.emit('stop', {workDownloader});
+
+    this.downloadNext();
   }
 
   /**
@@ -141,7 +164,7 @@ class DownloadManager extends EventEmitter {
    * @returns {DownloadManager}
    */
   createWorkDownloader({workId, options}) {
-    let workDownloader = workDownloader.createDownloader({workId, options});
+    let workDownloader = WorkDownloader.createDownloader({workId, options});
 
     this.appendWorkDownloader(workDownloader);
 
@@ -174,7 +197,7 @@ class DownloadManager extends EventEmitter {
 
       this.workDownloaderPool.delete(workId);
 
-      delete workDownloader;
+      workDownloader = null;
     }
 
     this.emit('delete', {workId});
@@ -187,7 +210,7 @@ class DownloadManager extends EventEmitter {
   startWorkDownloader({workId}) {
     let workDownloader = this.getWorkDownloader(workId);
 
-    if (workDownloader) {
+    if (workDownloader && !this.reachMaxProcessing()) {
       workDownloader.start();
     }
   }
@@ -210,7 +233,7 @@ class DownloadManager extends EventEmitter {
    */
   getWorkDownloader(id) {
     if (this.workDownloaderPool.has(id)) {
-      return this.workDownloaderPool.get(downloader.id);
+      return this.workDownloaderPool.get(id);
     }
 
     return null;
