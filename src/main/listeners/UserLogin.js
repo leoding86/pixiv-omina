@@ -1,4 +1,4 @@
-import WindowManager from '../modules/WindowManager';
+import WindowManager from '@/modules/WindowManager';
 
 function UserLogin() {
   this.windowManager = WindowManager.getManager();
