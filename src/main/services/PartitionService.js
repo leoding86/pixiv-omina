@@ -21,18 +21,20 @@ class PartitionService extends BaseService {
   }
 
   createPartition(name, persist = false) {
-    name = persist ? `persist:${name}` : name;
+    if (typeof name !== 'string' || name.length < 1) {
+      Error('Partition must be a string');
+    }
 
-    if (typeof name === 'string' && name.length > 0 && !this.partitions.has(name)) {
-      this.partitions.set(name);
+    let partition = (persist ? 'persist:' : '') + name;
+
+    if (!this.partitions.has(name)) {
+      this.partitions.set(name, partition);
     }
   }
 
-  getPartition(name, persist) {
-    name = persist ? `persist:${name}` : name;
-
+  getPartition(name) {
     if (this.partitions.has(name)) {
-      return name;
+      return this.partitions.get(name);
     }
 
     Error(`Invalid partition ${name}`);

@@ -1,4 +1,9 @@
-import { net, ipcMain, session } from 'electron';
+import {
+  net,
+  ipcMain,
+  session
+} from 'electron';
+import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
@@ -82,60 +87,45 @@ class UserService extends BaseService {
     return new Promise((resolve, reject) => {
       let url = UrlBuilder.getAccountUnreadCountUrl();
 
-      let ses = session.fromPartition(ServiceContainer.getService('partition').getPartition('main', true));
-
-      ses.cookies.get({
-        url: 'https://www.pixiv.net/'
-      }).then(cookies => {
-        let cookieString = '';
-
-        cookies.forEach(cookie => {
-          cookieString += `${cookie.name}=${cookie.value}; `;
-        });
-
-        let requsetOptions = {
-          method: 'GET',
-          url: url,
-          session: ses
-        };
-
-        console.log(requsetOptions);
-
-        let request = net.request(requsetOptions);
-
-        request.setHeader('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36');
-        request.setHeader('cookie', cookieString);
-
-        request.on('response', response => {
-          let body = '';
-
-          response.on('data', data => {
-            body += data;
-          });
-
-          response.on('error', () => {
-            reject('response error');
-          });
-
-          response.on('end', () => {
-            let jsonData = JSON.parse(body);
-            console.log(jsonData)
-
-            if (jsonData && jsonData.body && jsonData.body.unread_count) {
-              resolve();
-              return;
-            }
-
-            reject('cannot resolve response');
-          });
-        });
-
-        request.on('error', error => {
-          reject(error.message);
-        });
-
-        request.end();
+      let request = new Request({
+        url: url,
+        partition: ServiceContainer.getService('partition').getPartition('main')
       });
+
+      request.setHeader(
+        'user-agent',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36'
+      );
+
+      request.on('response', response => {
+        let body = '';
+
+        response.on('data', data => {
+          body += data;
+        });
+
+        response.on('error', () => {
+          reject('response error');
+        });
+
+        response.on('end', () => {
+          let jsonData = JSON.parse(body);
+          console.log(jsonData)
+
+          if (jsonData && jsonData.body && jsonData.body.unread_count) {
+            resolve();
+            return;
+          }
+
+          reject('cannot resolve response');
+        });
+      });
+
+      request.on('error', error => {
+        reject(error.message);
+      });
+
+      request.end();
     });
   }
 }

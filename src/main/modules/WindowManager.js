@@ -4,41 +4,45 @@ import * as path from 'path'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-function WindowManager() {
-  this.windows = {}
-}
-
-WindowManager.globalPartition = null;
-
-WindowManager.setGlobalPartition = function(partition) {
-  WindowManager.globalPartition = partition;
-}
-
-/**
- * @type {WindowManager}
- */
-WindowManager.instance = null;
-
-/**
- * @returns {WindowManager}
- */
-WindowManager.getManager = function() {
-  if (!WindowManager.instance) {
-    WindowManager.instance = new WindowManager();
+class WindowManager {
+  constructor() {
+    this.windows = {};
   }
 
-  return WindowManager.instance;
-}
+  static globalPartition = null;
 
-WindowManager.getWindow = function(name) {
-  if (!WindowManager.instance) {
-    Error('WindowManager has not been initialized');
+  /**
+   * @type {WindowManager}
+   */
+  static instance;
+
+  static setGlobalPartition = function(partition) {
+    WindowManager.globalPartition = partition;
   }
 
-  return WindowManager.instance.getWindow(name);
-}
+  /**
+   * @returns {WindowManager}
+   */
+  static getManager() {
+    if (!WindowManager.instance) {
+      WindowManager.instance = new WindowManager();
+    }
 
-WindowManager.prototype = {
+    return WindowManager.instance;
+  }
+
+  /**
+   * @param {string} name
+   * @returns {Electron.BrowserWindowConstructorOptions}
+   */
+  static getWindow(name) {
+    if (!WindowManager.instance) {
+      Error('WindowManager has not been initialized');
+    }
+
+    return WindowManager.instance.getWindow(name);
+  }
+
   /**
    *
    * @param {string} name
@@ -75,7 +79,7 @@ WindowManager.prototype = {
     this.appendWindow(name, window)
 
     return window
-  },
+  }
 
   /**
    *
@@ -84,7 +88,7 @@ WindowManager.prototype = {
    */
   appendWindow(name, window) {
     this.windows[name] = window
-  },
+  }
 
   /**
    *

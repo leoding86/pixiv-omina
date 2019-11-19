@@ -7,45 +7,48 @@ import fs from 'fs';
 import path from 'path';
 import formatUrl from 'url';
 import WindowManager from './WindowManager';
+import Request from '@/modules/Request';
 
-class Download extends EventEmitter {
-  constructor(url, options) {
-    super();
-
-    /**
-     * @type {WindowManager}
-     */
-    this.windowManager = WindowManager.getManager();
-
-    /**
-     * @type {string}
-     */
-    this.url = url;
-
-    /**
-     * @type {object}
-     */
-    this.options = options || {};
-
-    /**
-     * @type {Electron.ClientRequest}
-     */
-    this.request = null;
+class Download extends Request {
+  /**
+   * @constructor
+   * @param {Object} options
+   * @param {string} options.url
+   * @param {string} [options.method]
+   * @param {Electron.Session} [options.session]
+   * @param {string} [options.partition]
+   * @param {string} [options.saveDir]
+   * @param {string} [options.saveName]
+   */
+  constructor(options) {
+    this.options = options;
 
     /**
      * @type {string}
      */
-    this.saveDir = app.getPath('downloads');
+    this.saveDir = this.options.saveDir || app.getPath('downloads');
+
+    /**
+     * Merge options
+     */
+    tthis.options = Object.assign({}, Download.globalOptions, this.options);
+
+    super(this.options);
   }
 
-  static globalHeaders = {};
+  static globalOptions = {};
 
-  static setGlobalHeaders(headers) {
-    Download.globalHeaders = headers;
+  static setGlobalOptions(options) {
+    Download.globalOptions = options;
   }
 
-  static download(url, options, listeners = {}) {
-    let download = new Download(url, options);
+  /**
+   *
+   * @param {Object} option
+   * @param {Object} [listener]
+   */
+  static download(option, listener) {
+    let download = new Download(option);
 
     download.download();
 
@@ -56,7 +59,7 @@ class Download extends EventEmitter {
    * @returns {string}
    */
   getFilename() {
-    let filename = this.options.filename;
+    let filename = this.options.saveName;
 
     if (!filename) {
       let urlObj = formatUrl.parse(this.url);
@@ -75,29 +78,6 @@ class Download extends EventEmitter {
 
   download() {
     /**
-     * Init ClientRequest options
-     */
-    let clientRequestOptions = this.options.clientRequestOptions || {};
-
-    clientRequestOptions.url = this.url;
-
-    /**
-     * Create clientRequest instance
-     */
-    this.request = net.request(clientRequestOptions);
-
-    /**
-     * Set headers
-     */
-    let headers = Downloader.globalHeaders || {};
-
-    if (this.options.headers) {
-      for (let name in this.options.headers) {
-        headers[name] = this.options.headers[name];
-      }
-    }
-
-    /**
      * Parse file name
      */
     let filename = this.getFilename();
@@ -106,29 +86,25 @@ class Download extends EventEmitter {
       this.request.setHeader(name, headers[name]);
     }
 
-    this.request.on('response', response => {
+    this.on('response', response => {
       let writeStream = fs.createWriteStream(path.join(this.saveDir, filename));
 
       response.pipe(writeStream);
 
       response.on('end', () => {
-        //
+        this.emit('finish');
       });
     });
 
-    this.request.on('error', error => {
+    this.on('error', error => {
       Error(error.message);
     });
 
-    this.request.on('abort', () => {
+    this.on('abort', () => {
       this.emit('abort');
     });
 
-    this.request.end();
-  }
-
-  abort() {
-    this.request.abort();
+    this.end();
   }
 }
 
