@@ -19,6 +19,10 @@ class UrlBuilder {
   static getWorkInfoUrl(id) {
     return `https://www.pixiv.net/ajax/illust/${id}`;
   }
+
+  static getAccountUnreadCountUrl() {
+    return 'https://www.pixiv.net/rpc/index.php?mode=message_thread_unread_count';
+  }
 }
 
 export default UrlBuilder;

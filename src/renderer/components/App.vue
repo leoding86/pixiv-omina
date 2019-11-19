@@ -1,24 +1,43 @@
 <template>
   <div>
-    <button @click="openLogin">Login</button>
-    <div>
-      <input type="text" v-model="workId" />
-      <button @click="download">download</button>
-    </div>
-    <div>
-      <img :src="url" alt="">
+    <app-header></app-header>
+
+    <div id="container">
+      <button @click="checkUserLogined">check</button>
+
+      <el-form>
+        <el-input v-model="workId"></el-input>
+        <el-button @click="createDownloader">Submit</el-button>
+      </el-form>
+
+      <app-download-list
+        :downloads=downloads
+      ></app-download-list>
     </div>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from "electron";
+import Header from './Header';
+import DownloadList from './DownloadList';
 
 export default {
+  components: {
+    'app-header': Header,
+    'app-download-list': DownloadList
+  },
+
   data() {
     return {
-      url: 'https://i.pximg.net/img-master/img/2019/10/17/00/05/23/77329542_p0_master1200.jpg',
-      workId: '77626643'
+      workId: '77626643',
+      downloads: []
+    }
+  },
+
+  computed: {
+    logined() {
+      return this.$root.$data.logined;
     }
   },
 
@@ -26,12 +45,36 @@ export default {
     console.log("app");
   },
 
+  beforeMount() {
+    ipcRenderer.on('download-service:add', ({ workDownload }) => {
+      //
+    });
+
+    ipcRenderer.on('download-service:delete', ({ workDownload }) => {
+      //
+    });
+
+    ipcRenderer.on('download-service:update', ({ workDownload }) => {
+      //
+    });
+
+    ipcRenderer.on('download-service:stop', ({ workDownload }) => {
+      //
+    });
+
+    ipcRenderer.on('download-service:error', ({ workDownloader }) => {
+      //
+    });
+  },
+
   methods: {
-    openLogin() {
-      ipcRenderer.send("user:login");
+    checkUserLogined() {
+      ipcRenderer.send('user-service', {
+        action: 'checkUserLogined'
+      });
     },
 
-    download() {
+    createDownloader() {
       ipcRenderer.send('download-service', {
         action: 'createDownload',
         args: {

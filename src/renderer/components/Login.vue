@@ -4,9 +4,9 @@
       <p>Close this window after you logined</p>
     </div>
     <div class="webview">
-      <webview src="https://accounts.pixiv.net/login">
+      <iframe src="https://accounts.pixiv.net/login">
         Loading login page
-      </webview>
+      </iframe>
     </div>
   </div>
 </template>
@@ -23,7 +23,7 @@ html, body {
   margin: 0;
 }
 
-div, webview, p {
+div, webview, iframe, p {
   margin: 0;
   padding: 0;
 }
@@ -50,10 +50,11 @@ div, webview, p {
   height: calc(100% - 30px);
   position: relative;
 
-  webview {
+  webview, iframe {
     position: absolute;
     width: 100%;
     height: 100%;
+    border: none;
   }
 }
 </style>

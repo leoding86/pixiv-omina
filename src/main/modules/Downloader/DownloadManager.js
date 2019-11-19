@@ -2,6 +2,9 @@ import EventEmitter from 'events';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import DownloaderFactory from '@/modules/Downloader/DownloaderFactory';
 
+/**
+ * @class
+ */
 class DownloadManager extends EventEmitter {
   constructor() {
     super();

@@ -1,9 +1,8 @@
 'use strict'
 
 import { app, BrowserWindow, ipcMain, protocol } from 'electron'
-import ListenersRegister from './ListenersRegister'
 import WindowManager from './modules/WindowManager'
-import DownloadService from '@/services/DownloadService';
+import ServiceContainer from '@/ServiceContainer';
 
 /**
  * Make sure there is only one instance will be created.
@@ -17,15 +16,27 @@ if (!gotTheLock) {
   Error("Only one instance could be created");
 }
 
+// const isDevelopment = process.env.NODE_ENV !== 'production'
+
+// global reference to mainWindow (necessary to prevent window from being garbage collected)
+let mainWindow
+
 /**
  * Create window manager, you should use this create window
  */
 const windowManager = WindowManager.getManager();
 
 /**
- * Create download service, in this service, it will handle communication with the render thread.
+ * Create services
  */
-const downloadService = DownloadService.getService();
+ServiceContainer.getContainer();
+
+ServiceContainer.getService('partition').createPartition('main', true);
+
+/**
+ * Set WindowManager global partition
+ */
+WindowManager.setGlobalPartition(ServiceContainer.getService('partition').getPartition('main', true));
 
 /**
  * If another instance has been created, active the first instance.
@@ -40,16 +51,11 @@ app.on('second-instance', (event, commandLine, workingDirectory) => {
   }
 });
 
-// const isDevelopment = process.env.NODE_ENV !== 'production'
-
-// global reference to mainWindow (necessary to prevent window from being garbage collected)
-let mainWindow
-
 function createMainWindow() {
   const window = windowManager.createWindow('app', {
     webPreferences: {
-      nodeIntegration: true,
-      webSecurity: false
+      webSecurity: false,
+      nodeIntegration: true
     }
   });
 
@@ -64,14 +70,37 @@ function createMainWindow() {
     })
   });
 
+  /**
+   * Override the request headers
+   */
   window.webContents.session.webRequest.onBeforeSendHeaders((detail, cb) => {
     let { requestHeaders } = detail;
+
+    console.log(requestHeaders);
+
     requestHeaders = Object.assign(requestHeaders, { Referer: 'https://www.pixiv.net/' });
+
     cb({ requestHeaders });
   }, {
-    urls: ['<all_urls>'],
-    types: ['xmlhttprequest']
+    urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
+    // types: ['xmlhttprequest']
   });
+
+  /**
+   * Override the response headers
+   */
+  window.webContents.session.webRequest.onHeadersReceived({}, (detail, cb) => {
+    if (detail.responseHeaders['x-frame-options'] || detail.responseHeaders['X-Frame-Options']) {
+      delete detail.responseHeaders['x-frame-options'];
+      delete detail.responseHeaders['X-Frame-Options'];
+    }
+
+    cb({
+      cancel: false,
+      responseHeaders: detail.responseHeaders,
+      statusLine: detail.statusLine
+    });
+  })
 
   return window
 }
@@ -102,11 +131,4 @@ app.on('activate', () => {
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
   mainWindow = createMainWindow();
-
-  new ListenersRegister();
-
-  // test
-  ipcMain.on('work:download', (event, args) => {
-    let downloader = MangaWorkDownloader.createDownloader();
-  });
 })

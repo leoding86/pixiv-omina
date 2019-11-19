@@ -3,8 +3,9 @@ import {
 } from 'electron';
 import Download from '@/modules/Download';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
+import BaseService from '@/services/BaseService';
 
-class DownloadService {
+class DownloadService extends BaseService {
   /**
    * @property
    * @type {DownloadManager}
@@ -18,6 +19,8 @@ class DownloadService {
   static channel = 'download-service';
 
   constructor() {
+    super();
+
     /**
      * Configurate download
      */
@@ -26,6 +29,34 @@ class DownloadService {
     });
 
     this.downloadManager = DownloadManager.getManager();
+
+    this.downloadManager.on('start', ({ workDownloader }) => {
+      //
+    });
+
+    this.downloadManager.on('stop', ({ workDownloader }) => {
+      //
+    });
+
+    this.downloadManager.on('update', ({ workDownloader }) => {
+      //
+    });
+
+    this.downloadManager.on('progress', ({ workDownloader }) => {
+      //
+    });
+
+    this.downloadManager.on('finish', ({ workDownloader }) => {
+      //
+    });
+
+    this.downloadManager.on('delete', ({ workId }) => {
+      //
+    });
+
+    this.downloadManager.on('error', ({ workDownloader }) => {
+      //
+    });
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
   }
@@ -39,25 +70,6 @@ class DownloadService {
     }
 
     return DownloadService.instance;
-  }
-
-  channelIncomeHandler(event, args) {
-    this.callAction(args.action, args.args);
-  }
-
-  callAction(action, args) {
-    let method;
-
-    if (typeof action === 'string' && action.length > 0) {
-      method = `${action}Action`;
-    }
-
-    if (typeof this[method] === 'function') {
-      this[method].call(this, args);
-      return;
-    }
-
-    Error(`Invalid action method '${method}'`);
   }
 
   createDownloadAction({workId}) {

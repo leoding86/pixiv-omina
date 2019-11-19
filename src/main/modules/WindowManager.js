@@ -8,6 +8,15 @@ function WindowManager() {
   this.windows = {}
 }
 
+WindowManager.globalPartition = null;
+
+WindowManager.setGlobalPartition = function(partition) {
+  WindowManager.globalPartition = partition;
+}
+
+/**
+ * @type {WindowManager}
+ */
 WindowManager.instance = null;
 
 /**
@@ -21,6 +30,14 @@ WindowManager.getManager = function() {
   return WindowManager.instance;
 }
 
+WindowManager.getWindow = function(name) {
+  if (!WindowManager.instance) {
+    Error('WindowManager has not been initialized');
+  }
+
+  return WindowManager.instance.getWindow(name);
+}
+
 WindowManager.prototype = {
   /**
    *
@@ -29,6 +46,12 @@ WindowManager.prototype = {
    * @returns {Electron.BrowserWindow}
    */
   createWindow(name, args, loadUrlArgs = {}) {
+    if (WindowManager.globalPartition) {
+      args.webPreferences.partition = WindowManager.globalPartition;
+    }
+
+    console.log(args);
+
     let window = new BrowserWindow(args)
     let url;
 
