@@ -8,6 +8,7 @@ import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
 import ServiceContainer from '@/ServiceContainer';
+import PartitionManager from '@/modules/PartitionManager';
 
 /**
  * @class
@@ -73,7 +74,7 @@ class UserService extends BaseService {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('logined'));
     }).catch(error => {
       if (error && error.message) {
-        console.log(error.message);
+        // console.log(error.message);
       }
 
       WindowManager.getWindow('app').webContents.send(this.responseChannel('not-login'));
@@ -88,8 +89,7 @@ class UserService extends BaseService {
       let url = UrlBuilder.getAccountUnreadCountUrl();
 
       let request = new Request({
-        url: url,
-        partition: ServiceContainer.getService('partition').getPartition('main')
+        url: url
       });
 
       request.setHeader(
@@ -110,7 +110,7 @@ class UserService extends BaseService {
 
         response.on('end', () => {
           let jsonData = JSON.parse(body);
-          console.log(jsonData)
+          // console.log(jsonData)
 
           if (jsonData && jsonData.body && jsonData.body.unread_count) {
             resolve();

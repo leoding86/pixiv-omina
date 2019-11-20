@@ -1,4 +1,3 @@
-import PartitionService from '@/services/PartitionService';
 import UserService from '@/services/UserService';
 import DownloadService from '@/services/DownloadService';
 
@@ -14,9 +13,8 @@ class ServiceContainer {
     this.services = new Map();
 
     this.services
-      .set('partition', PartitionService.getService())
       .set('user', UserService.getService())
-      .set('download', DownloadService.getService());//
+      .set('download', DownloadService.getService());
   }
 
   /**

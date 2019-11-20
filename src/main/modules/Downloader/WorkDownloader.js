@@ -85,12 +85,12 @@ class WorkDownloader extends EventEmitter {
    * @returns {WorkDownloader}
    */
   static createDownloader({workId, options}) {
-    let workDownloader = new WorkDownloader();
+    let downloader = new this();
 
-    workDownloader.id = workId;
-    workDownloader.options = options;
+    downloader.id = workId;
+    downloader.options = options;
 
-    return workDownloader;
+    return downloader;
   }
 
   setContext(context) {

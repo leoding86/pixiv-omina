@@ -36,19 +36,19 @@ class DownloadService extends BaseService {
     this.downloadManager = DownloadManager.getManager();
 
     this.downloadManager.on('add', downloader => {
-      console.log(downloader.toJSON());
+      // console.log(downloader.toJSON());
 
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
 
     this.downloadManager.on('update', downloader => {//
-      console.log(downloader);
+      // console.log(downloader);
 
       this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
     });
 
     this.downloadManager.on('delete', workId => {
-      console.log(workId);
+      // console.log(workId);
 
       this.mainWindow.webContents.send(this.responseChannel('delete'), workId);
     });

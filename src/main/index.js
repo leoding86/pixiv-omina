@@ -4,6 +4,7 @@ import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 import WindowManager from './modules/WindowManager'
 import ServiceContainer from '@/ServiceContainer';
 import Request from '@/modules/Request';
+import PartitionManager from './modules/PartitionManager';
 
 /**
  * Make sure there is only one instance will be created.
@@ -26,6 +27,12 @@ let mainWindow
  * Create window manager, you should use this create window
  */
 const windowManager = WindowManager.getManager();
+
+/**
+ * Create partition manager and create a partition, you should use this to get the session
+ */
+const partitionManager = PartitionManager.getManager();
+partitionManager.createPartition('main', true);
 
 /**
  * If another instance has been created, active the first instance.
@@ -62,27 +69,30 @@ function createMainWindow() {
   /**
    * Override the request headers
    */
-  window.webContents.session.webRequest.onBeforeSendHeaders((detail, cb) => {
+  partitionManager.getSession('main').webRequest.onBeforeSendHeaders({
+    urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
+  }, (detail, cb) => {
     let { requestHeaders } = detail;
-
-    console.log(requestHeaders);
 
     requestHeaders = Object.assign(requestHeaders, { Referer: 'https://www.pixiv.net/' });
 
+    console.log('REQUEST HEADERS')
+    console.table(requestHeaders);
+
     cb({ requestHeaders });
-  }, {
-    urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
-    // types: ['xmlhttprequest']
   });
 
   /**
-   * Override the response headers
+   * Override the response headers used for load iframe page
    */
-  window.webContents.session.webRequest.onHeadersReceived({}, (detail, cb) => {
+  partitionManager.getSession('main').webRequest.onHeadersReceived({}, (detail, cb) => {
     if (detail.responseHeaders['x-frame-options'] || detail.responseHeaders['X-Frame-Options']) {
       delete detail.responseHeaders['x-frame-options'];
       delete detail.responseHeaders['X-Frame-Options'];
     }
+
+    console.log('RESPONSE HEADERS');
+    console.table(detail.responseHeaders);
 
     cb({
       cancel: false,
@@ -92,23 +102,22 @@ function createMainWindow() {
   });
 
   /**
-   * After window has been created, then create services. Because some service depend on main window
+   * After window has been created, then create services. Some services depend on main window,
+   * Because services are designed for communicating with the windows
    */
   ServiceContainer.getContainer();
-
-  ServiceContainer.getService('partition').createPartition('main', true);
 
   /**
    * Set Request global options
    */
   Request.setGlobalOptions({
-    partition: ServiceContainer.getService('partition').getPartition('main')
+    partition: partitionManager.getPartition('main')//
   });
 
   /**
    * Set WindowManager global partition
    */
-  WindowManager.setGlobalPartition(ServiceContainer.getService('partition').getPartition('main', true));
+  WindowManager.setGlobalPartition(partitionManager.getPartition('main'));
 
   return window
 }

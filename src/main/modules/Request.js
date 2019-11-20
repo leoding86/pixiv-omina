@@ -13,7 +13,7 @@ class Request extends net.ClientRequest {
    */
   constructor(options, callback) {
     options = Object.assign({}, Request.globalOptions, options);
-
+console.table(options);
     super(options, callback);
 
     this.options = options;

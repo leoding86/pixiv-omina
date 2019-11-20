@@ -63,7 +63,7 @@ class Download extends Request {
       }
     }
 
-    filename = filename || ('file' + Date.now());
+    return filename || ('file' + Date.now());
   }
 
   download() {
@@ -120,6 +120,8 @@ class Download extends Request {
     this.on('abort', () => {
       this.emit('dl-aborted');
     });
+
+    console.log(this.options.url);
 
     /**
      * Send request to start download

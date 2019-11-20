@@ -7,7 +7,7 @@
         @click="userLogin"
       >Login</span>
       <span v-else
-        @click="userLogout"
+        @click="userLogin"
       >Logout</span>
     </el-button>
     <el-button icon="el-icon-setting"

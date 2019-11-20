@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import DownloaderFactory from '@/modules/Downloader/DownloaderFactory';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
 /**
  * @class
@@ -72,7 +72,7 @@ class DownloadManager extends EventEmitter {
    * @returns {void}
    */
   downloadNext() {
-    if (this.workDownloaderPool.size() < 1) {
+    if (this.workDownloaderPool.size < 1) {
       return;
     }
 
@@ -84,9 +84,11 @@ class DownloadManager extends EventEmitter {
       }
     });
 
-    this.startWorkDownloader({
-      workId: nextWorkDownloader.id
-    });
+    if (nextWorkDownloader) {
+      this.startWorkDownloader({
+        workId: nextWorkDownloader.id
+      });
+    }
   }
 
   /**
@@ -166,20 +168,9 @@ class DownloadManager extends EventEmitter {
    * @returns {DownloadManager}
    */
   createWorkDownloader({workId, options}) {
-    let workDownloader = WorkDownloader.createDownloader({workId, options});
+    let undeterminedDownloader = UndeterminedDownloader.createDownloader({ workId, options });
 
-    this.addWorkDownloader(workDownloader);
-  }
-
-  /**
-   * Convert work downloader to manga/illustration/ugoira downloader
-   * @param {WorkDownloader} workDownloader
-   * @returns {Promise<WorkDownloader>}
-   */
-  getTureDownloader(workDownloader) {
-    workDownloader.setDownloading();
-
-    return DownloaderFactory.makeDownloader(workDownloader);
+    this.addWorkDownloader(undeterminedDownloader);
   }
 
   /**
@@ -197,9 +188,11 @@ class DownloadManager extends EventEmitter {
 
       this.emit('update', workDownloader);
 
-      if (Object.getPrototypeOf(workDownloader) === WorkDownloader.prototype) {
-        this.getTureDownloader(workDownloader).then(downloader => {
+      if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
+        workDownloader.getRealDownloader().then(downloader => {
           this.workDownloaderPool.set(downloader.id, downloader);
+
+          this.emit('update', downloader);
 
           this.startWorkDownloader({workId: downloader.id});
         }).catch(error => {
