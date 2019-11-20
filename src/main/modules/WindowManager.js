@@ -33,7 +33,7 @@ class WindowManager {
 
   /**
    * @param {string} name
-   * @returns {Electron.BrowserWindowConstructorOptions}
+   * @returns {Electron.BrowserWindow}
    */
   static getWindow(name) {
     if (!WindowManager.instance) {
@@ -53,8 +53,6 @@ class WindowManager {
     if (WindowManager.globalPartition) {
       args.webPreferences.partition = WindowManager.globalPartition;
     }
-
-    console.log(args);
 
     let window = new BrowserWindow(args)
     let url;
@@ -97,7 +95,7 @@ class WindowManager {
    */
   getWindow(name) {
     if (!this.windows[name]) {
-        throw `Cannot find window '${name}'`;
+        throw Error(`Cannot find window '${name}'`);
     }
 
     return this.windows[name];

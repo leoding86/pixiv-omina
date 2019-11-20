@@ -3,6 +3,7 @@
 import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 import WindowManager from './modules/WindowManager'
 import ServiceContainer from '@/ServiceContainer';
+import Request from '@/modules/Request';
 
 /**
  * Make sure there is only one instance will be created.
@@ -25,18 +26,6 @@ let mainWindow
  * Create window manager, you should use this create window
  */
 const windowManager = WindowManager.getManager();
-
-/**
- * Create services
- */
-ServiceContainer.getContainer();
-
-ServiceContainer.getService('partition').createPartition('main', true);
-
-/**
- * Set WindowManager global partition
- */
-WindowManager.setGlobalPartition(ServiceContainer.getService('partition').getPartition('main', true));
 
 /**
  * If another instance has been created, active the first instance.
@@ -100,7 +89,26 @@ function createMainWindow() {
       responseHeaders: detail.responseHeaders,
       statusLine: detail.statusLine
     });
-  })
+  });
+
+  /**
+   * After window has been created, then create services. Because some service depend on main window
+   */
+  ServiceContainer.getContainer();
+
+  ServiceContainer.getService('partition').createPartition('main', true);
+
+  /**
+   * Set Request global options
+   */
+  Request.setGlobalOptions({
+    partition: ServiceContainer.getService('partition').getPartition('main')
+  });
+
+  /**
+   * Set WindowManager global partition
+   */
+  WindowManager.setGlobalPartition(ServiceContainer.getService('partition').getPartition('main', true));
 
   return window
 }

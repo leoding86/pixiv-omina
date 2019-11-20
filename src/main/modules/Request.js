@@ -6,15 +6,28 @@ import { net, session } from 'electron';
 class Request extends net.ClientRequest {
   /**
    * @constructor
-   * @param {Object} option
-   * @param {string} option.url
-   * @param {Electron.Session} option.session
-   * @param {string} option.partition
+   * @param {Object} options
+   * @param {string} options.url
+   * @param {Electron.Session} options.session
+   * @param {string} options.partition
    */
-  constructor(option, callback) {
-    super(option, callback);
+  constructor(options, callback) {
+    options = Object.assign({}, Request.globalOptions, options);
 
-    this.option = option;
+    super(options, callback);
+
+    this.options = options;
+
+    /**
+     * Merge options
+     */
+    this.options = options;
+  }
+
+  static globalOptions = {};
+
+  static setGlobalOptions(options) {
+    Request.globalOptions = options;
   }
 
   /**
@@ -24,14 +37,14 @@ class Request extends net.ClientRequest {
    * @param {Function} [callback]
    */
   end(chunk, encoding, callback) {
-    let matches = this.option.url.match(/^(https?:\/{2}[^/]+)/);
+    let matches = this.options.url.match(/^(https?:\/{2}[^/]+)/);
     let ses;
 
-    if (this.option && (this.option.session || this.option.partition)) {
-      if (this.option.session) {
-        ses = this.option.session;
-      } else if (this.option.partition) {
-        ses = session.fromPartition(this.option.partition);
+    if (this.options && (this.options.session || this.options.partition)) {
+      if (this.options.session) {
+        ses = this.options.session;
+      } else if (this.options.partition) {
+        ses = session.fromPartition(this.options.partition);
       }
 
       let cookieString = '';

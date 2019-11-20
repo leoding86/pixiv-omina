@@ -7,16 +7,6 @@ import WindowManager from '@/modules/WindowManager';
  */
 class WorkDownloader extends EventEmitter {
   /**
-   * @enum {string}
-   */
-  static state = {
-    pending: 'pending',
-    downloading: 'downloading',
-    error: 'error',
-    finish: 'finish'
-  }
-
-  /**
    * @constructor
    */
   constructor() {
@@ -35,9 +25,14 @@ class WorkDownloader extends EventEmitter {
     this.id = null;
 
     /**
-     * @type {string}
+     * @type {number}
      */
-    this.title = '';
+    this.progress = 0;
+
+    /**
+     * @type {Object|null}
+     */
+    this.context = null;
 
     /**
      * @type {WorkDownloader.state}
@@ -60,6 +55,29 @@ class WorkDownloader extends EventEmitter {
     this.type = null;
   }
 
+  get speed() {
+    if (this.download) {
+      return this.download.speed;
+    }
+
+    return 0;
+  }
+
+  get title() {
+    return this.id;
+  }
+
+  /**
+   * @enum {string}
+   */
+  static state = {
+    pending: 'pending',
+    downloading: 'downloading',
+    error: 'error',
+    finish: 'finish',
+    stop: 'stop'
+  }
+
   /**
    * @param {Object} param
    * @param {number|string} param.workId
@@ -75,20 +93,59 @@ class WorkDownloader extends EventEmitter {
     return workDownloader;
   }
 
+  setContext(context) {
+    this.context = context;
+  }
+
+  setPending() {
+    this.state = WorkDownloader.state.pending;
+  }
+
+  setDownloading() {
+    this.state = WorkDownloader.state.downloading;
+  }
+
+  setErrorStatus(errorMessage) {
+    this.statusMessage = errorMessage;
+    this.state = WorkDownloader.state.error;
+  }
+
   isPending() {
     return this.state === WorkDownloader.state.pending;
   }
 
+  isDownloading() {
+    return this.state === WorkDownloader.state.downloading;
+  }
+
+  updateStatus(message) {
+    this.statusMessage = message;
+  }
+
   start() {
-    //
+    throw 'Not implemeneted';
   }
 
   stop() {
-    //
+    throw 'Not implemeneted';
   }
 
-  destroy() {
-    //
+  delete() {
+    throw 'Not implemeneted';
+  }
+
+  toJSON() {
+    let data = {
+      id: this.id,
+      title: this.title,
+      state: this.state,
+      speed: this.speed,
+      progress: this.progress,
+      statusMessage: this.statusMessage,
+      type: this.type//
+    };
+
+    return data;
   }
 }
 

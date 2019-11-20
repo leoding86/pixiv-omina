@@ -30,7 +30,8 @@ export default {
 
   data() {
     return {
-      workId: '77626643',
+      // workId: '77626643', // ugoira
+      workId: '77861222', // manga
       downloads: []
     }
   },
@@ -46,24 +47,16 @@ export default {
   },
 
   beforeMount() {
-    ipcRenderer.on('download-service:add', ({ workDownload }) => {
-      //
+    ipcRenderer.on('download-service:add', (event, download) => {
+      console.log(download);
     });
 
-    ipcRenderer.on('download-service:delete', ({ workDownload }) => {
-      //
+    ipcRenderer.on('download-service:delete', (event, downloadId) => {
+      console.log(downloadId);
     });
 
-    ipcRenderer.on('download-service:update', ({ workDownload }) => {
-      //
-    });
-
-    ipcRenderer.on('download-service:stop', ({ workDownload }) => {
-      //
-    });
-
-    ipcRenderer.on('download-service:error', ({ workDownloader }) => {
-      //
+    ipcRenderer.on('download-service:update', (event, download) => {
+      console.log(download);
     });
   },
 

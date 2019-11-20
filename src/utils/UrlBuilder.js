@@ -23,6 +23,14 @@ class UrlBuilder {
   static getAccountUnreadCountUrl() {
     return 'https://www.pixiv.net/rpc/index.php?mode=message_thread_unread_count';
   }
+
+  /**
+   *
+   * @param {number|string} id
+   */
+  static getWorkPagesUrl(id) {
+    return `https://www.pixiv.net/ajax/illust/${id}/pages`;
+  }
 }
 
 export default UrlBuilder;

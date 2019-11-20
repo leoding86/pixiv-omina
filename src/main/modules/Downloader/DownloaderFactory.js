@@ -1,18 +1,19 @@
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
-import WorkDownload from '@/modules/Downloader/WorkDownloader';
-import { net } from 'electron';
+import Request from '@/modules/Request';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 
 class DownloaderFactory {
   /**
-   * @param {WorkDownload} workDownloader
+   * @param {WorkDownloader} workDownloader
+   * @returns {Promise.<WorkDownloader>}
    */
   static makeDownloader(workDownloader) {
     return new Promise((resolve, reject) => {
       let workInfoUrl = UrlBuilder.getWorkInfoUrl(workDownloader.id);
 
-      let request = net.request({
+      let request = new Request({
         method: 'GET',
         url: workInfoUrl
       });
@@ -32,8 +33,13 @@ class DownloaderFactory {
             return;
           }
 
+          /**
+           * Set work info as context to downloader
+           */
+          workDownloader.setContext(jsonData.body);
+
           if (jsonData.body.illustType === 0) {
-            resolve(IllustrationDownloader.createFromWorkDownloader(workDownloader));
+            resolve(IllustrationDownloader.createFromWorkDownloader(workDownloader));//
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(workDownloader));
           } else {

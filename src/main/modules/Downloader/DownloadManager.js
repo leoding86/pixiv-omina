@@ -15,7 +15,7 @@ class DownloadManager extends EventEmitter {
      */
     this.workDownloaderPool = new Map();
 
-    this.maxProcessing = 2;
+    this.maxDownloading = 2;
   }
 
   static instance = null;
@@ -43,24 +43,28 @@ class DownloadManager extends EventEmitter {
    * @param {WorkDownloader} downloader
    * @returns {this}
    */
-  appendWorkDownloader(downloader) {
+  addWorkDownloader(downloader) {
     if (!this.getWorkDownloader(downloader.id)) {
       this.workDownloaderPool.set(downloader.id, downloader);
+
+      this.emit('add', downloader);
+
+      this.startWorkDownloader({workId: downloader.id});
     }
 
     return this;
   }
 
-  reachMaxProcessing() {
-    let processingCount = 0;
+  reachMaxDownloading() {
+    let downloadingCount = 0;
 
     this.workDownloaderPool.forEach(workDownloader => {
-      if (workDownloader.isProcessing()) {
-        processingCount++;
+      if (workDownloader.isDownloading()) {
+        downloadingCount++;
       }
     });
 
-    return processingCount >= this.maxProcessing;
+    return downloadingCount >= this.maxDownloading;
   }
 
   /**
@@ -68,8 +72,6 @@ class DownloadManager extends EventEmitter {
    * @returns {void}
    */
   downloadNext() {
-    let processingWorksCount = 0;
-
     if (this.workDownloaderPool.size() < 1) {
       return;
     }
@@ -80,59 +82,56 @@ class DownloadManager extends EventEmitter {
       if (!nextWorkDownloader && workDownloader.isPending()) {
         nextWorkDownloader = workDownloader;
       }
-
-      if (workDownloader.isProcessing()) {
-        processingWorksCount++;
-      }
     });
 
-    if (processingWorksCount < this.maxProcessing) {
-      nextWorkDownloader.start();
-    }
+    this.startWorkDownloader({
+      workId: nextWorkDownloader.id
+    });
   }
 
   /**
    * @param {Object} args
-   * @param {WorkDownloader} args.workDownloader
+   * @param {WorkDownloader} args.downloader
    */
-  workDownloaderStartHandler({workDownloader}) {
-    this.emit('start', {workDownloader});
+  workDownloaderStartHandler({ downloader }) {
+    this.emit('update', downloader);
   }
 
   /**
    * @param {Object} args
-   * @param {WorkDownloader} args.workDownloader
+   * @param {WorkDownloader} args.downloader
    */
-  workDownloaderStopHandler({workDownloader}) {
-    this.emit('stop', {workDownloader});
+  workDownloaderStopHandler({ downloader }) {
+
+    this.emit('update', downloader);
 
     this.downloadNext();
   }
 
   /**
    * @param {Object} args
-   * @param {WorkDownloader} args.workDownloader
+   * @param {WorkDownloader} args.downloader
    */
-  workDownloaderProgressHandler({workDownloader}) {
-    this.emit('progress', {workDownloader});
+  workDownloaderProgressHandler({ downloader }) {
+    this.emit('update', downloader);
   }
 
   /**
    * @param {Object} args
-   * @param {WorkDownloader} args.workDownloader
+   * @param {WorkDownloader} args.downloader
    */
-  workDownloaderErrorHandler({workDownloader}) {
-    this.emit('error', {workDownloader});
+  workDownloaderErrorHandler({ downloader }) {
+    this.emit('update', downloader);
 
     this.downloadNext();
   }
 
   /**
    * @param {Object} args
-   * @param {WorkDownloader} args.workDownloader
+   * @param {WorkDownloader} args.downloader
    */
-  workDownloaderFinishHandler({workDownloader}) {
-    this.emit('finish', {workDownloader});
+  workDownloaderFinishHandler({ downloader }) {
+    this.emit('update', downloader);
 
     this.downloadNext();
   }
@@ -141,11 +140,11 @@ class DownloadManager extends EventEmitter {
    * @param {WorkDownloader} workDownloader
    */
   attachListenersToDownloader(workDownloader) {
-    workDownloader.on('start', this.workDownloaderStartHandler);
-    workDownloader.on('stop', this.workDownloaderStopHandler);
-    workDownloader.on('progress', this.workDownloaderProgressHandler);
-    workDownloader.on('error', this.workDownloaderErrorHandler);
-    workDownloader.on('finish', this.workDownloaderFinishHandler);
+    workDownloader.on('start', this.workDownloaderStartHandler.bind(this));
+    workDownloader.on('stop', this.workDownloaderStopHandler.bind(this));
+    workDownloader.on('progress', this.workDownloaderProgressHandler.bind(this));
+    workDownloader.on('error', this.workDownloaderErrorHandler.bind(this));
+    workDownloader.on('finish', this.workDownloaderFinishHandler.bind(this));
   }
 
   /**
@@ -169,21 +168,67 @@ class DownloadManager extends EventEmitter {
   createWorkDownloader({workId, options}) {
     let workDownloader = WorkDownloader.createDownloader({workId, options});
 
-    this.appendWorkDownloader(workDownloader);
+    this.addWorkDownloader(workDownloader);
+  }
 
-    this.emit('add', workDownloader);
+  /**
+   * Convert work downloader to manga/illustration/ugoira downloader
+   * @param {WorkDownloader} workDownloader
+   * @returns {Promise<WorkDownloader>}
+   */
+  getTureDownloader(workDownloader) {
+    workDownloader.setDownloading();
 
-    DownloaderFactory.makeDownloader(workDownloader).then(downloader => {
-      if (this.workDownloaderPool.has(downloader.id)) {
-        this.workDownloaderPool.set(downloader.id, downloader);
+    return DownloaderFactory.makeDownloader(workDownloader);
+  }
 
-        this.attachListenersToDownloader(downloader);
+  /**
+   * @param {Object} param
+   * @param {number|string} param.workId
+   */
+  startWorkDownloader({workId}) {
+    let workDownloader = this.getWorkDownloader(workId);
 
-        this.emit('update', downloader);
+    if (workDownloader && !this.reachMaxDownloading()) {
+      /**
+       * Set downloader state to pending
+       */
+      workDownloader.setPending();
+
+      this.emit('update', workDownloader);
+
+      if (Object.getPrototypeOf(workDownloader) === WorkDownloader.prototype) {
+        this.getTureDownloader(workDownloader).then(downloader => {
+          this.workDownloaderPool.set(downloader.id, downloader);
+
+          this.startWorkDownloader({workId: downloader.id});
+        }).catch(error => {
+          workDownloader.setErrorStatus(error.message);
+
+          this.emit('update', workDownloader);
+
+          throw error;
+        });
+      } else {
+        this.attachListenersToDownloader(workDownloader);
+
+        workDownloader.start();
       }
-    }).catch(error => {
-      this.emit('error', workDownloader);
-    });
+    }
+  }
+
+  /**
+   * @param {Object} param
+   * @param {number|string} param.workId
+   */
+  stopWorkDownloader({workId}) {
+    let workDownloader = this.getWorkDownloader(workId);
+
+    if (workDownloader) {
+      this.deattachListenersFromDownloader(workDownloader);
+
+      workDownloader.stop();
+    }
   }
 
   /**
@@ -203,31 +248,7 @@ class DownloadManager extends EventEmitter {
       workDownloader = null;
     }
 
-    this.emit('delete', {workId});
-  }
-
-  /**
-   * @param {Object} param
-   * @param {number|string} param.workId
-   */
-  startWorkDownloader({workId}) {
-    let workDownloader = this.getWorkDownloader(workId);
-
-    if (workDownloader && !this.reachMaxProcessing()) {
-      workDownloader.start();
-    }
-  }
-
-  /**
-   * @param {Object} param
-   * @param {number|string} param.workId
-   */
-  stopWorkDownloader({workId}) {
-    let workDownloader = this.getWorkDownloader(workId);
-
-    if (workDownloader) {
-      workDownloader.stop();
-    }
+    this.emit('delete', workId);
   }
 
   /**

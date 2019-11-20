@@ -1,6 +1,7 @@
 import {
   ipcMain
 } from 'electron';
+import WindowManager from '@/modules/WindowManager';
 import Download from '@/modules/Download';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import BaseService from '@/services/BaseService';
@@ -30,34 +31,26 @@ class DownloadService extends BaseService {
       }
     });
 
+    this.mainWindow = WindowManager.getWindow('app');
+
     this.downloadManager = DownloadManager.getManager();
 
-    this.downloadManager.on('start', ({ workDownloader }) => {
-      //
+    this.downloadManager.on('add', downloader => {
+      console.log(downloader.toJSON());
+
+      this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
 
-    this.downloadManager.on('stop', ({ workDownloader }) => {
-      //
+    this.downloadManager.on('update', downloader => {//
+      console.log(downloader);
+
+      this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
     });
 
-    this.downloadManager.on('update', ({ workDownloader }) => {
-      //
-    });
+    this.downloadManager.on('delete', workId => {
+      console.log(workId);
 
-    this.downloadManager.on('progress', ({ workDownloader }) => {
-      //
-    });
-
-    this.downloadManager.on('finish', ({ workDownloader }) => {
-      //
-    });
-
-    this.downloadManager.on('delete', ({ workId }) => {
-      //
-    });
-
-    this.downloadManager.on('error', ({ workDownloader }) => {
-      //
+      this.mainWindow.webContents.send(this.responseChannel('delete'), workId);
     });
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
@@ -74,13 +67,19 @@ class DownloadService extends BaseService {
     return DownloadService.instance;
   }
 
+  /**
+   * Get renderer response channel
+   * @param {string} name
+   */
+  responseChannel(name) {
+    return DownloadService.channel + `:${name}`;
+  }
+
   createDownloadAction({workId}) {
-    if (this.downloadManager.getWorkDownloader(workId)) {
-      //
+    if (!this.downloadManager.getWorkDownloader(workId)) {
+      this.downloadManager.createWorkDownloader({workId});
       return;
     }
-
-    this.downloadManager.createWorkDownloader({workId});
   }
 
   deleteDownloadAction({downloadId}) {
