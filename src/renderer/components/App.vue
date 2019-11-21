@@ -10,7 +10,11 @@
         <el-button @click="createDownloader">Submit</el-button>
       </el-form>
 
+      <div v-if="downloads.length < 1">
+        There is no download, add one.
+      </div>
       <app-download-list
+        v-else
         :downloads=downloads
       ></app-download-list>
     </div>
@@ -31,7 +35,7 @@ export default {
   data() {
     return {
       // workId: '77626643', // ugoira
-      workId: '77861222', // manga
+      workId: '77897318', // manga 30pages
       downloads: []
     }
   },
@@ -48,19 +52,41 @@ export default {
 
   beforeMount() {
     ipcRenderer.on('download-service:add', (event, download) => {
-      console.log(download);
+      this.updateDownloads(download);
     });
 
     ipcRenderer.on('download-service:delete', (event, downloadId) => {
-      console.log(downloadId);
+      this.deleteDownload(download);
     });
 
     ipcRenderer.on('download-service:update', (event, download) => {
-      console.log(download);
+      this.updateDownloads(download);
     });
   },
 
   methods: {
+    updateDownloads(download) {console.log(download);
+      for (let i = 0, l = this.downloads.length; i < l; i++) {
+        if (this.downloads[i].id === download.id) {
+          this.$set(this.downloads, i, Object.assign({}, download));
+
+          return;
+        }
+      }
+
+      this.downloads.push(download);
+    },
+
+    deleteDownload(downloadId) {
+      for (let i = 0, l = this.downloads.length; i < l; i++) {
+        if (this.downloads[i].id === download.id) {
+          this.downloads = this.downloads.splice(i, 1);
+
+          return;
+        }
+      }
+    },
+
     checkUserLogined() {
       ipcRenderer.send('user-service', {
         action: 'checkUserLogined'

@@ -7,6 +7,9 @@ import path from 'path';
 import formatUrl from 'url';
 import Request from '@/modules/Request';
 
+/**
+ * Notice that the dl-progress event is not triggered every time, review codes for detail.
+ */
 class Download extends Request {
   /**
    * @constructor
@@ -30,6 +33,20 @@ class Download extends Request {
      * @type {number}
      */
     this.speed = 0;
+
+    /**
+     * @type {number} microsecond
+     */
+    this.speedSensitivity = 100;
+
+    this.startTime = null;
+
+    this.endTime = null;
+
+    /**
+     * @type {null | number}
+     */
+    this.completeTime = null;
   }
 //
   /**
@@ -72,7 +89,11 @@ class Download extends Request {
      */
     let filename = this.getFilename();
 
+    this.startTime = Date.now();
+
     this.on('response', response => {
+      let speedChunkDataLength = 0, duration = 0;
+
       let startTime = Date.now();
 
       let writeStream = fs.createWriteStream(path.join(this.saveDir, filename));
@@ -81,11 +102,19 @@ class Download extends Request {
 
       response.on('data', data => {
         let nowTime = Date.now();
-        let duration = nowTime - startTime;
 
-        this.speed = data / Math.round(duration / 1000);
+        duration = nowTime - startTime;
 
-        this.emit('dl-progress');
+        if (duration >= this.speedSensitivity) {
+          this.speed = Math.round(speedChunkDataLength / duration * 1000);
+
+          this.emit('dl-progress');
+//
+          startTime = nowTime;
+          speedChunkDataLength = 0;
+        } else {
+          speedChunkDataLength += data.length;
+        }
       });
 
       response.on('end', () => {
@@ -94,6 +123,10 @@ class Download extends Request {
          */
         writeStream.close();
         this.speed = 0;
+
+        this.endTime = Date.now();
+
+        this.completeTime = this.endTime - this.startTime;
 
         this.emit('dl-finish');
       });

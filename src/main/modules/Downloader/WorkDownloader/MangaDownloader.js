@@ -34,22 +34,35 @@ class MangaDownloader extends WorkDownloader {
    * Create a manga downloader from base work downloader
    * @member
    * @param {WorkDownloader} workDownloader
-   * @returns {Promise<MangaDownloader>}
+   * @returns {MangaDownloader}
    */
   static createFromWorkDownloader(workDownloader) {
-    return new Promise((resolve, reject) => {
-      let url = UrlBuilder.getWorkPagesUrl(workDownloader.id);
+    let downloader = new MangaDownloader();
+    downloader.id = workDownloader.id;
+    downloader.options = workDownloader.options;
+    downloader.context = workDownloader.context;
 
-      let request = new Request({
+    return downloader;
+  }
+
+  /**
+   * Fetch images that need to be downloaded
+   * @returns {Promise.<Array>}
+   */
+  fetchImages() {
+    return new Promise((resolve, reject) => {
+      let url = UrlBuilder.getWorkPagesUrl(this.id);
+
+      this.request = new Request({
         url: url,
         method: 'GET'
       });
 
-      request.on('error', error => {
+      this.request.on('error', error => {
         reject(error);
       });
 
-      request.on('response', response => {
+      this.request.on('response', response => {
         let body = '';
 
         response.on('error', error => {
@@ -64,14 +77,7 @@ class MangaDownloader extends WorkDownloader {
           let jsonData = JSON.parse(body.toString());
 
           if (jsonData && Array.isArray(jsonData.body) && jsonData.body.length > 0) {
-            let downloader = new MangaDownloader();
-            downloader.id = workDownloader.id;
-            downloader.options = workDownloader.options;
-            downloader.context = workDownloader.context;
-            downloader.images = jsonData.body;
-
-            resolve(downloader);
-
+            resolve(jsonData.body);
             return;
           }
 
@@ -83,7 +89,7 @@ class MangaDownloader extends WorkDownloader {
         });
       });
 
-      request.end();
+      this.request.end();
     });
   }
 
@@ -95,50 +101,63 @@ class MangaDownloader extends WorkDownloader {
     this.download = new Download(downloadOptions);
 
     this.download.on('dl-finish', () => {
-      this.imageIndex++;
+      this.imageIndex++;//
 
-      this.progress = this.imageIndex / this.images.length
+      this.progress = this.imageIndex / this.images.length;
 
-      this.emit('progress', { downloader: this });
+      this.setDownloading();
 
       if (this.imageIndex > (this.images.length - 1)) {
         this.state = MangaDownloader.state.finish;
 
-        this.emit('finish', { downloader: this });
+        this.setFinish();
+
+        this.download = null;
         return;
       }
 
       this.downloadImages();
     });
 
-    this.download.on('dl-error', error => {
-      this.state = MangaDownloader.state.error;
-      this.statusMessage = error.message;
+    this.download.on('dl-progress', () => {
+      this.setDownloading();
+    });
 
-      this.emit('error', { downloader: this });
+    this.download.on('dl-error', error => {
+      this.download = null;
+
+      this.setError(error);
     });
 
     this.download.on('dl-aborted', () => {
-      this.state = MangaDownloader.state.stop;
+      this.setStop();
 
-      this.emit('stop', { downloader: this });
+      this.download = null;
+
+      this.setStop();
     });
 
     this.download.download();
   }
 
   start() {
-    this.emit('start', { downloader: this });
+    this.setStart();
 
-    this.state = MangaDownloader.state.downloading;
+    if (this.images.length === 0) {
+      this.setDownloading('Fetch images that need to be downloaded');
 
-    this.downloadImages();
-  }
+      this.fetchImages().then(images => {
+        this.images = images;
 
-  stop() {
-    this.state = MangaDownloader.state.stop;
+        this.downloadImages();
+      }).catch(error => {
+        this.setError(error);
+      });
+    } else {
+      this.setDownloading();
 
-    this.download.abort();
+      this.downloadImages();
+    }
   }
 
   destroy() {

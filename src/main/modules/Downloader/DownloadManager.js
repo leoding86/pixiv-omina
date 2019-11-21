@@ -180,32 +180,34 @@ class DownloadManager extends EventEmitter {
   startWorkDownloader({workId}) {
     let workDownloader = this.getWorkDownloader(workId);
 
-    if (workDownloader && !this.reachMaxDownloading()) {
-      /**
-       * Set downloader state to pending
-       */
-      workDownloader.setPending();
+    if (workDownloader) {
+      if (!this.reachMaxDownloading()) {
 
-      this.emit('update', workDownloader);
-
-      if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
-        workDownloader.getRealDownloader().then(downloader => {
-          this.workDownloaderPool.set(downloader.id, downloader);
-
-          this.emit('update', downloader);
-
-          this.startWorkDownloader({workId: downloader.id});
-        }).catch(error => {
-          workDownloader.setErrorStatus(error.message);
-
-          this.emit('update', workDownloader);
-
-          throw error;
-        });
-      } else {
         this.attachListenersToDownloader(workDownloader);
 
-        workDownloader.start();
+        if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
+          workDownloader.getRealDownloader().then(downloader => {
+            workDownloader = null;
+
+            this.workDownloaderPool.set(downloader.id, downloader);
+
+            // this.emit('update', downloader);
+
+            this.startWorkDownloader({workId: downloader.id});
+          }).catch(error => {
+            // workDownloader.setError(error);
+
+            // this.emit('update', workDownloader);
+
+            throw error;
+          });
+        } else {
+          workDownloader.start();
+        }
+      } else {
+        workDownloader.setPending();
+
+        this.emit('update', workDownloader);
       }
     }
   }

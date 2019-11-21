@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import WindowManager from '@/modules/WindowManager';
 
@@ -13,6 +14,11 @@ class WorkDownloader extends EventEmitter {
     super();
 
     this.windowManager = WindowManager.getManager();
+
+    /**
+     * @type {Request}
+     */
+    this.request = null;
 
     /**
      * @type {Download}
@@ -97,17 +103,48 @@ class WorkDownloader extends EventEmitter {
     this.context = context;
   }
 
-  setPending() {
+  setPending(message) {
+    this.statusMessage = message || 'Pending';
     this.state = WorkDownloader.state.pending;
   }
 
-  setDownloading() {
+  setStart(message) {
+    this.statusMessage = message || 'Start';
     this.state = WorkDownloader.state.downloading;
+
+    this.emit('start', { downloader: this });
   }
 
-  setErrorStatus(errorMessage) {
-    this.statusMessage = errorMessage;
+  setDownloading(message) {
+    this.statusMessage = message || 'Downloading';
+    this.state = WorkDownloader.state.downloading;
+
+    this.emit('progress', { downloader: this });
+  }
+
+  setStop(message) {
+    this.statusMessage = message || 'Stopped';
+    this.state = WorkDownloader.state.stop;
+
+    this.emit('stop', { downloader: this });
+  }
+
+  setFinish() {
+    this.statusMessage = 'Finished';
+    this.statusMessage = WorkDownloader.state.finish;
+
+    this.emit('finish', { downloader: this });
+  }
+
+  /**
+   *
+   * @param {Error} error
+   */
+  setError(error) {
+    this.statusMessage = error.message;
     this.state = WorkDownloader.state.error;
+
+    this.emit('error', { downloader: this });
   }
 
   isPending() {
@@ -118,16 +155,18 @@ class WorkDownloader extends EventEmitter {
     return this.state === WorkDownloader.state.downloading;
   }
 
-  updateStatus(message) {
-    this.statusMessage = message;
-  }
-
   start() {
     throw 'Not implemeneted';
   }
 
   stop() {
-    throw 'Not implemeneted';
+    if (this.download) {
+      this.download.abort();
+    }
+
+    if (this.request) {
+      this.request.abort();
+    }
   }
 
   delete() {

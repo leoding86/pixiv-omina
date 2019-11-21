@@ -27,10 +27,9 @@ class UndeterminedDownloader extends WorkDownloader {
    * @returns {Promise<WorkDownloader>}
    */
   getRealDownloader() {
-    return new Promise((resolve, reject) => {
-      this.state = UndeterminedDownloader.state.downloading;
-      this.statusMessage = 'Resovling downloader';
+    this.setStart('Resovling downloader');
 
+    return new Promise((resolve, reject) => {
       let url = UrlBuilder.getWorkInfoUrl(this.id);
 
       this.request = new Request({
@@ -49,7 +48,11 @@ class UndeterminedDownloader extends WorkDownloader {
           let jsonData = JSON.parse(body.toString());
 
           if (!jsonData || jsonData.error || !jsonData.body) {
-            reject(Error('cannot resolve work info'));
+            let error = Error('cannot resolve work info');
+
+            this.setError(error);
+
+            reject(error);
             return;
           }
 
@@ -63,20 +66,30 @@ class UndeterminedDownloader extends WorkDownloader {
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(this));
           } else {
-            reject(Error(`unsupported work type '${jsonData.body.illustType}'`))
+            let error = Error(`unsupported work type '${jsonData.body.illustType}'`);
+
+            this.setError(error);
+
+            reject(error.message);
           }
         });
 
         response.on('error', error => {
+          this.setError(error);
+
           reject(error);
         })
       });
 
       this.request.on('abort', () => {
-        //
+        this.setStop();
+
+        reject();
       });
 
       this.request.on('error', error => {
+        this.setError(error);
+
         reject(error);
       });
 
