@@ -31,6 +31,13 @@ class UrlBuilder {
   static getWorkPagesUrl(id) {
     return `https://www.pixiv.net/ajax/illust/${id}/pages`;
   }
+
+  /**
+   * @returns {string}
+   */
+  static getUserLogoutUrl() {
+    return 'https://www.pixiv.net/logout.php';
+  }
 }
 
 export default UrlBuilder;

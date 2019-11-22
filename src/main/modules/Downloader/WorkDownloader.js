@@ -155,6 +155,12 @@ class WorkDownloader extends EventEmitter {
     return this.state === WorkDownloader.state.downloading;
   }
 
+  reset() {
+    this.progress = 0;
+    this.state = WorkDownloader.state.pending;
+    this.statusMessage = '';
+  }
+
   start() {
     throw 'Not implemeneted';
   }

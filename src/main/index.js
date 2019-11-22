@@ -1,6 +1,6 @@
-'use strict'
+'use strict'//
 
-import { app, BrowserWindow, ipcMain, protocol } from 'electron'
+import { app, shell } from 'electron'
 import WindowManager from './modules/WindowManager'
 import ServiceContainer from '@/ServiceContainer';
 import Request from '@/modules/Request';
@@ -118,6 +118,15 @@ function createMainWindow() {
    * Set WindowManager global partition
    */
   WindowManager.setGlobalPartition(partitionManager.getPartition('main'));
+
+  /**
+   * Force external links from browser-window to open in a default browser from app
+   */
+  WindowManager.getWindow('app').webContents.on('new-window', (event, url) => {//
+    event.preventDefault();
+
+    shell.openExternal(url);//
+  });
 
   return window
 }

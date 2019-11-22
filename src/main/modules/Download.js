@@ -109,7 +109,7 @@ class Download extends Request {
           this.speed = Math.round(speedChunkDataLength / duration * 1000);
 
           this.emit('dl-progress');
-//
+
           startTime = nowTime;
           speedChunkDataLength = 0;
         } else {

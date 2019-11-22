@@ -1,6 +1,7 @@
 import {
   ipcMain
 } from 'electron';
+import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
 import Download from '@/modules/Download';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
@@ -75,11 +76,22 @@ class DownloadService extends BaseService {
     return DownloadService.channel + `:${name}`;
   }
 
-  createDownloadAction({workId}) {
+  createDownloadAction({workId, url}) {
+    if (!workId) {
+      workId = UrlParser.getWorkIdFromUrl(url);
+    }
+
+    if (!workId) {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), 'It\'s a invalid download');
+      return;
+    }
+
     if (!this.downloadManager.getWorkDownloader(workId)) {
       this.downloadManager.createWorkDownloader({workId});
       return;
     }
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
   }
 
   deleteDownloadAction({downloadId}) {
@@ -92,6 +104,10 @@ class DownloadService extends BaseService {
 
   startDownloadAction({downloadId}) {
     this.downloadManager.startWorkDownloader({downloadId});
+  }
+
+  redownloadAction({downloadId}) {
+    this.downloadManager.startWorkDownloader({downloadId, reset: true});
   }
 }
 

@@ -1,9 +1,9 @@
-import WorkDownloader from '@/modules/Downloader/WorkDownloader'
+import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
 
 /**
  * @class
  */
-class IllustrationDownloader extends WorkDownloader {
+class IllustrationDownloader extends MangaDownloader {
   /**
    * @constructor
    */
@@ -17,15 +17,6 @@ class IllustrationDownloader extends WorkDownloader {
     this.imageIndex = 0;
 
     this.type = 2;
-  }
-
-  /**
-   * Create a illustration downloader form base work downloader
-   * @member
-   * @param {WorkDownloader} workDownloader
-   */
-  static createFromWorkDownloader(workDownloader) {
-    throw Error('not implemented');
   }
 }
 

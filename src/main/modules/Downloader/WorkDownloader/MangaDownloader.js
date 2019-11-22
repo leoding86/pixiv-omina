@@ -10,8 +10,6 @@ class MangaDownloader extends WorkDownloader {
   constructor() {
     super();
 
-    this.download = null;
-
     this.images = [];
 
     this.imageIndex = 0;
@@ -31,7 +29,7 @@ class MangaDownloader extends WorkDownloader {
   }
 
   /**
-   * Create a manga downloader from base work downloader
+   * Create a manga downloader from base work downloader//
    * @member
    * @param {WorkDownloader} workDownloader
    * @returns {MangaDownloader}
@@ -130,14 +128,18 @@ class MangaDownloader extends WorkDownloader {
     });
 
     this.download.on('dl-aborted', () => {
-      this.setStop();
-
       this.download = null;
 
       this.setStop();
     });
 
     this.download.download();
+  }
+
+  reset() {
+    super.reset();
+    this.images = [];
+    this.imageIndex = 0;
   }
 
   start() {
@@ -160,8 +162,8 @@ class MangaDownloader extends WorkDownloader {
     }
   }
 
-  destroy() {
-    this.stop();
+  stop() {
+    super.stop();
   }
 
   toJSON() {

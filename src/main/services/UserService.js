@@ -66,6 +66,24 @@ class UserService extends BaseService {
     });
   }
 
+  userLogoutAction() {
+    let request = new Request({
+      url: UrlBuilder.getUserLogoutUrl(),
+      method: 'GET',
+      redirect: "error"
+    });
+
+    request.on('error', () => {
+      // prevent error popup
+    });
+
+    request.once('close', () => {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
+    });
+
+    request.end();
+  }
+
   /**
    * Check login state then response renderer
    */

@@ -1,1 +1,45 @@
 html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,blockquote,p,button,img,button,select,iframe{padding:0;margin:0;border:0;}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: #f9f9f9;
+}
+
+.el-button {
+  [class*=" el-icon-"], [class^=el-icon-] {
+    transform: scale(1.5);
+  }
+}
+
+.app-dialog {
+  .el-dialog__header {
+    padding: 10px 20px;
+    border-bottom: 2px solid #e9e9e9;
+  }
+
+  .el-dialog__title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .el-dialog__headerbtn {
+    top: 15px;
+    right: 20px;
+  }
+
+  .el-dialog__body {
+    padding: 10px 20px;
+  }
+
+  .el-dialog__footer {
+    padding: 10px 20px 20px;
+  }
+
+  .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+}

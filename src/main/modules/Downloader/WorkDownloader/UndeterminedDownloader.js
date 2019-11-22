@@ -15,12 +15,6 @@ class UndeterminedDownloader extends WorkDownloader {
    */
   constructor() {
     super();
-
-    /**
-     * @property
-     * @type {Request}
-     */
-    this.request = null;
   }
 
   /**
@@ -97,11 +91,17 @@ class UndeterminedDownloader extends WorkDownloader {
     });
   }
 
+  reset() {
+    // ignore but must have it
+  }
+
   /**
    * Stop downloader
    */
   stop() {
-    this.request.abort();
+    if (this.request) {
+      this.request.abort();
+    }
   }
 }
 
