@@ -3,15 +3,15 @@ class BaseService {
    * @param {string} event
    * @param {Object} args
    */
-  channelIncomeHandler(event, args) {
-    this.callAction(args.action, args.args);
+  channelIncomeHandler(event, args) {console.log(event, args);
+    this.callAction(args.action, args.args, event);//
   }
 
   /**
    * @param {string} event
    * @param {Object} args
    */
-  callAction(action, args) {
+  callAction(action, args, event) {
     let method;
 
     if (typeof action === 'string' && action.length > 0) {
@@ -19,7 +19,7 @@ class BaseService {
     }
 
     if (typeof this[method] === 'function') {
-      this[method].call(this, args);
+      this[method].call(this, args, event);
       return;
     }
 

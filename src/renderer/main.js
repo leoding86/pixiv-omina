@@ -1,7 +1,5 @@
 'use strict';
 
-import './styles/app.scss';
-
 const url = window.location.href;
 
 const matches = url.match(/target=(.+)$/)

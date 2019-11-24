@@ -1,3 +1,4 @@
+import SettingService from '@/services/SettingService';
 import UserService from '@/services/UserService';
 import DownloadService from '@/services/DownloadService';
 
@@ -13,6 +14,7 @@ class ServiceContainer {
     this.services = new Map();
 
     this.services
+      .set('setting', SettingService.getService())
       .set('user', UserService.getService())
       .set('download', DownloadService.getService());
   }

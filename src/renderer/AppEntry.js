@@ -2,9 +2,16 @@ import { ipcRenderer } from 'electron';
 import Vue from 'vue';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import './styles/app.scss';
 import App from './components/App';
+import BaseMixin from './mixins/BaseMixin';
 
 Vue.use(ElementUI);
+
+/**
+ * Config global mixin
+ */
+Vue.mixin(BaseMixin);
 
 class MainEntry {
   constructor() {
@@ -15,7 +22,8 @@ class MainEntry {
 
       data() {
         return {
-          logined: false
+          appInited: false,
+          appLogined: false
         }
       },
 
@@ -27,11 +35,13 @@ class MainEntry {
         });
 
         ipcRenderer.on('user-service:logined', () => {
-          this.logined = true;
+          this.appInited = true;
+          this.appLogined = true;
         });
 
         ipcRenderer.on('user-service:not-login', () => {
-          this.logined = false;
+          this.appInited = true;
+          this.appLogined = false;
         });
 
         ipcRenderer.send('user-service', {

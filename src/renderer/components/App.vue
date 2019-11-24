@@ -1,10 +1,12 @@
 <template>
-  <div id="app">
+  <div id="app"
+    v-loading="!inited"
+    element-loading-text="Initializing...">
     <app-header></app-header>
 
     <div id="container">
       <div id="app-container-mask"
-        v-if="!logined">
+        v-if="inited && !logined">
         <div class="app-container-mask__body">
           <el-button
             type="primary"
@@ -13,22 +15,14 @@
         </div>
       </div>
 
-      <div id="test">
-        <button @click="testUserLogout">Logout</button>
-
-        <button @click="checkUserLogined">check</button>
-
-        <el-form>
-          <el-input v-model="workId"></el-input>
-          <el-button @click="createDownloader">Submit</el-button>
-        </el-form>
-      </div>
+      <app-test></app-test>
 
       <div class="download-list__empty-notice"
         v-if="downloads.length < 1">
         There is no download
       </div>
       <app-download-list
+        class="app-download-list"
         v-else
         :downloads=downloads
         @start="startDownloadHandler"
@@ -44,11 +38,13 @@
 import { ipcRenderer } from "electron";
 import Header from './Header';
 import DownloadList from './DownloadList';
+import Test from './Test';
 
 export default {
   components: {
     'app-header': Header,
-    'app-download-list': DownloadList
+    'app-download-list': DownloadList,
+    'app-test': Test
   },
 
   data() {
@@ -56,12 +52,6 @@ export default {
       // workId: '77626643', // ugoira
       workId: '77897318', // manga 30pages
       downloads: []
-    }
-  },
-
-  computed: {
-    logined() {
-      return this.$root.$data.logined;
     }
   },
 
@@ -207,15 +197,6 @@ export default {
       } else {
         alert('You are logined');
       }
-    },
-
-    /**
-     * TEST
-     */
-    testUserLogout() {
-      ipcRenderer.send("user-service", {
-        action: 'userLogout'
-      });
     }
   }
 };
@@ -230,9 +211,10 @@ export default {
 }
 
 #container {
-  padding: 10px;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  box-sizing: border-box;
   position: relative;
 }
 
@@ -253,8 +235,8 @@ export default {
   text-align: center;
 }
 
-.app-container-mask__login-button {
-
+.app-download-list {
+  flex: 1;
 }
 
 .download-list__empty-notice {
@@ -263,5 +245,9 @@ export default {
   margin: 20px 0;
   color: #dedede;
   text-shadow: 0 -1px 0 #6d6d6d;
+}
+
+#test {
+  height: 200px;
 }
 </style>

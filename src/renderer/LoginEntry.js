@@ -1,3 +1,4 @@
+import './styles/app.scss';
 import Vue from 'vue';
 import App from './components/Login';
 

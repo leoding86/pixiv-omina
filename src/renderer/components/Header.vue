@@ -12,54 +12,36 @@
       <el-button
         icon="el-icon-setting"
         size="small"
+        @click="showSettingsDialog = true"
       ></el-button>
     </div>
 
-    <el-dialog
-      append-to-body
-      custom-class="app-dialog add-download-dialog"
-      title="Add download"
-      :close-on-click-modal="false"
-      :width="'500px'"
-      :visible.sync="showAddDownloadDialog">
-      <el-form
-        ref="addDownloadForm"
-        :model="download"
-        :rules="addDownloadRule"
-      >
-        <el-form-item
-          label="Work url"
-          :label-width="formLabelWidth"
-        >
-          <el-input
-            v-model="download.url"
-            size="small"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button
-          @click="showAddDownloadDialog = false"
-          size="small"
-        >Cancel</el-button>
-        <el-button
-          type="primary"
-          @click="addDownload"
-          size="small"
-        >Add</el-button>
-      </span>
-    </el-dialog>
+    <add-download-dialog
+      :show.sync="showAddDownloadDialog"
+    ></add-download-dialog>
+
+    <settings-dialog
+      :show.sync="showSettingsDialog">
+    </settings-dialog>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from "electron";
+import AddDownloadDialog from './dialogs/AddDownloadDialog';
+import SettingsDialog from './dialogs/SettingsDialog';
 
 export default {
+  components: {
+    'add-download-dialog': AddDownloadDialog,
+    'settings-dialog': SettingsDialog
+  },
+
   data() {
     return {
       showAddDownloadDialog: false,
-      formLabelWidth: '80px',
+
+      showSettingsDialog: false,
 
       download: {
         url: ''
@@ -73,29 +55,8 @@ export default {
     }
   },
 
-  computed: {
-    logined() {
-      return this.$root.$data.logined;
-    }
-  },
-
   methods: {
-    addDownload() {
-      this.$refs['addDownloadForm'].validate((valid) => {
-        if (valid) {
-          this.showAddDownloadDialog = false;
-
-          ipcRenderer.send('download-service', {
-            action: 'createDownload',
-            args: {
-              url: this.workUrl
-            }
-          });
-        } else {
-          return false;
-        }
-      });
-    }
+    //
   }
 }
 </script>
@@ -107,10 +68,7 @@ export default {
   height: 32px;
   padding: 10px;
   background: #efefef;
-
-  .header__left {
-    //
-  }
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.15);
 
   .header__right {
     flex: 1;

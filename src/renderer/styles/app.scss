@@ -15,15 +15,20 @@ body {
   }
 }
 
+.el-button--default {
+  [class*=" el-icon-"], [class^=el-icon-] {
+    // color: #dedede;
+    // text-shadow: 0 -1px 0 #6d6d6d;
+  }
+}
+
 .app-dialog {
+  border-radius: 5px;
+  overflow: hidden;
+
   .el-dialog__header {
     padding: 10px 20px;
     border-bottom: 2px solid #e9e9e9;
-  }
-
-  .el-dialog__title {
-    font-size: 14px;
-    font-weight: 700;
   }
 
   .el-dialog__headerbtn {
@@ -31,15 +36,30 @@ body {
     right: 20px;
   }
 
+  .el-dialog__title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .el-form-item__label {
+    font-size: 12px;
+    text-align: left;
+  }
+
   .el-dialog__body {
     padding: 10px 20px;
   }
 
   .el-dialog__footer {
-    padding: 10px 20px 20px;
+    padding: 10px 20px;
+    background: #f9f9f9;
   }
 
   .el-form-item:last-child {
     margin-bottom: 0;
+  }
+
+  .el-form-item {
+    margin-bottom: 10px;
   }
 }

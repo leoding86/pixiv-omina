@@ -1,62 +1,86 @@
 <template>
-  <div class="app-download-list">
-    <div class="download-list-item"
-      v-for="download in downloads"
-      :key=download.id
-    >
-      <div class="download-list-item__mask"
-        v-if="download.frozing"></div>
-      <div class="download-list-item__body">
-        <div class="download-list-item__title-actions">
-          <div class="download-list-item__title">
-            <h3>
-              <span :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</span>
-              <a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a>
-            </h3>
+  <div class="download-list">
+    <div class="download-list-filters">
+      <el-button-group>
+        <el-button
+          :type="filter === 'all' ? 'primary' : 'default'"
+          size="small"
+          icon="el-icon-files"
+          @click="filter = 'all'"
+        ></el-button>
+        <el-button
+          :type="filter === 'downloading' ? 'primary' : 'default'"
+          size="small"
+          icon="el-icon-download"
+          @click="filter = 'downloading'"
+        ></el-button>
+        <el-button
+          :type="filter === 'finished' ? 'primary' : 'default'"
+          size="small"
+          icon="el-icon-finished"
+          @click="filter = 'finished'"
+        ></el-button>
+      </el-button-group>
+    </div>
+    <div class="download-list-item__content">
+      <el-card class="download-list-item"
+        v-for="download in filteredDownloads"
+        :key=download.id
+      >
+        <div class="download-list-item__mask"
+          v-if="download.frozing"></div>
+        <div class="download-list-item__body">
+          <div class="download-list-item__title-actions">
+            <div class="download-list-item__title">
+              <h3>
+                <span :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</span>
+                <a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a>
+              </h3>
+            </div>
+            <div class="download-list-item__actions">
+              <el-button-group>
+                <el-button
+                  v-if="download.state === 'stop' || download.state === 'error'"
+                  type="primary"
+                  size="small"
+                  icon="el-icon-video-play"
+                  @click="$emit('start', download)"
+                ></el-button>
+                <el-button
+                  v-if="download.state === 'pending' || download.state === 'downloading'"
+                  type="primary"
+                  size="small"
+                  icon="el-icon-video-pause"
+                  @click="$emit('stop', download)"
+                ></el-button>
+                <el-button
+                  v-if="download.state === 'finish'"
+                  type="primary"
+                  size="small"
+                  icon="el-icon-refresh"
+                  @click="$emit('redownload', download)"
+                ></el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  icon="el-icon-delete"
+                  @click="$emit('delete', download)"
+                ></el-button>
+              </el-button-group>
+            </div>
           </div>
-          <div class="download-list-item__actions">
-            <el-button-group>
-              <el-button
-                v-if="download.state === 'stop' || download.state === 'error'"
-                type="primary"
-                size="small"
-                icon="el-icon-video-play"
-                @click="$emit('start', download)"
-              ></el-button>
-              <el-button
-                v-if="download.state === 'pending' || download.state === 'downloading'"
-                type="primary"
-                size="small"
-                icon="el-icon-video-pause"
-                @click="$emit('stop', download)"
-              ></el-button>
-              <el-button
-                v-if="download.state === 'finish'"
-                type="primary"
-                size="small"
-                icon="el-icon-refresh"
-                @click="$emit('redownload', download)"
-              ></el-button>
-              <el-button
-                type="danger"
-                size="small"
-                icon="el-icon-delete"
-                @click="$emit('delete', download)"
-              ></el-button>
-            </el-button-group>
+          <div class="download-list-item__progress">
+            <el-progress
+              :percentage="download.progress * 100"
+              :show-text="false"></el-progress>
           </div>
         </div>
-        <div class="download-list-item__progress">
-          <el-progress
-            :percentage="download.progress * 100"
-            :show-text="false"></el-progress>
+        <div class="download-list-item__footer">
+          <div class="download-list-item__status">
+            <p>{{ download.statusMessage }}<span v-show="download.state === 'downloading'"> {{ getSpeedUnit(download.speed) }}</span> </p>
+          </div>
         </div>
-      </div>
-      <div class="download-list-item__footer">
-        <div class="download-list-item__status">
-          <p>{{ download.statusMessage }}<span v-show="download.state === 'downloading'"> {{ getSpeedUnit(download.speed) }}</span> </p>
-        </div>
-      </div>
+      </el-card>
     </div>
   </div>
 </template>
@@ -67,7 +91,33 @@ export default {
     downloads: {
       required: true,
       type: Array,
-      default: []
+      default: [],
+    }
+  },
+
+  data() {
+    return {
+      filter: 'all'
+    }
+  },
+
+  computed: {
+    filteredDownloads() {
+      let downloads = [];
+
+      this.downloads.forEach(download => {
+        if (this.filter !== 'all') {
+          if (this.filter === 'finished' && download.state === 'finish') {
+            downloads.push(download);
+          } else if (this.filter === 'downloading' && download.state === 'downloading') {
+            downloads.push(download);
+          }
+        } else {
+          downloads.push(download);
+        }
+      });
+
+      return downloads;
     }
   },
 
@@ -116,17 +166,40 @@ export default {
 </script>
 
 <style lang="scss">
+.download-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.download-list-filters {
+  box-sizing: border-box;
+  padding: 15px;
+  height: 47px;
+}
+
+.download-list-item__content {
+  box-sizing: border-box;
+  margin: 15px 0 0 0;
+  padding: 0 15px;
+  overflow-y: auto;
+}
+
 .download-list-item {
   position: relative;
   margin: 10px 0;
   padding: 15px 10px;
-  border: 1px solid #dadada;
   border-radius: 5px;
   background: #fff;
-  box-shadow: 0 1px 1px #dedede;
+  // border: 1px solid #dadada;
+  // box-shadow: 0 1px 1px #dedede;
 
   &:hover {
-    border: 1px solid #ccc;
+    -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.2);
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.2);
+  }
+
+  .el-card__body {
+    padding: 0;
   }
 }
 

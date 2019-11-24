@@ -12,7 +12,7 @@ import PartitionManager from './modules/PartitionManager';
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-  app.quit();
+  app.quit();//
 
   // Throw a error
   Error("Only one instance could be created");
@@ -45,10 +45,14 @@ app.on('second-instance', (event, commandLine, workingDirectory) => {
 
     mainWindow.focus();
   }
-});
+});//
 
 function createMainWindow() {
   const window = windowManager.createWindow('app', {
+    width: 480,
+    height: 1050,
+    minWidth: 600,
+    minHeight: 800,
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true
