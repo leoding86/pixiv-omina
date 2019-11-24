@@ -26,15 +26,9 @@
         label="Save to"
         :label-width="formLabelWidth"
       >
-        <el-input
-          v-model="settings.userAgent"
-        >
-          <el-button
-            slot="append"
-            icon="el-icon-folder"
-            @click="selectDirectory"
-          ></el-button>
-        </el-input>
+        <directory-selector
+          v-model="settings.saveTo"
+        ></directory-selector>
       </el-form-item>
 
       <el-form-item
@@ -93,8 +87,13 @@
 
 <script>
 import { ipcRenderer } from 'electron';
+import DirectorySelector from '../DirectorySelector';
 
 export default {
+  components: {
+    'directory-selector': DirectorySelector
+  },
+
   props: {
     show: {
       required: true,
@@ -108,7 +107,8 @@ export default {
       formLabelWidth: '120px',
 
       settings: {
-        userAgent: ''
+        userAgent: '',
+        saveTo: ''
       },
 
       settingsRule: {
@@ -118,24 +118,12 @@ export default {
   },
 
   methods: {
-    selectDirectory() {
-      let { filePath, bookmarks } = ipcRenderer.sendSync('setting-service', {
-        action: 'selectDirectory',
-        args: {}
-      });
-    },
-
     saveSettings() {
       this.$refs['settingsForm'].validate((valid) => {
         if (valid) {
           this.$emit('update:show', false);
 
-          ipcRenderer.send('download-service', {
-            action: 'createDownload',
-            args: {
-              url: this.download.url
-            }
-          });
+          //
         } else {
           return false;
         }
