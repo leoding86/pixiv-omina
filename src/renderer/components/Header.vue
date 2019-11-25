@@ -17,12 +17,15 @@
     </div>
 
     <add-download-dialog
+      v-if="showAddDownloadDialog"
       :show.sync="showAddDownloadDialog"
     ></add-download-dialog>
 
     <settings-dialog
-      :show.sync="showSettingsDialog">
-    </settings-dialog>
+      v-if="showSettingsDialog"
+      :settings="settings"
+      :show.sync="showSettingsDialog"
+    ></settings-dialog>
   </div>
 </template>
 

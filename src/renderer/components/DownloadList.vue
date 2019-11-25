@@ -2,24 +2,39 @@
   <div class="download-list">
     <div class="download-list-filters">
       <el-button-group>
-        <el-button
-          :type="filter === 'all' ? 'primary' : 'default'"
-          size="small"
-          icon="el-icon-files"
-          @click="filter = 'all'"
-        ></el-button>
-        <el-button
-          :type="filter === 'downloading' ? 'primary' : 'default'"
-          size="small"
-          icon="el-icon-download"
-          @click="filter = 'downloading'"
-        ></el-button>
-        <el-button
-          :type="filter === 'finished' ? 'primary' : 'default'"
-          size="small"
-          icon="el-icon-finished"
-          @click="filter = 'finished'"
-        ></el-button>
+        <el-tooltip
+          placement="bottom"
+          content="All"
+        >
+          <el-button
+            :type="filter === 'all' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-files"
+            @click="filter = 'all'"
+          ></el-button>
+        </el-tooltip>
+        <el-tooltip
+          placement="bottom"
+          content="Downloading"
+        >
+          <el-button
+            :type="filter === 'downloading' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-download"
+            @click="filter = 'downloading'"
+          ></el-button>
+        </el-tooltip>
+        <el-tooltip
+          placement="bottom"
+          content="finished"
+        >
+          <el-button
+            :type="filter === 'finished' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-finished"
+            @click="filter = 'finished'"
+          ></el-button>
+        </el-tooltip>
       </el-button-group>
     </div>
     <div class="download-list-item__content">
@@ -42,27 +57,34 @@
                 <el-button
                   v-if="download.state === 'stop' || download.state === 'error'"
                   type="primary"
-                  size="small"
+                  size="mini"
                   icon="el-icon-video-play"
                   @click="$emit('start', download)"
                 ></el-button>
                 <el-button
                   v-if="download.state === 'pending' || download.state === 'downloading'"
                   type="primary"
-                  size="small"
+                  size="mini"
                   icon="el-icon-video-pause"
                   @click="$emit('stop', download)"
                 ></el-button>
                 <el-button
                   v-if="download.state === 'finish'"
                   type="primary"
-                  size="small"
+                  size="mini"
+                  icon="el-icon-folder"
+                  @click="openFolder(download)"
+                ></el-button>
+                <el-button
+                  v-if="download.state === 'finish'"
+                  type="primary"
+                  size="mini"
                   icon="el-icon-refresh"
                   @click="$emit('redownload', download)"
                 ></el-button>
                 <el-button
                   type="danger"
-                  size="small"
+                  size="mini"
                   icon="el-icon-delete"
                   @click="$emit('delete', download)"
                 ></el-button>
@@ -86,6 +108,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron';
 export default {
   props: {
     downloads: {
@@ -160,6 +183,15 @@ export default {
       } else {
         return Math.round(speed / 1000 / 1000 / 8) + ' MB/s'
       }
+    },
+
+    openFolder(download) {
+      ipcRenderer.send('download-service', {
+        action: 'openFolder',
+        args: {
+          downloadId: download.id
+        }
+      });
     }
   }
 }

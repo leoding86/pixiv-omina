@@ -29,7 +29,7 @@ export default {
         args: {}
       });
 
-      this.$emit('input', filePath[0]);
+      this.$emit('input', filePath ? filePath[0] : this.value);
     }
   }
 }

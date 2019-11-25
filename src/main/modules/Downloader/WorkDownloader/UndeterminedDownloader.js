@@ -2,6 +2,7 @@ import Request from '@/modules/Request';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
+import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
 
 /**
@@ -56,9 +57,11 @@ class UndeterminedDownloader extends WorkDownloader {
           this.setContext(jsonData.body);
 
           if (jsonData.body.illustType === 0) {
-            resolve(IllustrationDownloader.createFromWorkDownloader(this)); //
+            resolve(IllustrationDownloader.createFromWorkDownloader(this));
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(this));
+          } else if (jsonData.body.illustType === 2) {
+            resolve(UgoiraDownloader.createDownloader(this));
           } else {
             let error = Error(`unsupported work type '${jsonData.body.illustType}'`);
 

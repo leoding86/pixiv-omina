@@ -6,6 +6,10 @@ export default {
 
     inited() {
       return this.$root.$data.appInited;
+    },
+
+    settings() {
+      return this.$root.$data.appSettings;
     }
   }
 }

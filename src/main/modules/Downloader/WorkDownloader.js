@@ -187,7 +187,7 @@ class WorkDownloader extends EventEmitter {
       speed: this.speed,
       progress: this.progress,
       statusMessage: this.statusMessage,
-      type: this.type//
+      type: this.type
     };
 
     return data;

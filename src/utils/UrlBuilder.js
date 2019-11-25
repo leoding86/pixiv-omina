@@ -38,6 +38,14 @@ class UrlBuilder {
   static getUserLogoutUrl() {
     return 'https://www.pixiv.net/logout.php';
   }
+
+  /**
+   * @param {number|string} id
+   * @returns {string}
+   */
+  static getUgoiraMetaUrl(id) {
+    return `https://www.pixiv.net/ajax/illust/${id}/ugoira_meta`;
+  }
 }
 
 export default UrlBuilder;

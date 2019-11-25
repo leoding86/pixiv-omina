@@ -1,23 +1,25 @@
-import path from 'path';
+import fs from 'fs-extra';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
+import Zip from 'jszip';
 
 /**
  * @class
  */
-class MangaDownloader extends WorkDownloader {
+class UgoiraDownloader extends WorkDownloader {
+  /**
+   * @constructor
+   */
   constructor() {
     super();
 
-    this.images = [];
+    this.meta = null;
 
-    this.imageIndex = 0;
-
-    this.type = 1;
+    this.type = 2;
   }
 
   /**
@@ -38,26 +40,22 @@ class MangaDownloader extends WorkDownloader {
    * @returns {MangaDownloader}
    */
   static createFromWorkDownloader(workDownloader) {
-    let downloader = new MangaDownloader();
+    let downloader = new UgoiraDownloader();
     downloader.id = workDownloader.id;
     downloader.options = workDownloader.options;
     downloader.context = workDownloader.context;
 
     /**
-     * Append work folder at the end
-     */
-    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('renameManga'), this.context));
+      * Append work folder at the end
+      */
+    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('renameUgoira'), this.context));
 
     return downloader;
   }
 
-  /**
-   * Fetch images that need to be downloaded
-   * @returns {Promise.<Array>}
-   */
-  fetchImages() {
+  fetchMeta() {
     return new Promise((resolve, reject) => {
-      let url = UrlBuilder.getWorkPagesUrl(this.id);
+      const url = UrlBuilder.getUgoiraMetaUrl(this.id);
 
       this.request = new Request({
         url: url,
@@ -68,7 +66,16 @@ class MangaDownloader extends WorkDownloader {
         reject(error);
       });
 
+      this.request.on('abort', () => {
+        reject(Error('Request ugoira meta has been aborted'));
+      });
+
       this.request.on('response', response => {
+        if (response.statusCode !== 200) {
+          reject(Error(response.statusCode));
+          return;
+        }
+
         let body = '';
 
         response.on('error', error => {
@@ -82,63 +89,55 @@ class MangaDownloader extends WorkDownloader {
         response.on('end', () => {
           let jsonData = JSON.parse(body.toString());
 
-          if (jsonData && Array.isArray(jsonData.body) && jsonData.body.length > 0) {
+          if (jsonData && jsonData.originalSrc && Array.isArray(jsonData.frames) && jsonData.frames.length > 0) {
             resolve(jsonData.body);
             return;
           }
 
-          reject(Error('Cannot resolve manga images'));
+          reject(Error('Cannot resolve ugoira meta'));
         });
 
         response.on('aborted', () => {
-          reject(Error('Resolve manga images has been aborted'));
+          reject(Error('Resolve ugoira meta has been aborted'));
         });
       });
-
-      this.request.end();
     });
   }
 
-  getImageSaveName() {
-    FormatName.format(SettingStorage.getSetting('renameImageManga'), this.context);
+  generateGif(zip) {
+    //
   }
 
-  downloadImages() {
-    let url = this.images[this.imageIndex].urls.original;
+  packFramesInfo(file) {
+    //animation.json
+    this.setDownloading('Pack frames infomation');
 
-    /**
-     * Must set pageNum property in context for make sure the rename image works correctly
-     */
-    this.context.pageNum = this.imageIndex;
+    fs.readFile(file).then(data => {
+      Zip.loadAsync(data).then(zip => {
+        zip.file('animation.json', JSON.stringify(this.meta.frames));
 
-    let downloadOptions = Object.assign(
-      {},
+        this.generateGif(zip);
+      });
+    });
+  }
+
+  downloadZip() {
+    const url = this.meta.originalSrc;
+
+    let downloadOptions = Object.assign({},
       this.options,
       {
         url: url,
-        saveName: this.getImageSaveName()
+        saveName: FormatName.format(SettingStorage.getSetting('ugoiraRname'), this.context)
       }
     );
 
     this.download = new Download(downloadOptions);
 
     this.download.on('dl-finish', () => {
-      this.imageIndex++;//
-
-      this.progress = this.imageIndex / this.images.length;
-
       this.setDownloading();
 
-      if (this.imageIndex > (this.images.length - 1)) {
-        this.state = MangaDownloader.state.finish;
-
-        this.setFinish();
-
-        this.download = null;
-        return;
-      }
-
-      this.downloadImages();
+      this.packFramesInfo(this.download.getSavedFile());
     });
 
     this.download.on('dl-progress', () => {
@@ -160,44 +159,29 @@ class MangaDownloader extends WorkDownloader {
     this.download.download();
   }
 
-  reset() {
-    super.reset();
-    this.images = [];
-    this.imageIndex = 0;
-  }
-
   start() {
     this.setStart();
 
-    if (this.images.length === 0) {
-      this.setDownloading('Fetch images that need to be downloaded');
+    if (!this.meta) {
+      this.setDownloading('Fetch ugoira meta for downloading');
 
-      this.fetchImages().then(images => {
-        this.images = images;
+      this.fetchMeta().then(meta => {
+        this.meta = meta;
 
-        this.downloadImages();
+        this.downloadZip();
       }).catch(error => {
         this.setError(error);
       });
     } else {
       this.setDownloading();
 
-      this.downloadImages();
+      this.downloadZip();
     }
   }
 
   stop() {
     super.stop();
   }
-
-  toJSON() {
-    let data = super.toJSON();
-
-    data.total = this.images.length;
-    data.complete = this.imageIndex;
-
-    return data;
-  }
 }
 
-export default MangaDownloader;
+export default UgoiraDownloader;

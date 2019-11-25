@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { shell } from 'electron';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
@@ -178,6 +179,14 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Get all downloader
+   */
+  getAllDownloader()
+  {
+    return this.workDownloaderPool;
+  }
+
+  /**
    * Create a downloader
    * @param {Object} args
    * @param {string|number} args.workId
@@ -267,6 +276,18 @@ class DownloadManager extends EventEmitter {
     }
 
     this.emit('delete', downloadId);
+  }
+
+  /**
+   * @param {Object} param
+   * @param {number|string} param.downloadId
+   */
+  openFolder({downloadId}) {
+    let downloader = this.getWorkDownloader(downloadId);
+
+    if (downloader) {
+      shell.openItem(downloader.options.saveTo);
+    }
   }
 
   /**

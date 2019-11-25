@@ -23,29 +23,50 @@ class MainEntry {
       data() {
         return {
           appInited: false,
-          appLogined: false
+          appLogined: false,
+          appSettings: {}
         }
       },
 
       beforeMount() {
-        ipcRenderer.on('user-service:check-login', () => {
+        ipcRenderer.on('setting-service:change', (event, changedSettings) => {
+          this.$notify({
+            title: 'Setting saved!',
+            type: 'success',
+            position: 'bottom-left',
+            duration: 1500,
+            showClose: false
+          });
+
+          this.appSettings = Object.assign({}, this.appSettings, changedSettings);
+        });
+
+        ipcRenderer.on('setting-service:settings', (event, settings) => {
+          this.appSettings = settings;
+
+          ipcRenderer.on('user-service:check-login', () => {
+            ipcRenderer.send('user-service', {
+              action: 'checkUserLogined'
+            });
+          });
+
+          ipcRenderer.on('user-service:logined', () => {
+            this.appInited = true;
+            this.appLogined = true;
+          });
+
+          ipcRenderer.on('user-service:not-login', () => {
+            this.appInited = true;
+            this.appLogined = false;
+          });
+
           ipcRenderer.send('user-service', {
             action: 'checkUserLogined'
           });
         });
 
-        ipcRenderer.on('user-service:logined', () => {
-          this.appInited = true;
-          this.appLogined = true;
-        });
-
-        ipcRenderer.on('user-service:not-login', () => {
-          this.appInited = true;
-          this.appLogined = false;
-        });
-
-        ipcRenderer.send('user-service', {
-          action: 'checkUserLogined'
+        ipcRenderer.send('setting-service', {
+          action: 'getSettings'
         });
       }
     });

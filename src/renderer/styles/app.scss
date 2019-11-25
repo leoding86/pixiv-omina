@@ -22,6 +22,24 @@ body {
   }
 }
 
+.el-message-box {
+  padding-bottom: 0;
+
+  .el-message-box__header {
+    padding: 10px 15px;
+  }
+
+  .el-message-box__headerbtn {
+    right: 15px;
+    top: 10px;
+  }
+
+  .el-message-box__title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
 .app-dialog {
   border-radius: 5px;
   overflow: hidden;
@@ -62,4 +80,12 @@ body {
   .el-form-item {
     margin-bottom: 10px;
   }
+}
+
+.el-tooltip__popper {
+  padding: 3px 5px;
+}
+
+.el-notification__title {
+  line-height: 24px;
 }

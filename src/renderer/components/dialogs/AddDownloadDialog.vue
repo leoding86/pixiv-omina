@@ -10,6 +10,7 @@
   >
     <el-form
       ref="addDownloadForm"
+      size="mini"
       :model="download"
       :rules="addDownloadRule"
     >
@@ -19,8 +20,16 @@
       >
         <el-input
           v-model="download.url"
-          size="small"
         ></el-input>
+      </el-form-item>
+
+      <el-form-item
+        label="Save to"
+        :label-width="formLabelWidth"
+      >
+        <directory-selector
+          v-model="download.saveTo"
+        ></directory-selector>
       </el-form-item>
     </el-form>
     <span
@@ -42,8 +51,13 @@
 
 <script>
 import { ipcRenderer } from 'electron';
+import DirectorySelector from '../DirectorySelector';
 
 export default {
+  components: {
+    'directory-selector': DirectorySelector
+  },
+
   props: {
     show: {
       required: true,
@@ -57,7 +71,8 @@ export default {
       formLabelWidth: '80px',
 
       download: {
-        url: ''
+        url: '',
+        saveTo: ''
       },
 
       addDownloadRule: {
@@ -68,6 +83,10 @@ export default {
     };
   },
 
+  beforeMount() {
+    this.download.saveTo = this.settings.saveTo;
+  },
+
   methods: {
     addDownload() {
       this.$refs['addDownloadForm'].validate((valid) => {
@@ -76,9 +95,7 @@ export default {
 
           ipcRenderer.send('download-service', {
             action: 'createDownload',
-            args: {
-              url: this.download.url
-            }
+            args: this.download
           });
         } else {
           return false;

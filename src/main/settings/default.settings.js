@@ -2,15 +2,15 @@ import { app } from 'electron';
 
 function defaultSetting() {
   return {
-    downloadPath: app.getPath('downloads'),
+    saveTo: app.getPath('downloads'),
 
-    illustrationRename: '',
-    illustrationImageRename: '',
+    illustrationRename: '%id%_%title%',
+    illustrationImageRename: '%id%_p%page_num%',
 
-    mangaRename: '',
-    mangaImageRename: '',
+    mangaRename: '%id%_%title%',
+    mangaImageRename: '%id%_p%page_num%',
 
-    ugoiraRename: '',
+    ugoiraRename: '%id%_%title%',
 
     overwriteMode: 'rename',
 

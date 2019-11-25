@@ -1,3 +1,4 @@
+import fs from 'fs-extra';
 import {
   ipcMain
 } from 'electron';
@@ -26,11 +27,11 @@ class DownloadService extends BaseService {
     /**
      * Configurate download
      */
-    Download.setGlobalOptions({
-      headers: {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36',
-      }
-    });
+    // Download.setGlobalOptions({
+    //   headers: {
+    //     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36',
+    //   }
+    // });
 
     this.mainWindow = WindowManager.getWindow('app');
 
@@ -76,18 +77,41 @@ class DownloadService extends BaseService {
     return DownloadService.channel + `:${name}`;
   }
 
-  createDownloadAction({workId, url}) {
+  fetchAllDownloadsAction()
+  {
+    let downloads = [];
+
+    this.downloadManager.getAllDownloader().forEach(download => {
+      downloads.push(download.toJSON());
+    });
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('downloads'), downloads);
+  }
+
+  createDownloadAction({workId, url, saveTo}) {
+    try {
+      fs.ensureDirSync(saveTo);
+    } catch (error) {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `Cannot save files to path ${saveTo}`);
+      return;
+    }
+
     if (!workId) {
       workId = UrlParser.getWorkIdFromUrl(url);
     }
 
     if (!workId) {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), 'It\'s a invalid download');
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
       return;
     }
 
     if (!this.downloadManager.getWorkDownloader(workId)) {
-      this.downloadManager.createWorkDownloader({workId});
+      this.downloadManager.createWorkDownloader({
+        workId,
+        options: {
+          saveTo: saveTo
+        }
+      });
       return;
     }
 
@@ -108,6 +132,10 @@ class DownloadService extends BaseService {
 
   redownloadAction({downloadId}) {
     this.downloadManager.startWorkDownloader({downloadId, reset: true});
+  }
+
+  openFolderAction({downloadId}) {
+    this.downloadManager.openFolder({downloadId});
   }
 }
 

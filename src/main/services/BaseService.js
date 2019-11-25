@@ -4,7 +4,7 @@ class BaseService {
    * @param {Object} args
    */
   channelIncomeHandler(event, args) {console.log(event, args);
-    this.callAction(args.action, args.args, event);//
+    this.callAction(args.action, args.args, event);
   }
 
   /**

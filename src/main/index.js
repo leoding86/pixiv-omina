@@ -4,7 +4,10 @@ import { app, shell } from 'electron'
 import WindowManager from './modules/WindowManager'
 import ServiceContainer from '@/ServiceContainer';
 import Request from '@/modules/Request';
-import PartitionManager from './modules/PartitionManager';
+import PartitionManager from '@/modules/PartitionManager';
+import SettingStorage from '@/modules/SettingStorage';
+
+console.log(app.getAppPath());
 
 /**
  * Make sure there is only one instance will be created.
@@ -78,7 +81,13 @@ function createMainWindow() {
   }, (detail, cb) => {
     let { requestHeaders } = detail;
 
-    requestHeaders = Object.assign(requestHeaders, { Referer: 'https://www.pixiv.net/' });
+    requestHeaders = Object.assign(
+      requestHeaders,
+      {
+        'user-agent': SettingStorage.getSetting('userAgent'),
+        Referer: 'https://www.pixiv.net/'
+      }
+    );
 
     console.log('REQUEST HEADERS')
     console.table(requestHeaders);
@@ -115,7 +124,10 @@ function createMainWindow() {
    * Set Request global options
    */
   Request.setGlobalOptions({
-    partition: partitionManager.getPartition('main')//
+    partition: partitionManager.getPartition('main'),
+    headers: {
+      'user-agent': SettingStorage.getSetting('userAgent'),
+    }
   });
 
   /**

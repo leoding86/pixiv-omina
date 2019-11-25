@@ -1,10 +1,7 @@
-import {
-  app,
-  net
-} from 'electron';
-import fs, { write } from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 import formatUrl from 'url';
+import mime from 'mime-types';
 import Request from '@/modules/Request';
 
 /**
@@ -18,7 +15,7 @@ class Download extends Request {
    * @param {string} [options.method]
    * @param {Electron.Session} [options.session]
    * @param {string} [options.partition]
-   * @param {string} [options.saveDir]
+   * @param {string} [options.saveTo]
    * @param {string} [options.saveName]
    */
   constructor(options) {
@@ -27,7 +24,7 @@ class Download extends Request {
     /**
      * @type {string}
      */
-    this.saveDir = options.saveDir || app.getPath('downloads');
+    this.saveTo = options.saveTo;
 
     /**
      * @type {number}
@@ -63,9 +60,10 @@ class Download extends Request {
   }
 
   /**
+   * @param {string} extName
    * @returns {string}
    */
-  getFilename() {
+  getFilename(extName) {
     let filename = this.options.saveName;
 
     if (!filename) {
@@ -80,86 +78,112 @@ class Download extends Request {
       }
     }
 
-    return filename || ('file' + Date.now());
+    filename = filename || ('file' + Date.now());
+
+    const regex = RegExp(`\.${extName}$`);
+
+    if (regex.test(filename)) {
+      return filename;
+    }
+
+    return `${filename}.${extName}`;
   }
 
   download() {
     /**
-     * Parse file name
+     * Create folder
      */
-    let filename = this.getFilename();
+    fs.ensureDir(this.options.saveTo).then(() => {
+      this.startTime = Date.now();
 
-    this.startTime = Date.now();
-
-    this.on('response', response => {
-      let speedChunkDataLength = 0, duration = 0;
-
-      let startTime = Date.now();
-
-      let writeStream = fs.createWriteStream(path.join(this.saveDir, filename));
-
-      response.pipe(writeStream);
-
-      response.on('data', data => {
-        let nowTime = Date.now();
-
-        duration = nowTime - startTime;
-
-        if (duration >= this.speedSensitivity) {
-          this.speed = Math.round(speedChunkDataLength / duration * 1000);
-
-          this.emit('dl-progress');
-
-          startTime = nowTime;
-          speedChunkDataLength = 0;
-        } else {
-          speedChunkDataLength += data.length;
+      this.on('response', response => {
+        if (response.statusCode.indexOf('20') !== 0) {
+          this.emit('dl-error', Error(response.statusCode));
+          return;
         }
-      });
 
-      response.on('end', () => {
+        const extName = mime.extension(response.headers['content-type'][0]);
+
         /**
-         * Close write stream
+         * Parse file name
          */
-        writeStream.close();
-        this.speed = 0;
+        this.saveName = this.getFilename(extName);
 
-        this.endTime = Date.now();
+        let speedChunkDataLength = 0, duration = 0;
 
-        this.completeTime = this.endTime - this.startTime;
+        let startTime = Date.now();
 
-        this.emit('dl-finish');
+        let writeStream = fs.createWriteStream(path.join(this.saveTo, this.saveName));
+
+        response.pipe(writeStream);
+
+        response.on('data', data => {
+          let nowTime = Date.now();
+
+          duration = nowTime - startTime;
+
+          if (duration >= this.speedSensitivity) {
+            this.speed = Math.round(speedChunkDataLength / duration * 1000);
+
+            this.emit('dl-progress');
+
+            startTime = nowTime;
+            speedChunkDataLength = 0;
+          } else {
+            speedChunkDataLength += data.length;
+          }
+        });
+
+        response.on('end', () => {
+          /**
+           * Close write stream
+           */
+          writeStream.close();
+          this.speed = 0;
+
+          this.endTime = Date.now();
+
+          this.completeTime = this.endTime - this.startTime;
+
+          this.emit('dl-finish');
+        });
+
+        response.on('error', error => {
+          writeStream.close();
+          this.speed = 0;
+
+          this.emit('dl-error', error);
+        });
+
+        response.on('aborted', () => {
+          writeStream.close();
+          this.speed = 0;
+
+          this.emit('dl-aborted');
+        });
       });
 
-      response.on('error', error => {
-        writeStream.close();
-        this.speed = 0;
-
+      this.on('error', error => {
         this.emit('dl-error', error);
       });
 
-      response.on('aborted', () => {
-        writeStream.close();
-        this.speed = 0;
-
+      this.on('abort', () => {
         this.emit('dl-aborted');
       });
-    });
 
-    this.on('error', error => {
+      console.log(this.options.url);
+
+      /**
+       * Send request to start download
+       */
+      this.end();
+    }).catch(error => {
       this.emit('dl-error', error);
     });
+  }
 
-    this.on('abort', () => {
-      this.emit('dl-aborted');
-    });
-
-    console.log(this.options.url);
-
-    /**
-     * Send request to start download
-     */
-    this.end();
+  getSavedFile() {
+    return path.join(this.options.saveTo, this.options.saveName);
   }
 }
 

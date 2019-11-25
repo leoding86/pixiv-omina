@@ -11,7 +11,7 @@
     <el-form
       ref="settingsForm"
       size="mini"
-      :model="settings"
+      :model="scopedSettings"
       :rules="settingsRule"
     >
       <el-form-item
@@ -19,7 +19,9 @@
         :label-width="formLabelWidth"
       >
         <el-input
-          v-model="settings.userAgent"
+          type="textarea"
+          v-model="scopedSettings.userAgent"
+          :rows="4"
         ></el-input>
       </el-form-item>
       <el-form-item
@@ -27,43 +29,51 @@
         :label-width="formLabelWidth"
       >
         <directory-selector
-          v-model="settings.saveTo"
+          v-model="scopedSettings.saveTo"
         ></directory-selector>
       </el-form-item>
 
       <el-form-item
-        label="Format manga"
         :label-width="formLabelWidth"
       >
+        <span
+          slot="label"
+        >Format manga <i class="el-icon-warning-outline"></i></span>
         <el-input
-          v-model="settings.userAgent"
+          v-model="scopedSettings.mangaRename"
         ></el-input>
       </el-form-item>
 
       <el-form-item
-        label="Format manga image"
         :label-width="formLabelWidth"
       >
+        <span
+          slot="label"
+        >Format manga image <i class="el-icon-warning-outline"></i></span>
         <el-input
-          v-model="settings.userAgent"
+          v-model="scopedSettings.mangaImageRename"
         ></el-input>
       </el-form-item>
 
       <el-form-item
-        label="Format illust"
         :label-width="formLabelWidth"
       >
+        <span
+          slot="label"
+        >Format illust <i class="el-icon-warning-outline"></i></span>
         <el-input
-          v-model="settings.userAgent"
+          v-model="scopedSettings.illustrationRename"
         ></el-input>
       </el-form-item>
 
       <el-form-item
-        label="Format illust image"
         :label-width="formLabelWidth"
       >
+        <span
+          slot="label"
+        >Format illust image <i class="el-icon-warning-outline"></i></span>
         <el-input
-          v-model="settings.userAgent"
+          v-model="scopedSettings.illustrationImageRename"
         ></el-input>
       </el-form-item>
 
@@ -73,9 +83,14 @@
       class="dialog-footer"
     >
       <el-button
+        style="float:left;"
+        size="mini"
+        @click="showHelp"
+      >Help</el-button>
+      <el-button
         @click="$emit('update:show', false)"
         size="mini"
-      >Cancel</el-button>
+      >Close</el-button>
       <el-button
         type="primary"
         @click="saveSettings"
@@ -104,12 +119,9 @@ export default {
 
   data() {
     return {
-      formLabelWidth: '120px',
+      formLabelWidth: '140px',
 
-      settings: {
-        userAgent: '',
-        saveTo: ''
-      },
+      scopedSettings: {},
 
       settingsRule: {
         //
@@ -117,16 +129,44 @@ export default {
     };
   },
 
+  beforeMount() {
+    this.scopedSettings = Object.assign({}, this.settings);
+  },
+
+  watch: {
+    settings(value) {
+      this.scopedSettings = value;
+    }
+  },
+
   methods: {
     saveSettings() {
       this.$refs['settingsForm'].validate((valid) => {
         if (valid) {
-          this.$emit('update:show', false);
+          // this.$emit('update:show', false);
 
-          //
+          ipcRenderer.send('setting-service', {
+            action: 'updateSettings',
+            args: {
+              settings: this.scopedSettings
+            }
+          });
         } else {
           return false;
         }
+      });
+    },
+
+    showHelp() {
+      const h = this.$createElement;
+
+      this.$msgbox({
+        title: 'Help',
+        message: h('div', null, [
+          h('p', null, 'Valid rename placehold: '),
+          h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%')
+        ]),
+        showConfirmButton: false
       });
     }
   }

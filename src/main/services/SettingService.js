@@ -1,7 +1,7 @@
 import { ipcMain, dialog } from 'electron';
 import WindowManager from '@/modules/WindowManager';
 import BaseService from '@/services/BaseService';
-import Setting from '@/modules/Setting';
+import SettingStorage from '@/modules/SettingStorage';
 
 class SettingService extends BaseService {
   /**
@@ -18,6 +18,8 @@ class SettingService extends BaseService {
 
   constructor() {
     super();
+
+    this.settingStorage = SettingStorage.getStorage();
 
     ipcMain.on(SettingService.channel, this.channelIncomeHandler.bind(this));
   }
@@ -41,7 +43,12 @@ class SettingService extends BaseService {
     return SettingService.channel + `:${name}`;
   }
 
-  selectDirectoryAction(args, event) { //
+  /**
+   * Show directory selector dialog
+   * @param {Object} args
+   * @param {Electron.Event} event
+   */
+  selectDirectoryAction(args, event) {
     dialog.showOpenDialog(
       WindowManager.getWindow('app'),
       {
@@ -51,6 +58,23 @@ class SettingService extends BaseService {
         event.returnValue = { filePath, bookmarks };
       }
     )
+  }
+
+  getSettingsAction(args, event) {
+    let settings = this.settingStorage.getSettings();
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('settings'), settings);
+  }
+
+  /**
+   *
+   * @param {Object} args
+   * @param {Electron.Event} event
+   */
+  updateSettingsAction(args, event) {//
+    let changedSettings = this.settingStorage.setSettings(args.settings);
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), changedSettings);
   }
 }
 

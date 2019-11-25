@@ -15,8 +15,6 @@
         </div>
       </div>
 
-      <app-test></app-test>
-
       <div class="download-list__empty-notice"
         v-if="downloads.length < 1">
         There is no download
@@ -78,6 +76,14 @@ export default {
 
     ipcRenderer.on('download-service:error', (event, downloadId) => {
       alert('This is not a valid url');
+    });
+
+    ipcRenderer.on('download-service:downloads', (event, downloads) => {
+      this.downloads = downloads;
+    });
+
+    ipcRenderer.send('download-service', {
+      action: 'fetchAllDownloads'
     });
   },
 
