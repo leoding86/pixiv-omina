@@ -14,6 +14,7 @@
     "element-ui": "^2.12.0",
     "fs-extra": "^8.1.0",
     "gif-encoder": "^0.7.2",
+    "jimp": "^0.8.5",
     "jszip": "^3.2.2",
     "mime-types": "^2.1.25",
     "source-map-support": "^0.5.12"
@@ -30,7 +31,7 @@
     "webpack": "~4.35.3"
   },
   "build": {
-    "appId": "me.electron.pixiv_omina"
+    "appId": "leod.electron.pixiv_omina"
   },
   "win": {
     "target": "NSIS"
@@ -45,5 +46,10 @@
     "schemes": [
       "pixiv-omina"
     ]
+  },
+  "electronWebpack": {
+      "main": {
+          "webpackConfig": "webpack.main.additions.js"
+      }
   }
 }

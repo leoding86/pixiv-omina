@@ -26,6 +26,8 @@ class Download extends Request {
      */
     this.saveTo = options.saveTo;
 
+    this.saveName = options.saveName;
+
     /**
      * @type {number}
      */
@@ -64,7 +66,7 @@ class Download extends Request {
    * @returns {string}
    */
   getFilename(extName) {
-    let filename = this.options.saveName;
+    let filename = this.saveName;
 
     if (!filename) {
       let urlObj = formatUrl.parse(this.options.url);
@@ -93,11 +95,11 @@ class Download extends Request {
     /**
      * Create folder
      */
-    fs.ensureDir(this.options.saveTo).then(() => {
+    fs.ensureDir(this.saveTo).then(() => {
       this.startTime = Date.now();
 
       this.on('response', response => {
-        if (response.statusCode.indexOf('20') !== 0) {
+        if (response.statusCode.toString().indexOf('20') !== 0) {
           this.emit('dl-error', Error(response.statusCode));
           return;
         }
@@ -183,7 +185,7 @@ class Download extends Request {
   }
 
   getSavedFile() {
-    return path.join(this.options.saveTo, this.options.saveName);
+    return path.join(this.saveTo, this.saveName);
   }
 }
 

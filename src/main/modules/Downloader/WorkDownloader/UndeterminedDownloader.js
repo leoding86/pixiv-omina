@@ -61,7 +61,7 @@ class UndeterminedDownloader extends WorkDownloader {
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(this));
           } else if (jsonData.body.illustType === 2) {
-            resolve(UgoiraDownloader.createDownloader(this));
+            resolve(UgoiraDownloader.createFromWorkDownloader(this));
           } else {
             let error = Error(`unsupported work type '${jsonData.body.illustType}'`);
 

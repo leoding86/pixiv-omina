@@ -16,7 +16,7 @@ class SettingStorage extends EventEmitter {
 
   static getSettingsFile()
   {
-    return path.join(app.getAppPath(), 'settings.config');
+    return path.join(app.getAppPath(), 'settings.config');//
   }
 
   static initSettings() {
@@ -24,13 +24,13 @@ class SettingStorage extends EventEmitter {
 
     fs.ensureFileSync(settingsFile);
 
-    let content = fs.readJsonSync(settingsFile);
-
-    if (!content) {
+    try {
+      return fs.readJsonSync(settingsFile);
+    } catch (error) {
       fs.writeJsonSync(settingsFile, defaultSettings);
     }
 
-    return fs.readJsonSync(settingsFile);//
+    return fs.readJsonSync(settingsFile);
   }
 
   /**

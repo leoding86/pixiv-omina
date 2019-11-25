@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import path from 'path';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import Request from '@/modules/Request';
@@ -6,6 +7,7 @@ import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import Zip from 'jszip';
+import cluster from 'cluster';
 
 /**
  * @class
@@ -34,13 +36,13 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   /**
-   * Create a manga downloader from base work downloader
+   * Create ugoira downloader from base work downloader
    * @member
    * @param {WorkDownloader} workDownloader
-   * @returns {MangaDownloader}
+   * @returns {UgoiraDownloader}
    */
   static createFromWorkDownloader(workDownloader) {
-    let downloader = new UgoiraDownloader();
+    let downloader = new UgoiraDownloader();//
     downloader.id = workDownloader.id;
     downloader.options = workDownloader.options;
     downloader.context = workDownloader.context;
@@ -48,7 +50,7 @@ class UgoiraDownloader extends WorkDownloader {
     /**
       * Append work folder at the end
       */
-    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('renameUgoira'), this.context));
+    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), downloader.context));
 
     return downloader;
   }
@@ -89,7 +91,12 @@ class UgoiraDownloader extends WorkDownloader {
         response.on('end', () => {
           let jsonData = JSON.parse(body.toString());
 
-          if (jsonData && jsonData.originalSrc && Array.isArray(jsonData.frames) && jsonData.frames.length > 0) {
+          if (jsonData &&
+            jsonData.body &&
+            jsonData.body.originalSrc &&
+            Array.isArray(jsonData.body.frames) &&
+            jsonData.body.frames.length > 0
+          ) {
             resolve(jsonData.body);
             return;
           }
@@ -101,22 +108,46 @@ class UgoiraDownloader extends WorkDownloader {
           reject(Error('Resolve ugoira meta has been aborted'));
         });
       });
+
+      this.request.end();
     });
   }
 
-  generateGif(zip) {
-    //
+  generateGif(file) {
+    this.setDownloading('Generating GIF');
+
+    cluster.setupMaster({
+      exec: "./UgoiraDownloader.GifEncoder.worker.js"
+    });
+
+    const worker = cluster.fork();
+
+    worker.on('message', data => {
+      if (data.status === 'finish') {
+        worker.kill();
+      }
+    });
+
+    worker.send({
+      file,
+      saveFile: path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif'
+    });
   }
 
   packFramesInfo(file) {
-    //animation.json
-    this.setDownloading('Pack frames infomation');
+    this.setDownloading('Packing frames infomation');
 
-    fs.readFile(file).then(data => {
+    fs.readFile(file).then(data => {//
       Zip.loadAsync(data).then(zip => {
         zip.file('animation.json', JSON.stringify(this.meta.frames));
 
-        this.generateGif(zip);
+        zip.generateNodeStream({
+          type: 'nodebuffer',
+          streamFiles: true
+        }).pipe(fs.createWriteStream(file))
+          .on('finish', () => {
+            this.generateGif(file);
+          });
       });
     });
   }
@@ -128,7 +159,7 @@ class UgoiraDownloader extends WorkDownloader {
       this.options,
       {
         url: url,
-        saveName: FormatName.format(SettingStorage.getSetting('ugoiraRname'), this.context)
+        saveName: FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)
       }
     );
 

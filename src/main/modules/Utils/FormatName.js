@@ -1,7 +1,7 @@
 class FormatName {
-  static format(renameFormat, context) {
+  static format(renameFormat, context, fallback) {
     let specials = {
-      win: {
+      win: {//
         illegals: [
           '<', '>', ':', '"', '/', '\\', '|', '?', '*'
         ],
@@ -69,10 +69,8 @@ class FormatName {
       return 'undefined';
     }
 
-    fallback += '';
-
     if (!renameFormat) {
-      filename = fallback;
+      filename = fallback + '';
     } else {
       var matches = renameFormat.match(/%[a-z]+%/ig);
       var name = renameFormat;
