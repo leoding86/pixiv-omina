@@ -3,7 +3,7 @@ import GifEncoder from 'gif-encoder';
 import fs from 'fs-extra';
 import Zip from 'jszip';
 
-let frames, gifFile, gifEncoder;
+let frames, zipFile, gifFile, gifEncoder;
 
 function addFrame(zip, frames, index = 0) {
   return new Promise(resolve => {
@@ -11,8 +11,9 @@ function addFrame(zip, frames, index = 0) {
 
     if (!frame) {
       resolve();
+      return;
     }
-
+console.log(frame);
     zip.file(frame.file).async('nodebuffer').then(buffer => {
       return Jimp.read(buffer);
     }).then(image => {
@@ -22,7 +23,7 @@ function addFrame(zip, frames, index = 0) {
         gifEncoder.writeHeader();
       }
 
-      gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap, 0), {
+      gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0), {
         delay: frame.delay
       });
 
@@ -31,22 +32,24 @@ function addFrame(zip, frames, index = 0) {
   });
 }
 
-process.on('message', data => {
-  fs.readFile(data.file).then(buffer => {
+process.on('message', args => {
+  fs.readFile(args.file).then(buffer => {
     return Zip.loadAsync(buffer);
   }).then(zip => {
+    zipFile = zip;
+
     return zip.file('animation.json').async('string')
   }).then(data => {
-    frames = data;
+    frames = JSON.parse(data);
 
-    gifFile = fs.createWriteStream(data.saveFile);
+    gifFile = fs.createWriteStream(args.saveFile);
 
-    return addFrame(zip, frames);
+    return addFrame(zipFile, frames);
   }).then(() => {
     gifEncoder.on('end', () => {
       process.send({status: 'finish'});
     });
-
+console.log('finish')
     gifEncoder.finish();
   });
 });

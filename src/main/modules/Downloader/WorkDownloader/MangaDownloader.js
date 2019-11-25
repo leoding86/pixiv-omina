@@ -88,7 +88,7 @@ class MangaDownloader extends WorkDownloader {
           }
 
           reject(Error('Cannot resolve manga images'));
-        });
+        });//
 
         response.on('aborted', () => {
           reject(Error('Resolve manga images has been aborted'));

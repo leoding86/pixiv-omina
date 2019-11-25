@@ -42,7 +42,7 @@ class UgoiraDownloader extends WorkDownloader {
    * @returns {UgoiraDownloader}
    */
   static createFromWorkDownloader(workDownloader) {
-    let downloader = new UgoiraDownloader();//
+    let downloader = new UgoiraDownloader();
     downloader.id = workDownloader.id;
     downloader.options = workDownloader.options;
     downloader.context = workDownloader.context;
@@ -117,7 +117,7 @@ class UgoiraDownloader extends WorkDownloader {
     this.setDownloading('Generating GIF');
 
     cluster.setupMaster({
-      exec: "./UgoiraDownloader.GifEncoder.worker.js"
+      exec: "./dist/main/UgoiraDownloaderGifEncoderWorker.js"
     });
 
     const worker = cluster.fork();
@@ -127,7 +127,7 @@ class UgoiraDownloader extends WorkDownloader {
         worker.kill();
       }
     });
-
+//
     worker.send({
       file,
       saveFile: path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif'
@@ -137,7 +137,7 @@ class UgoiraDownloader extends WorkDownloader {
   packFramesInfo(file) {
     this.setDownloading('Packing frames infomation');
 
-    fs.readFile(file).then(data => {//
+    fs.readFile(file).then(data => {
       Zip.loadAsync(data).then(zip => {
         zip.file('animation.json', JSON.stringify(this.meta.frames));
 
