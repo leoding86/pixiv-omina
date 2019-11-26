@@ -68,14 +68,14 @@ if (!gotTheLock) {
 
       mainWindow.focus();
     }
-  });//
+  });
 
   function createMainWindow() {
     const window = windowManager.createWindow('app', {
       width: 600,
-      height: isDevelopment ? 1050 : 800,
+      height: isDevelopment ? 1050 : 400,
       minWidth: 600,
-      minHeight: 800,
+      minHeight: 400,
       webPreferences: {
         webSecurity: false,
         nodeIntegration: true

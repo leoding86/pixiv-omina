@@ -133,6 +133,10 @@ class UgoiraDownloader extends WorkDownloader {
         worker.kill();
 
         this.setFinish();
+      } else if (data.status === 'progress') {
+        this.progress = 0.5 + (data.progress / 2);
+
+        this.setProcessing('Generating Gif');
       }
     });
 
@@ -143,7 +147,7 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   packFramesInfo(file) {
-    this.setDownloading('Packing frames infomation');
+    this.setProcessing('Packing frames infomation');
 
     fs.readFile(file).then(data => {
       Zip.loadAsync(data).then(zip => {
@@ -174,17 +178,15 @@ class UgoiraDownloader extends WorkDownloader {
     this.download = new Download(downloadOptions);
 
     this.download.on('dl-finish', () => {
+      this.progress = this.download.progress / 2;
       this.setDownloading();
-
-      this.progress = this.download.progress;
 
       this.packFramesInfo(this.download.getSavedFile());
     });
 
     this.download.on('dl-progress', () => {
+      this.progress = this.download.progress / 2;
       this.setDownloading();
-
-      this.progress = this.download.progress;
     });
 
     this.download.on('dl-error', error => {

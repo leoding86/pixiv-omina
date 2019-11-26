@@ -66,7 +66,8 @@
                   type="primary"
                   size="mini"
                   icon="el-icon-video-pause"
-                  @click="$emit('stop', download)"
+                  :disabled="download.state === 'processing'"
+                  @click="clickStopHandler(download)"
                 ></el-button>
                 <el-button
                   v-if="download.state === 'finish'"
@@ -80,13 +81,14 @@
                   type="primary"
                   size="mini"
                   icon="el-icon-refresh"
-                  @click="$emit('redownload', download)"
+                  @click="download.state === 'finish' && $emit('redownload', download)"
                 ></el-button>
                 <el-button
                   type="danger"
                   size="mini"
                   icon="el-icon-delete"
-                  @click="$emit('delete', download)"
+                  :disabled="download.state === 'processing'"
+                  @click="clickDeleteHandler(download)"
                 ></el-button>
               </el-button-group>
             </div>
@@ -183,6 +185,23 @@ export default {
       } else {
         return Math.round(speed / 1000 / 1000 / 8) + ' MB/s'
       }
+    },
+
+    clickStopHandler(download) {
+      if (download.state === 'processing') {
+        this.$alert('Cannot stop download in processing state');
+        return;
+      }
+
+      this.$emit('stop', download);
+    },
+
+    clickDeleteHandler(download) {
+      if (download.state === 'processing') {
+        this.$alert('Cannot delete download in processing state');
+      }
+
+      this.$emit('delete', download);
     },
 
     openFolder(download) {

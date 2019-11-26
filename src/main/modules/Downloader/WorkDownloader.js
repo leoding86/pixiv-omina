@@ -165,6 +165,10 @@ class WorkDownloader extends EventEmitter {
     return this.state === WorkDownloader.state.downloading;
   }
 
+  isProcessing() {
+    return this.state === WorkDownloader.state.processing;
+  }
+
   reset() {
     this.progress = 0;
     this.state = WorkDownloader.state.pending;
@@ -176,6 +180,10 @@ class WorkDownloader extends EventEmitter {
   }
 
   stop() {
+    if (this.isProcessing()) {
+      return;
+    }
+
     if (this.download || this.request) {
       this.download || this.download.abort();
       this.request || this.request.abort();

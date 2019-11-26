@@ -3,53 +3,92 @@ import GifEncoder from 'gif-encoder';
 import fs from 'fs-extra';
 import Zip from 'jszip';
 
-let frames, zipFile, gifFile, gifEncoder;
+class UgoiraDownloaderGifEncoderWorker {
+  constructor({ file, saveFile }) {
+    this.file = file;
 
-function addFrame(zip, frames, index = 0) {
-  return new Promise(resolve => {
-    const frame = frames[index];
+    this.saveFile = saveFile;
 
-    if (!frame) {
-      resolve();
-      return;
-    }
+    this.zipObj;
 
-    zip.file(frame.file).async('nodebuffer').then(buffer => {
-      return Jimp.read(buffer);
-    }).then(image => {
-      if (!gifEncoder) {
-        gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
-        gifEncoder.setRepeat(0);
-        gifEncoder.pipe(gifFile);
-        gifEncoder.writeHeader();
-      }
+    this.frames;
 
-      gifEncoder.setDelay(frame.delay);
-      gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
+    this.frameIndex = 0;
 
-      resolve(addFrame(zip, frames, ++index));
+    this.gifEncoder;
+  }
+
+  static run({ file, saveFile }) {
+    let worker = new UgoiraDownloaderGifEncoderWorker({ file, saveFile });
+
+    worker.prepare().then(() => {
+      worker.encode();
     });
-  });
-}
+  }
 
-process.on('message', args => {
-  fs.readFile(args.file).then(buffer => {
-    return Zip.loadAsync(buffer);
-  }).then(zip => {
-    zipFile = zip;
+  prepare() {
+    return fs.readFile(this.file).then(buffer => {
+      return Zip.loadAsync(buffer);
+    }).then(zipObj => {
+      this.zipObj = zipObj;
 
-    return zip.file('animation.json').async('string')
-  }).then(data => {
-    frames = JSON.parse(data);
+      return this.zipObj.file('animation.json').async('string');
+    }).then(content => {
+      this.frames = JSON.parse(content);
 
-    gifFile = fs.createWriteStream(args.saveFile);
+      return this.addFrame();
+    });
+  }
 
-    return addFrame(zipFile, frames);
-  }).then(() => {
-    gifEncoder.on('end', () => {
+  encode() {
+    this.gifEncoder.on('end', () => {
       process.send({status: 'finish'});
     });
 
-    gifEncoder.finish();
+    this.gifEncoder.finish();
+  }
+
+  addFrame(index = 0) {
+    return new Promise(resolve => {
+      const frame = this.frames[this.frameIndex];
+
+      if (!frame) {
+        resolve();
+        return;
+      }
+
+      this.zipObj.file(frame.file).async('nodebuffer').then(buffer => {
+        return Jimp.read(buffer);
+      }).then(image => {
+        if (!this.gifEncoder) {
+          this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
+
+          this.gifEncoder.on('frame#stop', () => {
+            process.send({
+              status: 'progress',
+              progress: Math.floor(this.frameIndex / this.frames.length * 100) / 100
+            });
+          });
+
+          this.gifEncoder.setRepeat(0);
+          this.gifEncoder.pipe(fs.createWriteStream(this.saveFile));
+          this.gifEncoder.writeHeader();
+        }
+
+        this.gifEncoder.setDelay(frame.delay);
+        this.gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
+
+        this.frameIndex++;
+
+        resolve(this.addFrame(this.frameIndex));
+      });
+    });
+  }
+}
+
+process.on('message', data => {
+  UgoiraDownloaderGifEncoderWorker.run({
+    file: data.file,
+    saveFile: data.saveFile
   });
 });

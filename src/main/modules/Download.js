@@ -168,6 +168,8 @@ class Download extends Request {
 
           this.completeTime = this.endTime - this.startTime;
 
+          this.progress = 1;
+
           this.emit('dl-finish');
         });
 
