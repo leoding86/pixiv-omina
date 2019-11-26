@@ -29,6 +29,10 @@ class MainEntry {
       },
 
       beforeMount() {
+        ipcRenderer.on('debug:log', (event, data) => {
+          console.log(data);
+        });
+
         ipcRenderer.on('setting-service:change', (event, changedSettings) => {
           this.$notify({
             title: 'Setting saved!',

@@ -57,9 +57,9 @@ class WindowManager {
     let window = new BrowserWindow(args)
     let url;
 
-    if (isDevelopment) {
+    // if (isDevelopment) {
       window.webContents.openDevTools()
-    }
+    // }
 
     if (isDevelopment) {
       url = `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?target=${name}`

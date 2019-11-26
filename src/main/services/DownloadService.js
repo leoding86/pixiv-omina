@@ -4,7 +4,6 @@ import {
 } from 'electron';
 import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
-import Download from '@/modules/Download';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import BaseService from '@/services/BaseService';
 
