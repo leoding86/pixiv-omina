@@ -7,8 +7,6 @@ import Request from '@/modules/Request';
 import PartitionManager from '@/modules/PartitionManager';
 import SettingStorage from '@/modules/SettingStorage';
 
-console.log(app.getAppPath());
-
 /**
  * Make sure there is only one instance will be created.
  */
@@ -161,16 +159,18 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-})
+});
 
 app.on('activate', () => {
   // on macOS it is common to re-create a window even after all windows have been closed
   if (mainWindow === null) {
-    mainWindow = createMainWindow()
+    mainWindow = createMainWindow();
   }
-})
+});
 
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
-  mainWindow = createMainWindow();
-})
+  partitionManager.getSession('main').clearCache(() => {
+    mainWindow = createMainWindow();
+  });
+});

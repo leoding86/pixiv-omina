@@ -1,3 +1,4 @@
+import { app } from 'electron';
 import fs from 'fs-extra';
 import path from 'path';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
@@ -7,7 +8,9 @@ import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import Zip from 'jszip';
-import cluster from 'cluster';
+import { fork } from 'child_process';
+
+const isDevelopment = process.env.NODE_ENV !== 'production'
 
 /**
  * @class
@@ -116,18 +119,23 @@ class UgoiraDownloader extends WorkDownloader {
   generateGif(file) {
     this.setDownloading('Generating GIF');
 
-    cluster.setupMaster({
-      exec: "./dist/main/UgoiraDownloaderGifEncoderWorker.js"
-    });
+    let workPath = path.join(app.getAppPath(), 'UgoiraDownloaderGifEncoderWorker.js');
+    let worker;
 
-    const worker = cluster.fork();
+    if (fs.existsSync(workPath)) {
+      worker = fork(workPath);
+    } else {
+      worker = fork(path.join(process.resourcesPath, 'app.asar', 'UgoiraDownloaderGifEncoderWorker.js'));
+    }
 
     worker.on('message', data => {
       if (data.status === 'finish') {
         worker.kill();
+
+        this.setFinish();
       }
     });
-//
+
     worker.send({
       file,
       saveFile: path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif'
@@ -168,11 +176,15 @@ class UgoiraDownloader extends WorkDownloader {
     this.download.on('dl-finish', () => {
       this.setDownloading();
 
+      this.progress = this.download.progress;
+
       this.packFramesInfo(this.download.getSavedFile());
     });
 
     this.download.on('dl-progress', () => {
       this.setDownloading();
+
+      this.progress = this.download.progress;
     });
 
     this.download.on('dl-error', error => {

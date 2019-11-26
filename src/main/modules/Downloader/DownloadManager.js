@@ -93,7 +93,7 @@ class DownloadManager extends EventEmitter {
 
     if (nextWorkDownloader) {
       this.startWorkDownloader({
-        workId: nextWorkDownloader.id
+        downloadId: nextWorkDownloader.id
       });
     }
   }

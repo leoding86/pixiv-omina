@@ -46,7 +46,7 @@ class MangaDownloader extends WorkDownloader {
     /**
      * Append work folder at the end
      */
-    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('mangaRename'), this.context));
+    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('mangaRename'), downloader.context));
 
     return downloader;
   }
@@ -95,6 +95,10 @@ class MangaDownloader extends WorkDownloader {
         });
       });
 
+      this.request.on('close', () => {
+        this.request = null;
+      });
+
       this.request.end();
     });
   }
@@ -123,15 +127,13 @@ class MangaDownloader extends WorkDownloader {
     this.download = new Download(downloadOptions);
 
     this.download.on('dl-finish', () => {
-      this.imageIndex++;//
+      this.imageIndex++;
 
       this.progress = this.imageIndex / this.images.length;
 
       this.setDownloading();
 
       if (this.imageIndex > (this.images.length - 1)) {
-        this.state = MangaDownloader.state.finish;
-
         this.setFinish();
 
         this.download = null;

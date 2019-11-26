@@ -22,24 +22,35 @@ class Download extends Request {
     super(options);
 
     /**
-     * @type {string}
+     * @property {string}
      */
     this.saveTo = options.saveTo;
 
     this.saveName = options.saveName;
 
     /**
-     * @type {number}
+     * @property {number}
      */
     this.speed = 0;
 
     /**
-     * @type {number} microsecond
+     * @property {number}
+     */
+    this.progress = 0;
+
+    /**
+     * @property {number}
      */
     this.speedSensitivity = 100;
 
+    /**
+     * @property {number}
+     */
     this.startTime = null;
 
+    /**
+     * @property {number}
+     */
     this.endTime = null;
 
     /**
@@ -99,7 +110,14 @@ class Download extends Request {
       this.startTime = Date.now();
 
       this.on('response', response => {
-        if (response.statusCode.toString().indexOf('20') !== 0) {
+        let totalSize = 0;
+        let completeSize = 0;
+
+        if (response.headers['content-length']) {
+          totalSize = response.headers['content-length'][0];
+        }
+
+        if (response.statusCode !== 200) {
           this.emit('dl-error', Error(response.statusCode));
           return;
         }
@@ -122,10 +140,13 @@ class Download extends Request {
         response.on('data', data => {
           let nowTime = Date.now();
 
+          completeSize += data.length;
+
           duration = nowTime - startTime;
 
           if (duration >= this.speedSensitivity) {
-            this.speed = Math.round(speedChunkDataLength / duration * 1000);
+            this.speed = Math.floor(speedChunkDataLength / duration * 1000);
+            this.progress = (totalSize ? Math.floor(completeSize / totalSize * 100) : 0) / 100;
 
             this.emit('dl-progress');
 

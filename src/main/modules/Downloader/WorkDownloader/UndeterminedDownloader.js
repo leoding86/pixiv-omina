@@ -90,6 +90,10 @@ class UndeterminedDownloader extends WorkDownloader {
         reject(error);
       });
 
+      this.request.on('close', () => {
+        this.request = null;
+      });
+
       this.request.end();
     });
   }
@@ -104,6 +108,8 @@ class UndeterminedDownloader extends WorkDownloader {
   stop() {
     if (this.request) {
       this.request.abort();
+    } else {
+      this.setStop();
     }
   }
 }

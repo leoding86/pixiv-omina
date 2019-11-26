@@ -19,6 +19,7 @@
         :label-width="formLabelWidth"
       >
         <el-input
+          ref="urlInput"
           v-model="download.url"
         ></el-input>
       </el-form-item>
@@ -85,6 +86,12 @@ export default {
 
   beforeMount() {
     this.download.saveTo = this.settings.saveTo;
+  },
+
+  mounted() {
+    setImmediate(() => {
+      this.$refs.urlInput.focus();
+    });
   },
 
   methods: {

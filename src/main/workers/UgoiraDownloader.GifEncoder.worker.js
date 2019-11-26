@@ -13,19 +13,19 @@ function addFrame(zip, frames, index = 0) {
       resolve();
       return;
     }
-console.log(frame);
+
     zip.file(frame.file).async('nodebuffer').then(buffer => {
       return Jimp.read(buffer);
     }).then(image => {
       if (!gifEncoder) {
         gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
+        gifEncoder.setRepeat(0);
         gifEncoder.pipe(gifFile);
         gifEncoder.writeHeader();
       }
 
-      gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0), {
-        delay: frame.delay
-      });
+      gifEncoder.setDelay(frame.delay);
+      gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
 
       resolve(addFrame(zip, frames, ++index));
     });
@@ -49,7 +49,7 @@ process.on('message', args => {
     gifEncoder.on('end', () => {
       process.send({status: 'finish'});
     });
-console.log('finish')
+
     gifEncoder.finish();
   });
 });
