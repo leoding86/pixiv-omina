@@ -133,7 +133,7 @@ class MangaDownloader extends WorkDownloader {
 
       this.setDownloading();
 
-      if (this.imageIndex > (this.images.length - 1)) {
+      if (this.imageIndex > (this.images.length - 1)) {//
         this.setFinish();
 
         this.download = null;
@@ -186,10 +186,6 @@ class MangaDownloader extends WorkDownloader {
 
       this.downloadImages();
     }
-  }
-
-  stop() {
-    super.stop();
   }
 
   toJSON() {

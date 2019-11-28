@@ -224,14 +224,14 @@ export default {
 
 .download-list-filters {
   box-sizing: border-box;
-  padding: 15px;
+  padding: 15px 10px;
   height: 47px;
 }
 
 .download-list-item__content {
   box-sizing: border-box;
   margin: 15px 0 0 0;
-  padding: 0 15px;
+  padding: 0 10px;
   overflow-y: auto;
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <div id="header">
+  <div class="header-container">
     <div class="header__left">
       <el-button
         icon="el-icon-plus"
@@ -65,17 +65,15 @@ export default {
 </script>
 
 <style lang="scss">
-#header {
+.header-container {
   display: flex;
   flex-direction: row;
-  height: 32px;
-  padding: 10px;
-  background: #efefef;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,.15);
 
   .header__right {
+    position: relative;
     flex: 1;
     text-align: right;
+    z-index: 99999;
   }
 }
 </style>

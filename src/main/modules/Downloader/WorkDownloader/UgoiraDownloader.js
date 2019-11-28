@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import fs from 'fs-extra';
 import path from 'path';
+import { debug } from '@/global';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import Request from '@/modules/Request';
@@ -117,6 +118,8 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   generateGif(file) {
+    debug.sendStatus(`Generating ${this.id} GIF`);
+
     this.setDownloading('Generating GIF');
 
     let workPath = path.join(app.getAppPath(), 'UgoiraDownloaderGifEncoderWorker.js');
@@ -133,10 +136,14 @@ class UgoiraDownloader extends WorkDownloader {
         worker.kill();
 
         this.setFinish();
+
+        debug.sendStatus(`Generate GIF ${this.id} complete`);
       } else if (data.status === 'progress') {
         this.progress = 0.5 + (data.progress / 2);
 
         this.setProcessing('Generating Gif');
+
+        debug.sendStatus(`Generate GIF ${this.id} progress ${data.progress}`);
       }
     });
 
@@ -146,8 +153,10 @@ class UgoiraDownloader extends WorkDownloader {
     });
   }
 
-  packFramesInfo(file) {
+  packFramesInfo(file) {//
     this.setProcessing('Packing frames infomation');
+
+    debug.sendStatus(`Packing frames information to ${this.id}`);
 
     fs.readFile(file).then(data => {
       Zip.loadAsync(data).then(zip => {
@@ -158,6 +167,8 @@ class UgoiraDownloader extends WorkDownloader {
           streamFiles: true
         }).pipe(fs.createWriteStream(file))
           .on('finish', () => {
+            debug.sendStatus(`${this.id} frames information packed`);
+
             this.generateGif(file);
           });
       });
@@ -222,10 +233,6 @@ class UgoiraDownloader extends WorkDownloader {
 
       this.downloadZip();
     }
-  }
-
-  stop() {
-    super.stop();
   }
 }
 

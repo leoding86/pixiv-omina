@@ -1,6 +1,7 @@
 import SettingService from '@/services/SettingService';
 import UserService from '@/services/UserService';
 import DownloadService from '@/services/DownloadService';
+import DebugService from '@/services/DebugService';
 
 /**
  * @class
@@ -16,7 +17,13 @@ class ServiceContainer {
     this.services
       .set('setting', SettingService.getService())
       .set('user', UserService.getService())
-      .set('download', DownloadService.getService());
+      .set('download', DownloadService.getService())
+      .set('debug', DebugService.getService());
+
+    /**
+     * Attach DebugServce's instance to global variable
+     */
+    global.debug = DebugService.instance;
   }
 
   /**

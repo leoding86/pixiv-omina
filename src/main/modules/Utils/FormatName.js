@@ -93,7 +93,7 @@ class FormatName {
      * use merged platform rule to filter filename.
      **/
     let rule = specials.win;
-    let illegalChars = specials.win.illegals.concat(specials.linux.illegals, specials.unix.illegals);
+    let illegalChars = specials.win.illegals.concat(specials.linux.illegals, specials.unix.illegals, ['~']);
 
     illegalChars.forEach(char => {
       filename = filename.replace(char, '_');

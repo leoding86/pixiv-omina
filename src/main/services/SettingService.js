@@ -71,7 +71,7 @@ class SettingService extends BaseService {
    * @param {Object} args
    * @param {Electron.Event} event
    */
-  updateSettingsAction(args, event) {//
+  updateSettingsAction(args, event) {
     let changedSettings = this.settingStorage.setSettings(args.settings);
 
     WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), changedSettings);

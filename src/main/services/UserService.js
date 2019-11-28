@@ -1,14 +1,14 @@
 import {
-  net,
   ipcMain,
-  session
 } from 'electron';
+import {
+  debug
+} from '@/global';
 import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
 import ServiceContainer from '@/ServiceContainer';
-import PartitionManager from '@/modules/PartitionManager';
 
 /**
  * @class
@@ -67,6 +67,8 @@ class UserService extends BaseService {
   }
 
   userLogoutAction() {
+    ServiceContainer.getService('debug').sendStatus('Logout');
+
     let request = new Request({
       url: UrlBuilder.getUserLogoutUrl(),
       method: 'GET',
@@ -81,21 +83,27 @@ class UserService extends BaseService {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
     });
 
-    request.end();
+    request.end();//
   }
 
   /**
    * Check login state then response renderer
    */
   checkUserLoginedAction() {
+    debug.sendStatus('Checking login status');
+
     this.checkUserLogined().then(() => {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('logined'));
+
+      debug.sendStatus('Logined');
     }).catch(error => {
       if (error && error.message) {
         // console.log(error.message);
       }
 
       WindowManager.getWindow('app').webContents.send(this.responseChannel('not-login'));
+
+      debug.sendStatus('Logouted');
     });
   }
 

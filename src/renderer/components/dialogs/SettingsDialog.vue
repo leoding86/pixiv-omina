@@ -8,77 +8,23 @@
     :width="'480px'"
     :visible.sync="show"
   >
-    <el-form
-      ref="settingsForm"
-      size="mini"
-      :model="scopedSettings"
-      :rules="settingsRule"
-    >
-      <el-form-item
-        label="User Agent"
-        :label-width="formLabelWidth"
+    <el-tabs>
+      <el-tab-pane
+        label="General"
       >
-        <el-input
-          type="textarea"
-          v-model="scopedSettings.userAgent"
-          :rows="4"
-        ></el-input>
-      </el-form-item>
-      <el-form-item
-        label="Save to"
-        :label-width="formLabelWidth"
+        <general-settings
+          @changed="settingsChangedHandler"
+        ></general-settings>
+      </el-tab-pane>
+      <el-tab-pane
+        label="Proxy"
       >
-        <directory-selector
-          v-model="scopedSettings.saveTo"
-        ></directory-selector>
-      </el-form-item>
-
-      <el-form-item
-        :label-width="formLabelWidth"
-      >
-        <span
-          slot="label"
-        >Format manga <i class="el-icon-warning-outline"></i></span>
-        <el-input
-          v-model="scopedSettings.mangaRename"
-        ></el-input>
-      </el-form-item>
-
-      <el-form-item
-        :label-width="formLabelWidth"
-      >
-        <span
-          slot="label"
-        >Format manga image <i class="el-icon-warning-outline"></i></span>
-        <el-input
-          v-model="scopedSettings.mangaImageRename"
-        ></el-input>
-      </el-form-item>
-
-      <el-form-item
-        :label-width="formLabelWidth"
-      >
-        <span
-          slot="label"
-        >Format illust <i class="el-icon-warning-outline"></i></span>
-        <el-input
-          v-model="scopedSettings.illustrationRename"
-        ></el-input>
-      </el-form-item>
-
-      <el-form-item
-        :label-width="formLabelWidth"
-      >
-        <span
-          slot="label"
-        >Format illust image <i class="el-icon-warning-outline"></i></span>
-        <el-input
-          v-model="scopedSettings.illustrationImageRename"
-        ></el-input>
-      </el-form-item>
-
-    </el-form>
-    <span
+        <proxy-settings
+          @changed="settingsChangedHandler"
+        ></proxy-settings>
+      </el-tab-pane>
+    </el-tabs>
+    <div
       slot="footer"
       class="dialog-footer"
     >
@@ -95,18 +41,20 @@
         type="primary"
         @click="saveSettings"
         size="mini"
-      >Save</el-button>
-    </span>
+      >Save<span v-if="settingsChanged">*</span></el-button>
+    </div>
   </el-dialog>
 </template>
 
 <script>
 import { ipcRenderer } from 'electron';
-import DirectorySelector from '../DirectorySelector';
+import GeneralSettings from './GeneralSettings';
+import ProxySettings from './ProxySettings';
 
 export default {
   components: {
-    'directory-selector': DirectorySelector
+    'general-settings': GeneralSettings,
+    'proxy-settings': ProxySettings
   },
 
   props: {
@@ -119,17 +67,12 @@ export default {
 
   data() {
     return {
-      formLabelWidth: '140px',
-
-      scopedSettings: {},
-
-      settingsRule: {
-        //
-      }
-    };
+      settingsChanged: false
+    }
   },
 
   beforeMount() {
+    this.changedSettings = {};
     this.scopedSettings = Object.assign({}, this.settings);
   },
 
@@ -140,21 +83,23 @@ export default {
   },
 
   methods: {
-    saveSettings() {
-      this.$refs['settingsForm'].validate((valid) => {
-        if (valid) {
-          // this.$emit('update:show', false);
-
-          ipcRenderer.send('setting-service', {
-            action: 'updateSettings',
-            args: {
-              settings: this.scopedSettings
-            }
-          });
-        } else {
-          return false;
-        }
+    settingsChangedHandler(changedSettings) {
+      Object.keys(changedSettings).forEach(key => {
+        this.changedSettings[key] = changedSettings[key];
       });
+
+      this.settingsChanged = !!this.diffSettings(this.changedSettings);
+    },
+
+    saveSettings() {
+      const changedSettings = this.diffSettings(this.changedSettings);
+
+      ipcRenderer.send('setting-service', {
+        action: 'updateSettings',
+        args: {
+          settings: changedSettings
+        }
+      })
     },
 
     showHelp() {
@@ -163,10 +108,12 @@ export default {
       this.$msgbox({
         title: 'Help',
         message: h('div', null, [
-          h('p', null, 'Valid rename placehold: '),
+          h('p', null, 'Valid rename placeholds: '),
           h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%')
         ]),
         showConfirmButton: false
+      }).catch(() => {
+        //ignore it
       });
     }
   }

@@ -101,17 +101,6 @@ class UndeterminedDownloader extends WorkDownloader {
   reset() {
     // ignore but must have it
   }
-
-  /**
-   * Stop downloader
-   */
-  stop() {
-    if (this.request) {
-      this.request.abort();
-    } else {
-      this.setStop();
-    }
-  }
 }
 
 export default UndeterminedDownloader;

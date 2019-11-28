@@ -72,8 +72,8 @@ if (!gotTheLock) {
 
   function createMainWindow() {
     const window = windowManager.createWindow('app', {
-      width: 600,
-      height: isDevelopment ? 1050 : 400,
+      width: 800,
+      height: 600,
       minWidth: 600,
       minHeight: 400,
       webPreferences: {
@@ -150,6 +150,46 @@ if (!gotTheLock) {
       headers: {
         'user-agent': SettingStorage.getSetting('userAgent'),
       }
+    });
+
+    /**
+     * update proxy
+     */
+    function updateProxy() {
+      const settings = SettingStorage.getSettings();
+
+      if (settings['enableProxy'] && settings['proxyService'] && settings['proxyServicePort']) {
+        partitionManager.getSession('main').setProxy({
+          pacScript: '',
+          proxyRules: settings['proxyService'] + ':' + settings['proxyServicePort'],
+          proxyBypassRules: ''
+        }, () => {
+          //ignore
+        });
+
+        if (settings['enableProxyAuth']) {
+          Request.updateGlobalOptions({
+            authUsername: settings['proxyUsername'],
+            authPassword: settings['proxyPassword']
+          });
+        }
+      } else {
+        partitionManager.getSession('main').setProxy({
+          pacScript: '',
+          proxyRules: 'direct://',
+          proxyBypassRules: ''
+        }, () => {
+          //ignore
+        });
+
+        Request.removeGlobalOptions(['proxyUsername', 'proxyPassword']);
+      }
+    }
+
+    updateProxy();
+
+    SettingStorage.getStorage().on('change', () => {
+      updateProxy();
     });
 
     /**

@@ -82,6 +82,7 @@ class WorkDownloader extends EventEmitter {
     processing: 'processing',
     error: 'error',
     finish: 'finish',
+    stopping: 'stopping',
     stop: 'stop'
   }
 
@@ -130,6 +131,13 @@ class WorkDownloader extends EventEmitter {
     this.emit('progress', { downloader: this });
   }
 
+  setStopping(message) {
+    this.statusMessage = message || 'Stopping';
+    this.state = WorkDownloader.state.stopping;
+
+    this.emit('progress', { downloader: this });
+  }
+
   setStop(message) {
     this.statusMessage = message || 'Stopped';
     this.state = WorkDownloader.state.stop;
@@ -169,6 +177,14 @@ class WorkDownloader extends EventEmitter {
     return this.state === WorkDownloader.state.processing;
   }
 
+  isStopping() {
+    return this.state === WorkDownloader.state.stopping;
+  }
+
+  isStop() {
+    return this.state === WorkDownloader.state.stop;
+  }
+
   reset() {
     this.progress = 0;
     this.state = WorkDownloader.state.pending;
@@ -184,9 +200,15 @@ class WorkDownloader extends EventEmitter {
       return;
     }
 
+    if (this.isStopping()) {
+      return;
+    }
+
+    this.setStopping();
+
     if (this.download || this.request) {
-      this.download || this.download.abort();
-      this.request || this.request.abort();
+      this.download && this.download.abort();
+      this.request && this.request.abort();
     } else {
       this.setStop();
     }

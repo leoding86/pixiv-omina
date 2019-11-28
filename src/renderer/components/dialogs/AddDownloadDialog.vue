@@ -51,8 +51,9 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, clipboard } from 'electron';
 import DirectorySelector from '../DirectorySelector';
+import UrlMatcher from '@/../utils/UrlMatcher';
 
 export default {
   components: {
@@ -85,6 +86,12 @@ export default {
   },
 
   beforeMount() {
+    let text = clipboard.readText('selection')
+
+    if (UrlMatcher.isMatch(text)) {
+      this.download.url = text;
+    }
+
     this.download.saveTo = this.settings.saveTo;
   },
 
@@ -112,3 +119,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.add-download-dialog {
+  .el-dialog__body {
+    padding: 10px 20px;
+  }
+}
+</style>

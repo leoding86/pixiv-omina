@@ -2,6 +2,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import formatUrl from 'url';
 import mime from 'mime-types';
+import {
+  debug
+} from '@/global';
 import Request from '@/modules/Request';
 
 /**
@@ -58,7 +61,7 @@ class Download extends Request {
      */
     this.completeTime = null;
   }
-//
+
   /**
    *
    * @param {Object} options
@@ -103,6 +106,8 @@ class Download extends Request {
   }
 
   download() {
+    debug.sendStatus(`Download ${this.options.url}`);
+
     /**
      * Create folder
      */
@@ -118,7 +123,7 @@ class Download extends Request {
         }
 
         if (response.statusCode !== 200) {
-          this.emit('dl-error', Error(response.statusCode));
+          this.setError(Error(response.statusCode));
           return;
         }
 
@@ -138,6 +143,8 @@ class Download extends Request {
         response.pipe(writeStream);
 
         response.on('data', data => {
+          debug.sendStatus(`Recieve data from ${this.options.url}`);
+
           let nowTime = Date.now();
 
           completeSize += data.length;
@@ -170,41 +177,63 @@ class Download extends Request {
 
           this.progress = 1;
 
-          this.emit('dl-finish');
+          this.setFinish();
         });
 
         response.on('error', error => {
           writeStream.close();
           this.speed = 0;
 
-          this.emit('dl-error', error);
+          this.setError(error);
         });
 
         response.on('aborted', () => {
           writeStream.close();
           this.speed = 0;
 
-          this.emit('dl-aborted');
+          this.setAbort();
         });
       });
 
       this.on('error', error => {
-        this.emit('dl-error', error);
+        this.setError(error);
       });
 
       this.on('abort', () => {
-        this.emit('dl-aborted');
+        this.setAbort();
       });
-
-      console.log(this.options.url);
 
       /**
        * Send request to start download
        */
       this.end();
     }).catch(error => {
-      this.emit('dl-error', error);
+      this.setError(error);
     });
+  }
+
+  setProgress() {
+    this.emit('dl-progress');
+
+    debug.sendStatus(`Download progress ${this.options.url}`)
+  }
+
+  setFinish() {
+    this.emit('dl-finish');
+
+    debug.sendStatus(`Download ${this.options.url} finish`);
+  }
+
+  setError(error) {
+    this.emit('dl-error', error);
+
+    debug.sendStatus(`Download ${this.options.url} error`);
+  }
+
+  setAbort() {
+    this.emit('dl-aborted');
+
+    debug.sendStatus(`Download ${this.options.url} aborted`);
   }
 
   getSavedFile() {

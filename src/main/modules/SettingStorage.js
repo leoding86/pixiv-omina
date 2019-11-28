@@ -46,6 +46,10 @@ class SettingStorage extends EventEmitter {
     return SettingStorage.instance;
   }
 
+  static getSettings() {
+    return SettingStorage.instance.getSettings();
+  }
+
   static getSetting(key) {
     return SettingStorage.instance.getSetting(key);
   }
@@ -93,6 +97,8 @@ class SettingStorage extends EventEmitter {
     Object.assign(this.settings, settings);
 
     fs.writeJsonSync(SettingStorage.getSettingsFile(), this.settings);
+
+    this.emit('change', settings);
 
     return settings;
   }

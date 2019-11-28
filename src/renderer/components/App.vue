@@ -2,7 +2,10 @@
   <div id="app"
     v-loading="!inited"
     element-loading-text="Initializing...">
-    <app-header></app-header>
+
+    <div id="header">
+      <app-header></app-header>
+    </div>
 
     <div id="container">
       <div id="app-container-mask"
@@ -29,18 +32,24 @@
         @redownload="redownloadHandle"
       ></app-download-list>
     </div>
+
+    <div id="footer">
+      <app-footer></app-footer>
+    </div>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from "electron";
 import Header from './Header';
+import Footer from './Footer';
 import DownloadList from './DownloadList';
 import Test from './Test';
 
 export default {
   components: {
     'app-header': Header,
+    'app-footer': Footer,
     'app-download-list': DownloadList,
     'app-test': Test
   },
@@ -216,12 +225,27 @@ export default {
   flex-direction: column;
 }
 
+#header {
+  height: 32px;
+  padding: 10px;
+  background: #efefef;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.15);
+}
+
 #container {
   display: flex;
   flex-direction: column;
   flex: 1;
   box-sizing: border-box;
   position: relative;
+}
+
+#footer {
+  position: relative;
+  height: 25px;
+  padding: 0 10px;
+  background: #eee;
+  z-index: 999999;
 }
 
 #app-container-mask {

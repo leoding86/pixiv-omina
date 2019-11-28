@@ -62,6 +62,7 @@ class UgoiraDownloaderGifEncoderWorker {
       }).then(image => {
         if (!this.gifEncoder) {
           this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
+          this.gifEncoder.setQuality(1);
 
           this.gifEncoder.on('frame#stop', () => {
             process.send({
