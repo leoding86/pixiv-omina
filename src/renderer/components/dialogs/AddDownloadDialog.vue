@@ -15,7 +15,7 @@
       :rules="addDownloadRule"
     >
       <el-form-item
-        label="Work url"
+        label="URL"
         :label-width="formLabelWidth"
       >
         <el-input
@@ -79,7 +79,7 @@ export default {
 
       addDownloadRule: {
         url: [
-          { required: true, message: 'Please input work url', trigger: 'blur' }
+          { required: true, message: 'Please input url', trigger: 'blur' }
         ]
       }
     };

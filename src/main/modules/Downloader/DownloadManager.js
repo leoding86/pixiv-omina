@@ -199,6 +199,10 @@ class DownloadManager extends EventEmitter {
     this.addWorkDownloader(undeterminedDownloader);
   }
 
+  createUserDownloader({workId, options}) {
+    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ workId, options, isUser: true }));
+  }
+
   /**
    * @param {Object} param
    * @param {number|string} param.downloadId
@@ -218,21 +222,39 @@ class DownloadManager extends EventEmitter {
         this.attachListenersToDownloader(workDownloader);
 
         if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
-          workDownloader.getRealDownloader().then(downloader => {
-            workDownloader = null;
+          if (workDownloader.isUser) {
+            workDownloader.getUserWorkDownloaders().then(downloaders => {
+              // downloaders.forEach(downloader => {
+              //   this.addWorkDownloader(downloader);
+              // });
+let i = 0
+              while (i < 10) {
+                i++;
 
-            this.workDownloaderPool.set(downloader.id, downloader);
+                this.addWorkDownloader(downloaders[i]);
+              }
 
-            // this.emit('update', downloader);
+              this.deleteWorkDownloader({
+                downloadId: workDownloader.id
+              });
+            });
+          } else {
+            workDownloader.getRealDownloader().then(downloader => {
+              workDownloader = null;
 
-            this.startWorkDownloader({downloadId: downloader.id});
-          }).catch(error => {
-            // workDownloader.setError(error);
+              this.workDownloaderPool.set(downloader.id, downloader);
 
-            // this.emit('update', workDownloader);
+              // this.emit('update', downloader);
 
-            throw error;
-          });
+              this.startWorkDownloader({downloadId: downloader.id});
+            }).catch(error => {
+              // workDownloader.setError(error);
+
+              // this.emit('update', workDownloader);
+
+              throw error;
+            });
+          }
         } else {
           workDownloader.start();
         }

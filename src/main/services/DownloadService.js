@@ -95,7 +95,7 @@ class DownloadService extends BaseService {
     debug.sendStatus('All downloads are fetched');
   }
 
-  createDownloadAction({workId, url, saveTo}) {
+  createDownloadAction({url, saveTo}) {
     debug.sendStatus('Try to create download');
 
     try {
@@ -108,19 +108,20 @@ class DownloadService extends BaseService {
       return;
     }
 
-    if (!workId) {
-      workId = UrlParser.getWorkIdFromUrl(url);
-    }
+    let workId = UrlParser.getWorkIdFromUrl(url);
 
-    if (!workId) {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
+    /**
+     * This is a work url
+     */
+    if (workId) {
+      if (this.downloadManager.getWorkDownloader(workId)) {
+        debug.sendStatus('Duplicated download');
 
-      debug.sendStatus('Cannot create download');
+        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
 
-      return;
-    }
+        return;
+      }
 
-    if (!this.downloadManager.getWorkDownloader(workId)) {
       this.downloadManager.createWorkDownloader({
         workId,
         options: {
@@ -133,9 +134,38 @@ class DownloadService extends BaseService {
       return;
     }
 
-    debug.sendStatus('Duplicated download');
+    let userUrlInfo = UrlParser.getPixivUserUrlInfo(url);
 
-    WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
+    if (userUrlInfo) {
+      workId = `user-${userUrlInfo.userId}`;
+
+      if (this.downloadManager.getWorkDownloader(workId)) {
+        debug.sendStatus('Duplicated download');
+
+        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
+
+        return;
+      }
+
+      this.downloadManager.createUserDownloader({
+        workId,
+        options: {
+          saveTo: saveTo
+        }
+      });
+
+      debug.sendStatus('User download created');
+
+      return;
+    }
+
+    if (!workId) {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
+
+      debug.sendStatus('Cannot create download');
+
+      return;
+    }
   }
 
   deleteDownloadAction({downloadId}) {

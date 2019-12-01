@@ -12,6 +12,20 @@ import Request from '@/modules/Request';
  */
 class Download extends Request {
   /**
+   * @static
+   * @type {string}
+   */
+  static tempExtenstionName = 'tpdownload';
+
+  /**
+   * Set download temporary name
+   * @param {string} tempExtenstionName
+   */
+  setTempExtenstionName(tempExtenstionName) {
+    Download.tempExtenstionName = tempExtenstionName;
+  }
+
+  /**
    * @constructor
    * @param {Object} options
    * @param {string} options.url
@@ -29,7 +43,20 @@ class Download extends Request {
      */
     this.saveTo = options.saveTo;
 
+    /**
+     * @property {string}
+     */
     this.saveName = options.saveName;
+
+    /**
+     * @property {string}
+     */
+    this.tempExtenstionName = Download.tempExtenstionName;
+
+    /**
+     * @property {string}
+     */
+    this.tempFile = '';
 
     /**
      * @property {number}
@@ -105,11 +132,20 @@ class Download extends Request {
     return `${filename}.${extName}`;
   }
 
+  createDownloadTemporaryFileWriteStream(targetFilename) {
+    this.tempFile = `${targetFilename}.${this.tempExtenstionName}`;
+    return fs.createWriteStream(this.tempFile);
+  }
+
+  renameTemporaryFileToSaveFile(saveFile) {
+    fs.renameSync(this.tempFile, saveFile);
+  }
+
   download() {
     debug.sendStatus(`Download ${this.options.url}`);
 
     /**
-     * Create folder
+     * Create save folder
      */
     fs.ensureDir(this.saveTo).then(() => {
       this.startTime = Date.now();
@@ -138,9 +174,11 @@ class Download extends Request {
 
         let startTime = Date.now();
 
-        let writeStream = fs.createWriteStream(path.join(this.saveTo, this.saveName));
+        let downloadTemporaryWriteStream = this.createDownloadTemporaryFileWriteStream(path.join(this.saveTo, this.saveName));
 
-        response.pipe(writeStream);
+        // let writeStream = fs.createWriteStream(path.join(this.saveTo, this.saveName));
+
+        response.pipe(downloadTemporaryWriteStream);
 
         response.on('data', data => {
           debug.sendStatus(`Recieve data from ${this.options.url}`);
@@ -168,7 +206,10 @@ class Download extends Request {
           /**
            * Close write stream
            */
-          writeStream.close();
+          downloadTemporaryWriteStream.close();
+
+          this.renameTemporaryFileToSaveFile(path.join(this.saveTo, this.saveName));
+
           this.speed = 0;
 
           this.endTime = Date.now();
@@ -181,14 +222,14 @@ class Download extends Request {
         });
 
         response.on('error', error => {
-          writeStream.close();
+          downloadTemporaryWriteStream.close();
           this.speed = 0;
 
           this.setError(error);
         });
 
         response.on('aborted', () => {
-          writeStream.close();
+          downloadTemporaryWriteStream.close();
           this.speed = 0;
 
           this.setAbort();

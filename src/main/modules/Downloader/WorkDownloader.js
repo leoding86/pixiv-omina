@@ -59,6 +59,8 @@ class WorkDownloader extends EventEmitter {
      * @type {string|number}
      */
     this.type = null;
+
+    this.isUser = false;
   }
 
   get speed() {
@@ -89,16 +91,12 @@ class WorkDownloader extends EventEmitter {
   /**
    * @param {Object} param
    * @param {number|string} param.workId
-   * @param {Object} options
+   * @param {Object} param.options
+   * @param {Boolean} param.isUser
    * @returns {WorkDownloader}
    */
-  static createDownloader({workId, options}) {
-    let downloader = new this();
-
-    downloader.id = workId;
-    downloader.options = options;
-
-    return downloader;
+  static createDownloader({workId, options, isUser}) {
+    throw Error('Abstract method, not implemented');
   }
 
   setContext(context) {

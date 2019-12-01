@@ -1,42 +1,5 @@
 <template>
   <div class="download-list">
-    <div class="download-list-filters">
-      <el-button-group>
-        <el-tooltip
-          placement="bottom"
-          content="All"
-        >
-          <el-button
-            :type="filter === 'all' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-files"
-            @click="filter = 'all'"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="Downloading"
-        >
-          <el-button
-            :type="filter === 'downloading' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-download"
-            @click="filter = 'downloading'"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="finished"
-        >
-          <el-button
-            :type="filter === 'finished' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-finished"
-            @click="filter = 'finished'"
-          ></el-button>
-        </el-tooltip>
-      </el-button-group>
-    </div>
     <div class="download-list-item__content">
       <el-card class="download-list-item"
         v-for="download in filteredDownloads"
@@ -146,6 +109,12 @@ export default {
     }
   },
 
+  beforeMount() {
+    this.$root.$on('download-list:filter', filter => {
+      this.filter = filter;
+    });
+  },
+
   methods: {
     getDownloadTypeClassname(type) {
       let classname = 'download-list-item__title-type';
@@ -218,19 +187,13 @@ export default {
 
 <style lang="scss">
 .download-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.download-list-filters {
-  box-sizing: border-box;
-  padding: 15px 10px;
-  height: 47px;
+  width: 100%;
+  height: 100%;
 }
 
 .download-list-item__content {
+  height: 100%;
   box-sizing: border-box;
-  margin: 15px 0 0 0;
   padding: 0 10px;
   overflow-y: auto;
 }

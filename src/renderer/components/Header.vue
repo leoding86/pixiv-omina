@@ -7,6 +7,42 @@
         v-if="logined"
         @click="showAddDownloadDialog = true"
       ></el-button>
+
+      <el-button-group class="header__download-filter">
+        <el-tooltip
+          placement="bottom"
+          content="All"
+        >
+          <el-button
+            :type="filter === 'all' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-files"
+            @click="filterDownloads('all')"
+          ></el-button>
+        </el-tooltip>
+        <el-tooltip
+          placement="bottom"
+          content="Downloading"
+        >
+          <el-button
+            :type="filter === 'downloading' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-download"
+            @click="filterDownloads('downloading')"
+          ></el-button>
+        </el-tooltip>
+        <el-tooltip
+          placement="bottom"
+          content="finished"
+        >
+          <el-button
+            :type="filter === 'finished' ? 'primary' : 'default'"
+            size="small"
+            icon="el-icon-finished"
+            @click="filterDownloads('finished')"
+          ></el-button>
+        </el-tooltip>
+      </el-button-group>
     </div>
     <div class="header__right">
       <el-button
@@ -46,20 +82,21 @@ export default {
 
       showSettingsDialog: false,
 
-      download: {
-        url: ''
-      },
+      downloadFilter: 'all'
+    }
+  },
 
-      addDownloadRule: {
-        url: [
-          { required: true, message: 'Please input work url', trigger: 'blur' }
-        ]
-      }
+  computed: {
+    filter() {
+      return this.downloadFilter;
     }
   },
 
   methods: {
-    //
+    filterDownloads(type) {
+      this.downloadFilter = type;
+      this.$root.$emit('download-list:filter', this.downloadFilter);
+    }
   }
 }
 </script>

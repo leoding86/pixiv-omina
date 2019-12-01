@@ -46,6 +46,10 @@ class UrlBuilder {
   static getUgoiraMetaUrl(id) {
     return `https://www.pixiv.net/ajax/illust/${id}/ugoira_meta`;
   }
+
+  static getUserProfileAllUrl(id) {
+    return `https://www.pixiv.net/ajax/user/${id}/profile/all`;
+  }
 }
 
 export default UrlBuilder;

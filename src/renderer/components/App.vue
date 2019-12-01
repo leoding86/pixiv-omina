@@ -56,8 +56,6 @@ export default {
 
   data() {
     return {
-      // workId: '77626643', // ugoira
-      workId: '77897318', // manga 30pages
       downloads: []
     }
   },
@@ -80,7 +78,7 @@ export default {
     });
 
     ipcRenderer.on('download-service:duplicated', (event, downloadId) => {
-      alert('Download is already exists');
+      alert('Download is already exists, delete it and try again');
     });
 
     ipcRenderer.on('download-service:error', (event, downloadId) => {
