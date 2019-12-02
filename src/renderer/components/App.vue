@@ -65,8 +65,14 @@ export default {
   },
 
   beforeMount() {
+    this.downloadsList = {};
+
     ipcRenderer.on('download-service:add', (event, download) => {
-      this.updateDownloads(download);
+      this.addDownloads(download);
+    });
+
+    ipcRenderer.on('download-service:add-batch', (event, downloads) => {
+      this.addDownloads(downloads);
     });
 
     ipcRenderer.on('download-service:delete', (event, downloadId) => {
@@ -95,17 +101,55 @@ export default {
   },
 
   methods: {
-    updateDownloads(download) {
-      console.log(download);
+    findDownload(download) {
+      let downloadId;
 
+      if (typeof download === 'object') {
+        downloadId = download.id;
+      } else {
+        downloadId = download;
+      }
+
+      if (this.downloadsList[downloadId]) {
+        return this.downloadsList[downloadId];
+      }
+
+      return null;
+    },
+
+    appendDownload(download) {
+      if (!this.findDownload(download)) {
+        this.downloads.push(download);
+        this.downloadsList[download.id] = this.downloads[this.downloads.length - 1];
+      }
+    },
+
+    addDownloads(downloads) {
+      if (!Array.isArray(downloads)) {
+        downloads = [downloads];
+      }
+
+      downloads.forEach(download => {
+        if (!this.findDownload(download)) {
+          this.appendDownload(download);
+        }
+      });
+    },
+
+    updateDownloads(download) {
       let _download = this.findDownload(download);
 
       if (_download) {
-          this.$set(this.downloads, this.downloads.indexOf(_download), download);
-          return;
+        let index = this.downloads.indexOf(_download);
+
+        this.$set(this.downloads, index, download);
+
+        this.downloadsList[download.id] = this.downloads[index];
+
+        return;
       }
 
-      this.downloads.push(download);
+      this.appendDownload(download);
     },
 
     deleteDownload(downloadId) {
@@ -113,6 +157,9 @@ export default {
 
       if (_download) {
           this.downloads.splice(this.downloads.indexOf(_download), 1);
+
+          delete this.downloadsList[downloadId];
+
           return;
       }
     },
@@ -121,15 +168,6 @@ export default {
       ipcRenderer.send('user-service', {
         action: 'checkUserLogined'
       });
-    },
-
-    createDownloader() {
-      ipcRenderer.send('download-service', {
-        action: 'createDownload',
-        args: {
-          workId: this.workId
-        }
-      })
     },
 
     startDownloadHandler(download) {
@@ -182,24 +220,6 @@ export default {
           downloadId: download.id
         }
       });
-    },
-
-    findDownload(download) {
-      let downloadId;
-
-      if (typeof download === 'object') {
-        downloadId = download.id;
-      } else {
-        downloadId = download;
-      }
-
-      for (let i = 0, l = this.downloads.length; i < l; i++) {
-        if (this.downloads[i].id === downloadId) {
-          return this.downloads[i];
-        }
-      }
-
-      return null;
     },
 
     userLogin() {

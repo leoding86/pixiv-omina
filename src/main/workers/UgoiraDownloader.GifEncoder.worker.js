@@ -9,6 +9,10 @@ class UgoiraDownloaderGifEncoderWorker {
 
     this.saveFile = saveFile;
 
+    this.tempFile = '';
+
+    this.tempExtension = 'giftemp';
+
     this.zipObj;
 
     this.frames;
@@ -24,6 +28,16 @@ class UgoiraDownloaderGifEncoderWorker {
     worker.prepare().then(() => {
       worker.encode();
     });
+  }
+
+  createTempFileWriteStream() {
+    this.tempFile = `${this.saveFile}.${this.tempExtension}`;
+
+    return fs.createWriteStream(this.tempFile);
+  }
+
+  renameTempFileToSaveFile() {
+    fs.renameSync(this.tempFile, this.saveFile);
   }
 
   prepare() {
@@ -42,13 +56,15 @@ class UgoiraDownloaderGifEncoderWorker {
 
   encode() {
     this.gifEncoder.on('end', () => {
+      this.renameTempFileToSaveFile();
+
       process.send({status: 'finish'});
     });
 
     this.gifEncoder.finish();
   }
 
-  addFrame(index = 0) {
+  addFrame() {
     return new Promise(resolve => {
       const frame = this.frames[this.frameIndex];
 
@@ -72,7 +88,7 @@ class UgoiraDownloaderGifEncoderWorker {
           });
 
           this.gifEncoder.setRepeat(0);
-          this.gifEncoder.pipe(fs.createWriteStream(this.saveFile));
+          this.gifEncoder.pipe(this.createTempFileWriteStream());
           this.gifEncoder.writeHeader();
         }
 

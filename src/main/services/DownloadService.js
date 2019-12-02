@@ -27,34 +27,31 @@ class DownloadService extends BaseService {
   constructor() {
     super();
 
-    /**
-     * Configurate download
-     */
-    // Download.setGlobalOptions({
-    //   headers: {
-    //     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3964.0 Safari/537.36',
-    //   }
-    // });
-
     this.mainWindow = WindowManager.getWindow('app');
 
     this.downloadManager = DownloadManager.getManager();
 
     this.downloadManager.on('add', downloader => {
-      // console.log(downloader.toJSON());
-
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
 
-    this.downloadManager.on('update', downloader => {//
-      // console.log(downloader);
+    this.downloadManager.on('add-batch', downloaders => {
+      let data = [];
 
-      this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+      downloaders.forEach(downloader => {
+        data.push(downloader.toJSON());
+      });
+
+      this.mainWindow.webContents.send(this.responseChannel('add-batch'), data);
+    });
+
+    this.downloadManager.on('update', downloader => {
+      if (this.downloadManager.getWorkDownloader(downloader.id)) {
+        this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+      }
     });
 
     this.downloadManager.on('delete', workId => {
-      // console.log(workId);
-
       this.mainWindow.webContents.send(this.responseChannel('delete'), workId);
     });
 
@@ -144,7 +141,7 @@ class DownloadService extends BaseService {
 
         WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
 
-        return;
+        return;//
       }
 
       this.downloadManager.createUserDownloader({
@@ -159,13 +156,9 @@ class DownloadService extends BaseService {
       return;
     }
 
-    if (!workId) {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
 
-      debug.sendStatus('Cannot create download');
-
-      return;
-    }
+    debug.sendStatus('Cannot create download');
   }
 
   deleteDownloadAction({downloadId}) {

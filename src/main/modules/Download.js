@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import path from 'path';
+import path, { extname } from 'path';
 import formatUrl from 'url';
 import mime from 'mime-types';
 import {
@@ -16,6 +16,10 @@ class Download extends Request {
    * @type {string}
    */
   static tempExtenstionName = 'tpdownload';
+
+  static duplicated = {
+    skip: 'skip'
+  };
 
   /**
    * Set download temporary name
@@ -84,9 +88,19 @@ class Download extends Request {
     this.endTime = null;
 
     /**
-     * @type {null | number}
+     * @property {null | number}
      */
     this.completeTime = null;
+
+    /**
+     * @property {string}
+     */
+    this.duplicateMode = Download.duplicated.skip;
+
+    /**
+     * @property {boolean}
+     */
+    this.skipped = false;
   }
 
   /**
@@ -123,9 +137,15 @@ class Download extends Request {
 
     filename = filename || ('file' + Date.now());
 
-    const regex = RegExp(`\.${extName}$`);
+    let regexp;
 
-    if (regex.test(filename)) {
+    if (extName === 'jpg' || extName === 'jpeg') {
+      regexp = RegExp('\.jpe?g$');
+    } else {
+      regexp = RegExp(`\.${extName}$`);
+    }
+
+    if (regexp.test(filename)) {
       return filename;
     }
 
@@ -141,6 +161,27 @@ class Download extends Request {
     fs.renameSync(this.tempFile, saveFile);
   }
 
+  preFetchExtname(url) {
+    let matches = url.match(/\.([a-z]+)(?:\?.*)?$/);
+
+    if (matches) {
+      return matches[1];
+    }
+  }
+
+  hasFileBeenDownloaded(file) {
+    return fs.existsSync(file);
+  }
+
+  skip() {
+    try {
+      this.skipped = true;
+      this.abort();
+    } catch(e) {
+      //ignore
+    }
+  }
+
   download() {
     debug.sendStatus(`Download ${this.options.url}`);
 
@@ -149,6 +190,22 @@ class Download extends Request {
      */
     fs.ensureDir(this.saveTo).then(() => {
       this.startTime = Date.now();
+
+      /**
+       * Check if the file has been downloaded, this is the first checking using the pre-fetch file extension from url
+       */
+      let preFetchedExtName = this.preFetchExtname(this.options.url);
+
+      if (preFetchedExtName) {
+        this.saveName = this.getFilename(preFetchedExtName);
+
+        if (this.hasFileBeenDownloaded(path.join(this.saveTo, this.saveName))) {
+          if (this.duplicateMode === Download.duplicated.skip) {
+            this.setFinish('Downloaded, skip');
+            return;
+          }
+        }
+      }
 
       this.on('response', response => {
         let totalSize = 0;
@@ -163,26 +220,34 @@ class Download extends Request {
           return;
         }
 
-        const extName = mime.extension(response.headers['content-type'][0]);
+        let extName = mime.extension(response.headers['content-type'][0]);
 
         /**
          * Parse file name
          */
         this.saveName = this.getFilename(extName);
 
+        let saveFile = path.join(this.saveTo, this.saveName);
+
+        /**
+         * Check if the file has been downloaded if can not fetch the file extension from url
+         */
+        if (this.hasFileBeenDownloaded(saveFile)) {
+          if (this.duplicateMode === Download.duplicated.skip) {
+            this.skip();
+            return;
+          }
+        }
+
         let speedChunkDataLength = 0, duration = 0;
 
         let startTime = Date.now();
 
-        let downloadTemporaryWriteStream = this.createDownloadTemporaryFileWriteStream(path.join(this.saveTo, this.saveName));
-
-        // let writeStream = fs.createWriteStream(path.join(this.saveTo, this.saveName));
+        let downloadTemporaryWriteStream = this.createDownloadTemporaryFileWriteStream(saveFile);
 
         response.pipe(downloadTemporaryWriteStream);
 
         response.on('data', data => {
-          debug.sendStatus(`Recieve data from ${this.options.url}`);
-
           let nowTime = Date.now();
 
           completeSize += data.length;
@@ -229,6 +294,11 @@ class Download extends Request {
         });
 
         response.on('aborted', () => {
+          if (this.skipped) {
+            this.setFinish('Abort download because file has been downloaded');
+            return;
+          }
+
           downloadTemporaryWriteStream.close();
           this.speed = 0;
 
@@ -241,6 +311,11 @@ class Download extends Request {
       });
 
       this.on('abort', () => {
+        if (this.skipped) {
+          this.setFinish('Abort download because file has been downloaded');
+          return;
+        }
+
         this.setAbort();
       });
 
@@ -260,6 +335,8 @@ class Download extends Request {
   }
 
   setFinish() {
+    this.progress = 1;
+
     this.emit('dl-finish');
 
     debug.sendStatus(`Download ${this.options.url} finish`);

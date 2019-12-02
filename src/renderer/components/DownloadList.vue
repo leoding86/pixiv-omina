@@ -97,7 +97,7 @@ export default {
         if (this.filter !== 'all') {
           if (this.filter === 'finished' && download.state === 'finish') {
             downloads.push(download);
-          } else if (this.filter === 'downloading' && download.state === 'downloading') {
+          } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
             downloads.push(download);
           }
         } else {

@@ -20,7 +20,7 @@ class DownloadManager extends EventEmitter {
      * @property
      * @type {Map<number|string, WorkDownloader>}
      */
-    this.deletingDownloaders = new Map();
+    this.attachedListenersDownloaders = new Map();
 
     this.maxDownloading = 2;
   }
@@ -62,11 +62,32 @@ class DownloadManager extends EventEmitter {
     return this;
   }
 
+  /**
+   * Add multiple downloaders to download manager
+   * @param {Array.<WorkDownloader>} downloaders//
+   * @returns {void}
+   */
+  addDownloaders(downloaders) {
+    let addedDownloaders = [];
+
+    downloaders.forEach(downloader => {
+      if (!this.getWorkDownloader(downloader.id)) {
+        addedDownloaders.push(downloader);
+
+        this.workDownloaderPool.set(downloader.id, downloader);
+
+        this.attachListenersToDownloader(downloader);
+      }
+    });
+
+    this.emit('add-batch', addedDownloaders);
+  }
+
   reachMaxDownloading() {
     let downloadingCount = 0;
 
     this.workDownloaderPool.forEach(workDownloader => {
-      if (workDownloader.isDownloading()) {
+      if (workDownloader.isDownloading() || workDownloader.isProcessing()) {
         downloadingCount++;
       }
     });
@@ -95,6 +116,10 @@ class DownloadManager extends EventEmitter {
       this.startWorkDownloader({
         downloadId: nextWorkDownloader.id
       });
+
+      if (!this.reachMaxDownloading()) {
+        this.downloadNext();
+      }
     }
   }
 
@@ -129,7 +154,9 @@ class DownloadManager extends EventEmitter {
    * @param {WorkDownloader} args.downloader
    */
   workDownloaderProgressHandler({ downloader }) {
-    this.emit('update', downloader);
+    if (this.getWorkDownloader(downloader.id)) {
+      this.emit('update', downloader);
+    }
   }
 
   /**
@@ -160,6 +187,13 @@ class DownloadManager extends EventEmitter {
    * @param {WorkDownloader} workDownloader
    */
   attachListenersToDownloader(workDownloader) {
+    /**
+     * Prevent listeners attach to downloader multiple times
+     */
+    if (this.attachedListenersDownloaders.has(workDownloader.id)) {
+      return;
+    }
+
     workDownloader.on('start', this.workDownloaderStartHandler.bind(this));
     workDownloader.on('stop', this.workDownloaderStopHandler.bind(this));
     workDownloader.on('progress', this.workDownloaderProgressHandler.bind(this));
@@ -176,6 +210,12 @@ class DownloadManager extends EventEmitter {
     workDownloader.removeAllListeners('progress');
     workDownloader.removeAllListeners('error');
     workDownloader.removeAllListeners('finish');
+
+    /**
+     * Remove downloader from the attachedListenersDownloaders to make sure the listeners can
+     * attache to the downloader again
+     */
+    this.attachedListenersDownloaders.delete(workDownloader.id);
   }
 
   /**
@@ -217,22 +257,13 @@ class DownloadManager extends EventEmitter {
         workDownloader.reset();
       }
 
+      this.attachListenersToDownloader(workDownloader);
+
       if (!this.reachMaxDownloading()) {
-
-        this.attachListenersToDownloader(workDownloader);
-
         if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
           if (workDownloader.isUser) {
             workDownloader.getUserWorkDownloaders().then(downloaders => {
-              // downloaders.forEach(downloader => {
-              //   this.addWorkDownloader(downloader);
-              // });
-let i = 0
-              while (i < 10) {
-                i++;
-
-                this.addWorkDownloader(downloaders[i]);
-              }
+              this.addDownloaders(downloaders);
 
               this.deleteWorkDownloader({
                 downloadId: workDownloader.id
@@ -244,14 +275,8 @@ let i = 0
 
               this.workDownloaderPool.set(downloader.id, downloader);
 
-              // this.emit('update', downloader);
-
               this.startWorkDownloader({downloadId: downloader.id});
             }).catch(error => {
-              // workDownloader.setError(error);
-
-              // this.emit('update', workDownloader);
-
               throw error;
             });
           }
@@ -286,10 +311,6 @@ let i = 0
     let workDownloader = this.getWorkDownloader(downloadId);
 
     if (workDownloader) {
-      if (this.deletingDownloaders.has(workDownloader)) {
-        this.deletingDownloaders.set(workDownloader.id, workDownloader);
-      }
-
       this.workDownloaderPool.delete(downloadId);
 
       workDownloader.stop();

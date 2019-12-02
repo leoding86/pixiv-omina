@@ -122,6 +122,18 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.setDownloading('Generating GIF');
 
+    let gifSaveFile = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
+
+    /**
+     * Check if the gif file has been generated
+     */
+    if (fs.existsSync(gifSaveFile)) {
+      this.setFinish(`Gif has been generated, skip`);
+
+      this.progress = 1;
+      return;
+    }
+
     let workPath = path.join(app.getAppPath(), 'UgoiraDownloaderGifEncoderWorker.js');
     let worker;
 
@@ -141,7 +153,7 @@ class UgoiraDownloader extends WorkDownloader {
       } else if (data.status === 'progress') {
         this.progress = 0.5 + (data.progress / 2);
 
-        this.setProcessing('Generating Gif');
+        this.setProcessing(`Generating Gif ${this.progress * 100}%`);
 
         debug.sendStatus(`Generate GIF ${this.id} progress ${data.progress}`);
       }
@@ -149,7 +161,7 @@ class UgoiraDownloader extends WorkDownloader {
 
     worker.send({
       file,
-      saveFile: path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif'
+      saveFile: gifSaveFile
     });
   }
 
@@ -171,7 +183,11 @@ class UgoiraDownloader extends WorkDownloader {
 
             this.generateGif(file);
           });
+      }).catch(error => {
+        this.setError(error);
       });
+    }).catch(error => {
+      this.setError(error);
     });
   }
 

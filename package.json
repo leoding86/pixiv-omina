@@ -17,7 +17,8 @@
     "jimp": "^0.8.5",
     "jszip": "^3.2.2",
     "mime-types": "^2.1.25",
-    "source-map-support": "^0.5.12"
+    "source-map-support": "^0.5.12",
+    "vue-virtual-scroller": "^1.0.0-rc.2"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.0",
@@ -32,14 +33,17 @@
   },
   "build": {
     "appId": "pixiv_omina.leo",
+    "directories": {
+        "buildResources": "build"
+    },
     "win": {
       "target": [
-          {
-              "target": "nsis",
-              "arch": [
-                  "ia32"
-              ]
-          }
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -57,8 +61,8 @@
     }
   },
   "electronWebpack": {
-      "main": {
-          "webpackConfig": "webpack.main.additions.js"
-      }
+    "main": {
+      "webpackConfig": "webpack.main.additions.js"
+    }
   }
 }

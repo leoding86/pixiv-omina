@@ -72,7 +72,7 @@ class FormatName {
     if (!renameFormat) {
       filename = fallback + '';
     } else {
-      var matches = renameFormat.match(/%[a-z]+%/ig);
+      var matches = renameFormat.match(/%[a-z_]+%/ig);
       var name = renameFormat;
 
       if (matches && matches.length > 0) {

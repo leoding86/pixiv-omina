@@ -23,7 +23,6 @@ export default {
 
   beforeMount() {
     ipcRenderer.on('debug-service:status', (event, data) => {
-      console.log(data);
       this.statusMessage = data.statusMessage;
     });
   },
