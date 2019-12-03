@@ -98,7 +98,7 @@ if (!gotTheLock) {
         }
       );
 
-      console.time('REQUEST HEADERS');
+      console.log('REQUEST HEADERS');
       console.log(`REQUEST URL: ${detail.url}`);
       console.table(requestHeaders);
 

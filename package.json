@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.0",
-    "electron": "^7.1.2",
+    "electron": "^6.1.5",
     "electron-builder": "^21.0.11",
     "electron-webpack": "^2.7.4",
     "electron-webpack-vue": "^2.3.0",
@@ -55,6 +55,12 @@
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "license": "LICENSE.txt"
+    },
+    "mac": {
+        "target": "dmg",
+        "extendInfo": {
+            "NSRequiresAquaSystemAppearance": false
+        }
     },
     "protocols": {
       "name": "pixiv-omina-protocal",

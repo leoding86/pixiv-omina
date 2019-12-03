@@ -1,11 +1,10 @@
-import EventEmitter from 'events';
 import { net, session } from 'electron';
-import { debug } from '@/global';//
+import { debug } from '@/global';
 
 /**
  * @class
  */
-class Request extends EventEmitter {
+class Request extends net.ClientRequest {
   /**
    * @constructor
    * @param {Object} options
@@ -14,20 +13,58 @@ class Request extends EventEmitter {
    * @param {string} options.partition
    * @param {Array} options.headers
    */
-  constructor(options) {
-    super();
+  constructor(options, callback) {
+    options = Object.assign({}, Request.globalOptions, options);
+
+    super(options, callback);
 
     /**
      * Cannot use this reference before super called
      */
-    this.options = Object.assign({}, Request.globalOptions, options);
+    this.options = options;
 
-    /**
-     * @type {Electron.ClientRequest}
-     */
-    this.request = net.request(this.options);
+    this.on('login', (proxyInfo, cb) => {
+      if (proxyInfo.isProxy) {
+        let username = this.options.proxyUsername || '',
+            password = this.options.proxyPassword || '';
 
-    this.attachListenersToRequest();
+        if (typeof username === 'string' && typeof password === 'string') {
+          cb(username, password);
+        }
+      }
+    });
+
+    this.on('response', response => {
+      debug.sendStatus(`Get response from ${this.options.url}`);
+
+      response.on('data', () => {
+        debug.sendStatus(`Response: Receiving data from ${this.options.url}`);
+      });
+
+      response.on('aborted', () => {
+        debug.sendStatus(`Response: Abort receive data from ${this.options.url}`);
+      });
+
+      response.on('error', error => {
+        debug.sendStatus(`Response: Error ${error.message} occured while receiving data from ${this.options.url}`);
+      });
+
+      response.on('end', () => {
+        debug.sendStatus(`Response: All data received from ${this.options.url}`);
+      });
+    });
+
+    this.on('close', () => {
+      debug.sendStatus(`Request: ${this.options.url} closed`);
+    });
+
+    this.on('error', error => {
+      debug.sendStatus(`Request: ${this.options.url} error ${error.message}`);
+    });
+
+    this.on('finish', () => {
+      debug.sendStatus(`Request: ${this.options.url} all data sended`);
+    });
   }
 
   static globalOptions = {};
@@ -50,74 +87,13 @@ class Request extends EventEmitter {
     });
   }
 
-  attachListenersToRequest() {
-
-    this.request.on('login', (proxyInfo, cb) => {
-      if (proxyInfo.isProxy) {
-        let username = this.options.proxyUsername || '',
-            password = this.options.proxyPassword || '';
-
-        if (typeof username === 'string' && typeof password === 'string') {
-          cb(username, password);
-        }
-      }
-    });
-
-    this.request.on('response', response => {
-      debug.sendStatus(`Get response from ${this.options.url}`);
-
-      this.emit('response', response);
-
-      response.on('data', () => {
-        debug.sendStatus(`Response: Receiving data from ${this.options.url}`);
-      });
-
-      response.on('aborted', () => {
-        debug.sendStatus(`Response: Abort receive data from ${this.options.url}`);
-      });
-
-      response.on('error', error => {
-        debug.sendStatus(`Response: Error ${error.message} occured while receiving data from ${this.options.url}`);
-      });
-
-      response.on('end', () => {
-        debug.sendStatus(`Response: All data received from ${this.options.url}`);
-      });
-    });
-
-    this.request.on('close', () => {
-      debug.sendStatus(`Request: ${this.options.url} closed`);
-
-      this.emit('close');
-    });
-
-    this.request.on('error', error => {
-      debug.sendStatus(`Request: ${this.options.url} error ${error.message}`);
-
-      this.emit('error', error);
-    });
-
-    this.request.on('abort', () => {
-      debug.sendStatus(`Request: ${this.options.url} abort`);
-
-      this.emit('abort');
-    });
-
-    this.request.on('finish', () => {
-      debug.sendStatus(`Request: ${this.options.url} all data sended`);
-
-      this.emit('finish');
-    });
-  }
-
-  setHeader(name, value) {
-    this.request.setHeader(name, value);
-  }
-
   /**
-   * @returns {void}
+   *
+   * @param {string|Buffer} [chunk]
+   * @param {string} [encoding]
+   * @param {Function} [callback]
    */
-  end() {
+  end(chunk, encoding, callback) {
     let matches = this.options.url.match(/^(https?:\/{2}[^/]+)/);
     let ses;
 
@@ -128,6 +104,26 @@ class Request extends EventEmitter {
         ses = session.fromPartition(this.options.partition);
       }
 
+      ses.webRequest.onBeforeSendHeaders({
+        urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
+      }, (detail, cb) => {
+        let { requestHeaders } = detail;
+
+        requestHeaders = Object.assign(
+          {},
+          requestHeaders,
+          {
+            referer: 'https://www.pixiv.net/'
+          }
+        );
+
+        console.log('REQUEST HEADERS 2');
+        console.log(`REQUEST URL 2: ${detail.url}`);
+        console.table(requestHeaders);
+
+        cb({ requestHeaders });
+      });
+
       let cookieString = '';
 
       ses.cookies.get({
@@ -137,14 +133,14 @@ class Request extends EventEmitter {
           cookieString += `${cookie.name}=${cookie.value}; `;
         });
 
-        this.request.setHeader('cookie', cookieString);
-        this.request.end();
+        this.setHeader('cookie', cookieString);
+        super.end(chunk, encoding, callback);
       });
 
       return;
     }
 
-    this.request.end();
+    super.end(chunk, encoding, callback);
   }
 }
 

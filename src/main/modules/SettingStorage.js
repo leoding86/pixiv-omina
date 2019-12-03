@@ -16,7 +16,7 @@ class SettingStorage extends EventEmitter {
 
   static getSettingsFile()
   {
-    return path.join(app.getPath('userData'), app.name.replace(' ', '_'), 'settings.config');//
+    return path.join(app.getPath('userData'), app.getName().replace(' ', '_'), 'settings.config');//
   }
 
   static initSettings() {

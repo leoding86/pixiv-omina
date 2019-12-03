@@ -221,7 +221,9 @@ class Download extends Request {
           return;
         }
 
-        let extName = mime.extension(response.headers['content-type'][0]);
+        const contentType = response.headers['content-type'];
+
+        let extName = mime.extension(Array.isArray(contentType) ? contentType[0] : contentType);
 
         /**
          * Parse file name
