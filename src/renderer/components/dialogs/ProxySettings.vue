@@ -23,7 +23,7 @@
 
       <el-input style="display:inline-block;width:125px;"
         :disabled="!scopedSettings.enableProxy"
-        placeholder="127.0.0.1"
+        placeholder="http://127.0.0.1"
         v-model="scopedSettings.proxyService"
       ></el-input>
       :

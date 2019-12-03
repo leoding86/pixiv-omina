@@ -48,6 +48,14 @@ class UserService extends BaseService {
     return UserService.channel + `:${name}`;
   }
 
+  closeLoginAction(args, event) {
+    const window = WindowManager.getWindow('login');
+
+    if (window) {
+      window.close();
+    }
+  }
+
   /**
    * Open login window and after window closed then response renderer to check login state
    */

@@ -5,6 +5,7 @@ import mime from 'mime-types';
 import {
   debug
 } from '@/global';
+// import Request from '@/modules/Request';
 import Request from '@/modules/Request';
 
 /**

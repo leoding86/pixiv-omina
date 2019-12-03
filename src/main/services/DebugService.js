@@ -54,8 +54,12 @@ class DebugService extends BaseService {
       if (window) {
         if (window.webContents.isDevToolsOpened()) {
           window.webContents.closeDevTools();
+
+          window.webContents.send(this.responseChannel('devToolsClosed'));
         } else {
           window.webContents.openDevTools();
+
+          window.webContents.send(this.responseChannel('devToolsOpened'));
         }
       }
     } catch (e) {

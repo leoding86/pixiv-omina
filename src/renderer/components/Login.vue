@@ -1,7 +1,7 @@
 <template>
   <div id="login-window">
     <div class="notification">
-      <p>Close this window after you logined</p>
+      <p><a href="javascript:void(0)" @click="closeWindow">Click this window after you logined</a></p>
     </div>
     <div class="webview">
       <iframe src="https://accounts.pixiv.net/login">
@@ -11,9 +11,19 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<script>
+import { ipcRenderer } from 'electron';
 
-</style>
+export default {
+  methods: {
+    closeWindow() {
+      ipcRenderer.send('user-service', {
+        action: 'closeLogin'
+      });
+    }
+  }
+}
+</script>
 
 <style lang="scss">
 html, body {

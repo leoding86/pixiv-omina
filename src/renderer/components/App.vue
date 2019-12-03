@@ -7,6 +7,8 @@
       <app-header></app-header>
     </div>
 
+    <app-test v-if="debug"></app-test>
+
     <div id="container">
       <div id="app-container-mask"
         v-if="inited && !logined">
@@ -34,7 +36,7 @@
     </div>
 
     <div id="footer">
-      <app-footer></app-footer>
+      <app-footer @devToolsToggled="devToolsToggledHandler"></app-footer>
     </div>
   </div>
 </template>
@@ -56,7 +58,8 @@ export default {
 
   data() {
     return {
-      downloads: []
+      downloads: [],
+      debug: false
     }
   },
 
@@ -101,6 +104,10 @@ export default {
   },
 
   methods: {
+    devToolsToggledHandler(val) {
+      this.debug = val;
+    },
+
     findDownload(download) {
       let downloadId;
 

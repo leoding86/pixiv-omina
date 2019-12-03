@@ -25,6 +25,14 @@ export default {
     ipcRenderer.on('debug-service:status', (event, data) => {
       this.statusMessage = data.statusMessage;
     });
+
+    ipcRenderer.on('debug-service:devToolsOpened', (event, data) => {
+      this.$emit('devToolsToggled', true);
+    });
+
+    ipcRenderer.on('debug-service:devToolsClosed', (event, data) => {
+      this.$emit('devToolsToggled', false);
+    });
   },
 
   methods: {

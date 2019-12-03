@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.0",
-    "electron": "5.0.6",
+    "electron": "^7.1.2",
     "electron-builder": "^21.0.11",
     "electron-webpack": "^2.7.4",
     "electron-webpack-vue": "^2.3.0",
@@ -34,8 +34,11 @@
   "build": {
     "appId": "pixiv_omina.leo",
     "directories": {
-        "buildResources": "build"
+      "buildResources": "build"
     },
+    "extraResources": [
+      "./static/**"
+    ],
     "win": {
       "target": [
         {
