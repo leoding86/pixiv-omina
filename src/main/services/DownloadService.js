@@ -1,5 +1,7 @@
+import path from 'path';
 import fs from 'fs-extra';
 import {
+  app,
   ipcMain
 } from 'electron';
 import {
@@ -8,8 +10,9 @@ import {
 import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
+import DownloadCacheManager from '@/modules/DownloadCacheManager';
 import BaseService from '@/services/BaseService';
-import ServiceContainer from '@/ServiceContainer';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
 class DownloadService extends BaseService {
   /**
@@ -30,6 +33,10 @@ class DownloadService extends BaseService {
     this.mainWindow = WindowManager.getWindow('app');
 
     this.downloadManager = DownloadManager.getManager();
+
+    this.downloadCacheManager = DownloadCacheManager.getManager({
+      cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
+    });
 
     this.downloadManager.on('add', downloader => {
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
@@ -56,6 +63,8 @@ class DownloadService extends BaseService {
     });
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
+
+    this.restoreDownloads();
   }
 
   /**
@@ -77,8 +86,23 @@ class DownloadService extends BaseService {
     return DownloadService.channel + `:${name}`;
   }
 
-  fetchAllDownloadsAction()
-  {
+  restoreDownloads() {
+    const cachedDownloads = this.downloadCacheManager.getCachedDownloads();
+    let downloaders = [];
+
+    for (let downloadId in cachedDownloads) {
+      downloaders.push(UndeterminedDownloader.createDownloader({
+        workId: downloadId,
+        options: cachedDownloads.options
+      }));
+    }
+
+    const mute = true;
+
+    this.downloadManager.addDownloaders(downloaders, mute);
+  }
+
+  fetchAllDownloadsAction() {
     debug.sendStatus('Fetching all downloads');
 
     let downloads = [];

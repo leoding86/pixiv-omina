@@ -1,3 +1,5 @@
+import WindowManager from '@/modules/WindowManager';
+
 class BaseService {
   /**
    * @param {string} event
@@ -24,6 +26,10 @@ class BaseService {
     }
 
     Error(`Invalid action method '${method}'`);
+  }
+
+  sendDataToWindow(channel, data) {
+    WindowManager.getWindow('app').webContents.send(channel, data);
   }
 }
 

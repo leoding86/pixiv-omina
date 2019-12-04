@@ -76,6 +76,12 @@ class DebugService extends BaseService {
       }
     )
   }
+
+  sendNotice(message) {
+    this.sendDataToWindow(this.responseChannel('notice'), {
+      notice: message
+    });
+  }
 }
 
 export default DebugService;

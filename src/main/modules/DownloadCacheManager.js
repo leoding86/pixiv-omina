@@ -1,0 +1,84 @@
+import fs from 'fs-extra';
+import ServiceContainer from '@/ServiceContainer';
+
+/**
+ * This class used for caching download ids for restoring downloads after
+ * the application restarted. It dose NOT cache download progress, only caches
+ * the download id. So after application restarted, you can read download ids
+ * from it and re-create the download and append it to the DownloadManager.
+ * Because the download task will skip the downloaded file so it looks like
+ * the downloads been restored.
+ *
+ * Make sure use the method removeDownload to remove the finish downloads or
+ * the finish downloads will be re-created and append to the DownloadManager
+ * after application startup everytime.
+ */
+class DownloadCacheManager {
+
+  /**
+   * @type {DownloadCacheManager}
+   */
+  static instance = null;
+
+  /**
+   * @constructor
+   * @param {Object} options
+   * @param {string} options.cacheFile
+   */
+  constructor(options) {
+    this.debugService = ServiceContainer.getService('debug');
+
+    this.cacheFile = options.cacheFile;
+
+    try {
+      this.cachedDownloads = JSON.parse(fs.readFileSync(this.cacheFile));
+    } catch (error) {
+      this.cachedDownloads = {};
+      this.debugService.sendNotice('Cannot read cached downloads');
+    }
+  }
+
+  /**
+   * @constructor
+   * @param {Object} options
+   * @param {string} options.cacheFile
+   * @returns {DownloadCacheManager}
+   */
+  static getManager(options) {
+    if (!DownloadCacheManager.instance) {
+      DownloadCacheManager.instance = new DownloadCacheManager(options);
+    }
+
+    return DownloadCacheManager.instance;
+  }
+
+  getCachedDownloads() {
+    return this.cachedDownloads;
+  }
+
+  cacheDownload(download) {
+    if (download.id && this.cachedDownloads[download.id] === undefined) {
+      this.cachedDownloads[download.id] = download.options;
+
+      try {
+        fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
+      } catch (error) {
+        this.debugService.sendNotice(`Cannot cache download to storage: ${error.message}`);
+      }
+    }
+  }
+
+  removeDownload(download) {
+    if (download.id && this.cachedDownloads[download.id] !== undefined) {
+      delete this.cachedDownloads[download.id];
+
+      try {
+        fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
+      } catch (error) {
+        this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
+      }
+    }
+  }
+}
+
+export default DownloadCacheManager;

@@ -22,15 +22,13 @@ class UndeterminedDownloader extends WorkDownloader {
    * @param {Object} param
    * @param {number|string} param.workId
    * @param {Object} param.options
-   * @param {Boolean} param.isUser
    * @returns {WorkDownloader}
    */
-  static createDownloader({workId, options, isUser}) {
+  static createDownloader({workId, options}) {
     let downloader = new UndeterminedDownloader();
 
     downloader.id = workId;
     downloader.options = Object.assign({}, options);
-    downloader.isUser = !!isUser;
 
     return downloader;
   }

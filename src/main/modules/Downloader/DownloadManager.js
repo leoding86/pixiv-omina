@@ -65,9 +65,10 @@ class DownloadManager extends EventEmitter {
   /**
    * Add multiple downloaders to download manager
    * @param {Array.<WorkDownloader>} downloaders//
+   * @param {boolean} mute determine to send event
    * @returns {void}
    */
-  addDownloaders(downloaders) {
+  addDownloaders(downloaders, mute = false) {
     let addedDownloaders = [];
 
     downloaders.forEach(downloader => {
@@ -80,7 +81,7 @@ class DownloadManager extends EventEmitter {
       }
     });
 
-    this.emit('add-batch', addedDownloaders);
+    if (!mute) this.emit('add-batch', addedDownloaders);
   }
 
   reachMaxDownloading() {
@@ -240,7 +241,8 @@ class DownloadManager extends EventEmitter {
   }
 
   createUserDownloader({workId, options}) {
-    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ workId, options, isUser: true }));
+    options.isUser = true;
+    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ workId, options }));
   }
 
   /**
@@ -261,7 +263,7 @@ class DownloadManager extends EventEmitter {
 
       if (!this.reachMaxDownloading()) {
         if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
-          if (workDownloader.isUser) {
+          if (workDownloader.isUser()) {
             workDownloader.getUserWorkDownloaders().then(downloaders => {
               this.addDownloaders(downloaders);
 
