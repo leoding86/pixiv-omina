@@ -1,10 +1,12 @@
 import path from 'path';
-import { app, shell, Tray, Menu, systemPreferences, nativeImage } from 'electron';
+import { app, shell, Tray, Menu, systemPreferences, nativeImage, session } from 'electron';
 import Request from '@/modules/Request';
 import ServiceContainer from '@/ServiceContainer';
 import WindowManager from './modules/WindowManager';
 import PartitionManager from '@/modules/PartitionManager';
 import SettingStorage from '@/modules/SettingStorage';
+
+console.log(`Electron version: ${process.versions['electron']}`);
 
 // const isDevelopment = process.env.NODE_ENV !== 'production'//
 
@@ -35,15 +37,20 @@ if (!gotTheLock) {
   let quiting;
 
   /**
+   * Create partition manager and create a partition, you should use this to get the session
+   */
+  const partitionManager = PartitionManager.getManager();
+  partitionManager.createPartition('main', true);
+
+  /**
    * Create window manager, you should use this create window
    */
   const windowManager = WindowManager.getManager();
 
   /**
-   * Create partition manager and create a partition, you should use this to get the session
+   * Set WindowManager global partition
    */
-  const partitionManager = PartitionManager.getManager();
-  partitionManager.createPartition('main', true);
+  WindowManager.setGlobalPartition(partitionManager.getPartition('main'));
 
   /**
    * If another instance has been created, active the first instance.
@@ -116,13 +123,12 @@ if (!gotTheLock) {
         delete detail.responseHeaders['X-Frame-Options'];
       }
 
+      console.log(`RESPONSE BY URL: ${detail.url}`)
       console.log('RESPONSE HEADERS');
       console.table(detail.responseHeaders);
 
       cb({
-        cancel: false,
-        responseHeaders: detail.responseHeaders,
-        statusLine: detail.statusLine
+        responseHeaders: detail.responseHeaders
       });
     });
 
@@ -206,11 +212,6 @@ if (!gotTheLock) {
     SettingStorage.getStorage().on('change', () => {
       updateProxy();
     });
-
-    /**
-     * Set WindowManager global partition
-     */
-    WindowManager.setGlobalPartition(partitionManager.getPartition('main'));
 
     /**
      * Force external links from browser-window to open in a default browser from app

@@ -7,6 +7,8 @@
     :close-on-click-modal="false"
     :width="'400px'"
     :visible.sync="show"
+    v-loading="checking"
+    element-loading-text="Checking user login status..."
   >
     <el-form
       ref="addDownloadForm"
@@ -54,6 +56,7 @@
 import { ipcRenderer, clipboard } from 'electron';
 import DirectorySelector from '../DirectorySelector';
 import UrlMatcher from '@/../utils/UrlMatcher';
+import User from '@/../renderer/modules/User';
 
 export default {
   components: {
@@ -81,12 +84,14 @@ export default {
         url: [
           { required: true, message: 'Please input url', trigger: 'blur' }
         ]
-      }
+      },
+
+      checking: false
     };
   },
 
   beforeMount() {
-    let text = clipboard.readText('selection')
+    let text = clipboard.readText('selection').trim();
 
     if (UrlMatcher.isMatch(text)) {
       this.download.url = text;
@@ -105,11 +110,23 @@ export default {
     addDownload() {
       this.$refs['addDownloadForm'].validate((valid) => {
         if (valid) {
-          this.$emit('update:show', false);
+          /**
+           * Check user login status
+           */
+          this.checking = true;
 
-          ipcRenderer.send('download-service', {
-            action: 'createDownload',
-            args: this.download
+          User.checkLogin().then(() => {
+            this.$emit('update:show', false);
+
+            ipcRenderer.send('download-service', {
+              action: 'createDownload',
+              args: this.download
+            });
+          }).catch(() => {
+            this.$message('You are not logined');
+            this.$emit('user:logout');
+          }).finally(() => {
+            this.checking = false;
           });
         } else {
           return false;

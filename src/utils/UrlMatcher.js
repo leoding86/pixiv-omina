@@ -17,7 +17,7 @@ class UrlMatcher {
   }
 
   static isPixivWork(url) {
-    return /^https?:\/{2}www\.pixiv\.net\/([a-z]+\/)artworks\/[\d]+(\?.*)?$/.test(url);
+    return /^https?:\/{2}www\.pixiv\.net\/([a-z]+\/)?artworks\/[\d]+(\?.*)?$/.test(url);
   }
 
   static isPixivUser(url) {

@@ -104,26 +104,6 @@ class Request extends net.ClientRequest {
         ses = session.fromPartition(this.options.partition);
       }
 
-      ses.webRequest.onBeforeSendHeaders({
-        urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
-      }, (detail, cb) => {
-        let { requestHeaders } = detail;
-
-        requestHeaders = Object.assign(
-          {},
-          requestHeaders,
-          {
-            referer: 'https://www.pixiv.net/'
-          }
-        );
-
-        console.log('REQUEST HEADERS 2');
-        console.log(`REQUEST URL 2: ${detail.url}`);
-        console.table(requestHeaders);
-
-        cb({ requestHeaders });
-      });
-
       let cookieString = '';
 
       ses.cookies.get({

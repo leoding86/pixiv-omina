@@ -213,7 +213,9 @@ class Download extends Request {
         let completeSize = 0;
 
         if (response.headers['content-length']) {
-          totalSize = response.headers['content-length'][0];
+          totalSize = Array.isArray(response.headers['content-length']) ?
+            response.headers['content-length'][0] :
+            response.headers['content-length'];
         }
 
         if (response.statusCode !== 200) {

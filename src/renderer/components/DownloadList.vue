@@ -39,8 +39,9 @@
                   icon="el-icon-folder"
                   @click="openFolder(download)"
                 ></el-button>
+                <!-- Hidden redownload button -->
                 <el-button
-                  v-if="download.state === 'finish'"
+                  v-if="false && download.state === 'finish'"
                   type="primary"
                   size="mini"
                   icon="el-icon-refresh"

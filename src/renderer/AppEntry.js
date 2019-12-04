@@ -5,6 +5,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import './styles/app.scss';
 import App from './components/App';
 import BaseMixin from './mixins/BaseMixin';
+import User from './modules/User';
 
 Vue.use(ElementUI);
 
@@ -29,8 +30,8 @@ class MainEntry {
       },
 
       beforeMount() {
-        ipcRenderer.on('debug:log', (event, data) => {
-          // console.log(data);
+        this.$on('user:logout', () => {
+          this.appLogined = false;
         });
 
         ipcRenderer.on('setting-service:change', (event, changedSettings) => {
@@ -48,30 +49,26 @@ class MainEntry {
         ipcRenderer.on('setting-service:settings', (event, settings) => {
           this.appSettings = settings;
 
-          ipcRenderer.on('user-service:check-login', () => {
-            ipcRenderer.send('user-service', {
-              action: 'checkUserLogined'
-            });
-          });
+          this.checkUserLogin();
+        });
 
-          ipcRenderer.on('user-service:logined', () => {
-            this.appInited = true;
-            this.appLogined = true;
-          });
-
-          ipcRenderer.on('user-service:not-login', () => {
-            this.appInited = true;
-            this.appLogined = false;
-          });
-
-          ipcRenderer.send('user-service', {
-            action: 'checkUserLogined'
-          });
+        ipcRenderer.on('user-service:check-login', () => {
+          this.checkUserLogin();
         });
 
         ipcRenderer.send('setting-service', {
           action: 'getSettings'
         });
+      },
+
+      methods: {
+        checkUserLogin() {
+          User.checkLogin().then(() => {
+            this.appInited = this.appLogined = true;
+          }).catch(() => {
+            this.appInited = !(this.appLogined = false);
+          });
+        }
       }
     });
   }

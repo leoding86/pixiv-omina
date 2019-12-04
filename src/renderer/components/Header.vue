@@ -48,6 +48,7 @@
       <el-button
         icon="el-icon-setting"
         size="small"
+        :style="!logined ? {zIndex: 99999} : null"
         @click="showSettingsDialog = true"
       ></el-button>
     </div>
@@ -110,7 +111,6 @@ export default {
     position: relative;
     flex: 1;
     text-align: right;
-    z-index: 99999;
   }
 }
 </style>

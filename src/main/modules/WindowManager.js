@@ -54,7 +54,7 @@ class WindowManager {
       args.webPreferences.partition = WindowManager.globalPartition;
     }
 
-    let window = new BrowserWindow(args)
+    let window = new BrowserWindow(args);
     let url;
 
     if (isDevelopment) {

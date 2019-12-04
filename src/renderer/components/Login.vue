@@ -4,9 +4,11 @@
       <p><a href="javascript:void(0)" @click="closeWindow">Click this window after you logined</a></p>
     </div>
     <div class="webview">
-      <iframe src="https://accounts.pixiv.net/login">
+      <webview src="https://accounts.pixiv.net/login"
+        partition="persist:main"
+      >
         Loading login page
-      </iframe>
+      </webview>
     </div>
   </div>
 </template>

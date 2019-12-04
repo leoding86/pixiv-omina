@@ -72,9 +72,9 @@ class DownloadManager extends EventEmitter {
 
     downloaders.forEach(downloader => {
       if (!this.getWorkDownloader(downloader.id)) {
-        addedDownloaders.push(downloader);
-
         this.workDownloaderPool.set(downloader.id, downloader);
+
+        addedDownloaders.push(downloader);
 
         this.attachListenersToDownloader(downloader);
       }

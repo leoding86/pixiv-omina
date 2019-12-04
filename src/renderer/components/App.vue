@@ -1,7 +1,7 @@
 <template>
   <div id="app"
     v-loading="!inited"
-    element-loading-text="Initializing...">
+    element-loading-text="Initializing and chekcing login status...">
 
     <div id="header">
       <app-header></app-header>
@@ -95,7 +95,7 @@ export default {
     });
 
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
-      this.downloads = downloads;
+      this.addDownloads(downloads);
     });
 
     ipcRenderer.send('download-service', {
@@ -152,11 +152,7 @@ export default {
         this.$set(this.downloads, index, download);
 
         this.downloadsList[download.id] = this.downloads[index];
-
-        return;
       }
-
-      this.appendDownload(download);
     },
 
     deleteDownload(downloadId) {
@@ -169,12 +165,6 @@ export default {
 
           return;
       }
-    },
-
-    checkUserLogined() {
-      ipcRenderer.send('user-service', {
-        action: 'checkUserLogined'
-      });
     },
 
     startDownloadHandler(download) {
