@@ -14,12 +14,6 @@ class ServiceContainer {
   constructor() {
     this.services = new Map();
 
-    this.services
-      .set('setting', SettingService.getService())
-      .set('user', UserService.getService())
-      .set('download', DownloadService.getService())
-      .set('debug', DebugService.getService());
-
     /**
      * Attach DebugServce's instance to global variable
      */
@@ -37,11 +31,21 @@ class ServiceContainer {
   static getContainer() {
     if (!ServiceContainer.instance) {
       ServiceContainer.instance = new ServiceContainer();
+      ServiceContainer.instance.services
+        .set('debug', DebugService.getService())
+        .set('setting', SettingService.getService())
+        .set('user', UserService.getService())
+        .set('download', DownloadService.getService());
     }
 
     return ServiceContainer.instance;
   }
 
+  /**
+   *
+   * @param {string} name service name
+   * @returns {(SettingService|DownloadService|UserService|DebugService)}
+   */
   static getService(name) {
     if (ServiceContainer.instance.services.has(name)) {
       return ServiceContainer.instance.services.get(name);
