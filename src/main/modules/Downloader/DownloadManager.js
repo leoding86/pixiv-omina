@@ -82,6 +82,8 @@ class DownloadManager extends EventEmitter {
     });
 
     if (!mute) this.emit('add-batch', addedDownloaders);
+
+    this.downloadNext();
   }
 
   reachMaxDownloading() {
@@ -178,6 +180,8 @@ class DownloadManager extends EventEmitter {
    */
   workDownloaderFinishHandler({ downloader }) {
     this.emit('update', downloader);
+
+    this.emit('finish', downloader);
 
     this.deattachListenersFromDownloader(downloader);
 

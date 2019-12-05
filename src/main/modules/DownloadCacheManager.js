@@ -30,6 +30,8 @@ class DownloadCacheManager {
 
     this.cacheFile = options.cacheFile;
 
+    fs.createFileSync(this.cacheFile);
+
     try {
       this.cachedDownloads = JSON.parse(fs.readFileSync(this.cacheFile));
     } catch (error) {
@@ -58,7 +60,9 @@ class DownloadCacheManager {
 
   cacheDownload(download) {
     if (download.id && this.cachedDownloads[download.id] === undefined) {
-      this.cachedDownloads[download.id] = download.options;
+      this.cachedDownloads[download.id] = {
+        options: download.options
+      };
 
       try {
         fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
@@ -68,15 +72,29 @@ class DownloadCacheManager {
     }
   }
 
-  removeDownload(download) {
-    if (download.id && this.cachedDownloads[download.id] !== undefined) {
-      delete this.cachedDownloads[download.id];
-
-      try {
-        fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
-      } catch (error) {
-        this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
+  cacheDownloads(downloads) {
+    downloads.forEach(download => {
+      if (download.id && this.cachedDownloads[download.id] === undefined) {
+        this.cachedDownloads[download.id] = {
+          options: download.options
+        };
       }
+    });
+
+    try {
+      fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
+    } catch (error) {
+      this.debugService.sendNotice(`Cannot cache download to storage: ${error.message}`);
+    }
+  }
+
+  removeDownload(downloadId) {
+    delete this.cachedDownloads[downloadId];
+
+    try {
+      fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
+    } catch (error) {
+      this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
     }
   }
 }

@@ -43,11 +43,6 @@ class MangaDownloader extends WorkDownloader {
     downloader.options = workDownloader.options;
     downloader.context = workDownloader.context;
 
-    /**
-     * Append work folder at the end
-     */
-    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('mangaRename'), downloader.context));
-
     return downloader;
   }
 
@@ -104,7 +99,11 @@ class MangaDownloader extends WorkDownloader {
   }
 
   getImageSaveName() {
-    FormatName.format(SettingStorage.getSetting('mangaImageRename'), this.context);
+    return FormatName.format(SettingStorage.getSetting('mangaImageRename'), this.context);
+  }
+
+  getImageSaveFolderName() {
+    return FormatName.format(SettingStorage.getSetting('mangaRename'), this.context);
   }
 
   downloadImages() {
@@ -120,6 +119,7 @@ class MangaDownloader extends WorkDownloader {
       this.options,
       {
         url: url,
+        saveTo: path.join(this.options.saveTo, this.getImageSaveFolderName()),
         saveName: this.getImageSaveName()
       }
     );

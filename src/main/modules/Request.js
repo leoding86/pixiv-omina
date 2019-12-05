@@ -104,18 +104,20 @@ class Request extends net.ClientRequest {
         ses = session.fromPartition(this.options.partition);
       }
 
-      let cookieString = '';
+      if (ses) {
+        let cookieString = '';
 
-      ses.cookies.get({
-        url: matches[1]
-      }).then(cookies => {
-        cookies.forEach(cookie => {
-          cookieString += `${cookie.name}=${cookie.value}; `;
+        ses.cookies.get({
+          url: matches[1]
+        }).then(cookies => {
+          cookies.forEach(cookie => {
+            cookieString += `${cookie.name}=${cookie.value}; `;
+          });
+
+          this.setHeader('cookie', cookieString);
+          super.end(chunk, encoding, callback);
         });
-
-        this.setHeader('cookie', cookieString);
-        super.end(chunk, encoding, callback);
-      });
+      }
 
       return;
     }

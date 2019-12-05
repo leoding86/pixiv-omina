@@ -34,16 +34,15 @@ class IllustrationDownloader extends MangaDownloader {
     downloader.options = workDownloader.options;
     downloader.context = workDownloader.context;
 
-    /**
-     * Append work folder at the end
-     */
-    downloader.options.saveTo = path.join(downloader.options.saveTo, FormatName.format(SettingStorage.getSetting('illustrationRename'), downloader.context));
-
     return downloader;
   }
 
   getImageSaveName() {
-    FormatName.format(SettingStorage.getSetting('illustrationImageRename'), this.context);
+    return FormatName.format(SettingStorage.getSetting('illustrationImageRename'), this.context);
+  }
+
+  getImageSaveFolderName() {
+    return FormatName.format(SettingStorage.getSetting('illustrationRename'), this.context);
   }
 }
 

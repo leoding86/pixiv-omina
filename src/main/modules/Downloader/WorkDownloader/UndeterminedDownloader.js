@@ -34,6 +34,8 @@ class UndeterminedDownloader extends WorkDownloader {
   }
 
   getUserWorkDownloaders() {
+    this.setStart('Resovling user works');
+
     return new Promise((resolve, reject) => {
       let userId = this.id.replace('user-', '');
 
@@ -63,7 +65,13 @@ class UndeterminedDownloader extends WorkDownloader {
             return;
           }
 
-          let downloaders = [];
+          let downloaders = [];//
+
+          /**
+           * It's important to REMOVE isUser property from options, or the cached system will cache the download as
+           * a user works download and causes wired errors
+           */
+          delete this.options.isUser;
 
           Object.keys(jsonData.body.illusts).forEach(id => {
             downloaders.push(UndeterminedDownloader.createDownloader({
@@ -159,7 +167,7 @@ class UndeterminedDownloader extends WorkDownloader {
            */
           this.setContext(jsonData.body);
 
-          if (jsonData.body.illustType === 0) {//
+          if (jsonData.body.illustType === 0) {
             resolve(IllustrationDownloader.createFromWorkDownloader(this));
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(this));

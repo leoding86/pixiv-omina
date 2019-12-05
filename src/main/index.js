@@ -38,6 +38,11 @@ if (!gotTheLock) {
   let quiting;
 
   /**
+   * initialize modules first
+   */
+  const settingStorage = SettingStorage.getStorage();
+
+  /**
    * Create partition manager and create a partition, you should use this to get the session
    */
   const partitionManager = PartitionManager.getManager();
@@ -65,17 +70,15 @@ if (!gotTheLock) {
 
     commandLine.forEach(line => {
       if (/^pixiv-omina:/.test(line)) {
+        ServiceContainer.getService('debug').sendStatus(`Get line data: ${line}`);
+
         const urlParts = new URL(line);
         const incomingUrl = decodeURIComponent(urlParts.searchParams.get('url'));
 
-        const workId = UrlParser.getWorkIdFromUrl(incomingUrl);
-
-        if (workId) {
-          ServiceContainer.getService('download').createDownloadAction({
-            workId,
-            saveTo: SettingStorage.getSetting('saveTo')
-          });
-        }
+        ServiceContainer.getService('download').createDownloadAction({
+          url: incomingUrl,
+          saveTo: SettingStorage.getSetting('saveTo')
+        });
       }
     });
 
@@ -108,9 +111,9 @@ if (!gotTheLock) {
         }
       );
 
-      console.log('REQUEST HEADERS');
-      console.log(`REQUEST URL: ${detail.url}`);
-      console.table(requestHeaders);
+      // console.log('REQUEST HEADERS');
+      // console.log(`REQUEST URL: ${detail.url}`);
+      // console.table(requestHeaders);
 
       cb({ requestHeaders });
     });
@@ -126,9 +129,9 @@ if (!gotTheLock) {
         delete detail.responseHeaders['X-Frame-Options'];
       }
 
-      console.log(`RESPONSE BY URL: ${detail.url}`)
-      console.log('RESPONSE HEADERS');
-      console.table(detail.responseHeaders);
+      // console.log(`RESPONSE BY URL: ${detail.url}`)
+      // console.log('RESPONSE HEADERS');
+      // console.table(detail.responseHeaders);
 
       cb({
         responseHeaders: detail.responseHeaders
@@ -160,12 +163,6 @@ if (!gotTheLock) {
     });
 
     /**
-     * After window has been created, then create services. Some services depend on main window,
-     * Because services are designed for communicating with the windows
-     */
-    ServiceContainer.getContainer();
-
-    /**
      * Set Request global options
      */
     Request.setGlobalOptions({
@@ -175,6 +172,12 @@ if (!gotTheLock) {
         'referer': 'https://www.pixiv.net/'
       }
     });
+
+    /**
+     * After window has been created, then create services. Some services depend on main window,
+     * Because services are designed for communicating with the windows
+     */
+    ServiceContainer.getContainer();
 
     /**
      * update proxy
@@ -229,20 +232,18 @@ if (!gotTheLock) {
      * This is for macOS
      */
     app.on('open-url', (event, url) => {
+      ServiceContainer.getService('debug').sendStatus(`Get url data: ${url}`);
+
       event.preventDefault();
 
       const urlParts = new URL(url);
 
       const incomingUrl = decodeURIComponent(urlParts.searchParams.get('url'));
 
-      const workId = UrlParser.getWorkIdFromUrl(incomingUrl);
-
-      if (workId) {
-        ServiceContainer.getService('download').createDownloadAction({
-          workId,
-          saveTo: SettingStorage.getSetting('saveTo')
-        });
-      }
+      ServiceContainer.getService('download').createDownloadAction({
+        url: incomingUrl,
+        saveTo: SettingStorage.getSetting('saveTo')
+      });
 
       console.log(data);
     });

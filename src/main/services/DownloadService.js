@@ -39,6 +39,8 @@ class DownloadService extends BaseService {
     });
 
     this.downloadManager.on('add', downloader => {
+      this.downloadCacheManager.cacheDownload(downloader);
+
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
 
@@ -49,6 +51,8 @@ class DownloadService extends BaseService {
         data.push(downloader.toJSON());
       });
 
+      this.downloadCacheManager.cacheDownloads(downloaders);
+
       this.mainWindow.webContents.send(this.responseChannel('add-batch'), data);
     });
 
@@ -58,8 +62,14 @@ class DownloadService extends BaseService {
       }
     });
 
-    this.downloadManager.on('delete', workId => {
-      this.mainWindow.webContents.send(this.responseChannel('delete'), workId);
+    this.downloadManager.on('finish', downloader => {
+      this.downloadCacheManager.removeDownload(downloader.id);
+    });
+
+    this.downloadManager.on('delete', id => {
+      this.downloadCacheManager.removeDownload(id);
+
+      this.mainWindow.webContents.send(this.responseChannel('delete'), id);
     });
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
@@ -90,15 +100,20 @@ class DownloadService extends BaseService {
     const cachedDownloads = this.downloadCacheManager.getCachedDownloads();
     let downloaders = [];
 
+    debug.sendStatus('Restoring downloads');
+
     for (let downloadId in cachedDownloads) {
+      console.log(cachedDownloads[downloadId], downloadId);
       downloaders.push(UndeterminedDownloader.createDownloader({
         workId: downloadId,
-        options: cachedDownloads.options
+        options: cachedDownloads[downloadId].options
       }));
     }
 
-    const mute = true;
+    debug.sendStatus('Downloads have been restored');
 
+    const mute = true;
+console.log(downloaders);
     this.downloadManager.addDownloaders(downloaders, mute);
   }
 

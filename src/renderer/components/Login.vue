@@ -1,7 +1,7 @@
 <template>
   <div id="login-window">
     <div class="notification">
-      <p><a href="javascript:void(0)" @click="closeWindow">Click this window after you logined</a></p>
+      <p><a href="javascript:void(0)" @click="closeWindow">Close this window after you logined</a></p>
     </div>
     <div class="webview">
       <webview src="https://accounts.pixiv.net/login"

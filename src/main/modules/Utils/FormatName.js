@@ -99,9 +99,14 @@ class FormatName {
       filename = filename.replace(char, '_');
     });
 
+    /**
+     * Remove dots at end of the filename
+     */
+    filename = filename.replace(/\.*$/, '');
+
     filename = filename.substr(0, rule.max);
 
-    return filename;
+    return filename.length === 0 ? `file_${Date.now()}` : filename;
   }
 }
 
