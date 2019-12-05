@@ -1,5 +1,6 @@
 import path from 'path';
 import { app, shell, Tray, Menu, systemPreferences, nativeImage, session } from 'electron';
+import UrlParser from '@/modules/UrlParser';
 import Request from '@/modules/Request';
 import ServiceContainer from '@/ServiceContainer';
 import WindowManager from './modules/WindowManager';
@@ -65,11 +66,13 @@ if (!gotTheLock) {
     commandLine.forEach(line => {
       if (/^pixiv-omina:/.test(line)) {
         const urlParts = new URL(line);
-        const id = urlParts.searchParams.get('id');
+        const incomingUrl = decodeURIComponent(urlParts.searchParams.get('url'));
 
-        if (id) {
+        const workId = UrlParser.getWorkIdFromUrl(incomingUrl);
+
+        if (workId) {
           ServiceContainer.getService('download').createDownloadAction({
-            workId: id,
+            workId,
             saveTo: SettingStorage.getSetting('saveTo')
           });
         }
@@ -229,11 +232,14 @@ if (!gotTheLock) {
       event.preventDefault();
 
       const urlParts = new URL(url);
-      const id = urlParts.searchParams.get('id');
 
-      if (id) {
+      const incomingUrl = decodeURIComponent(urlParts.searchParams.get('url'));
+
+      const workId = UrlParser.getWorkIdFromUrl(incomingUrl);
+
+      if (workId) {
         ServiceContainer.getService('download').createDownloadAction({
-          workId: id,
+          workId,
           saveTo: SettingStorage.getSetting('saveTo')
         });
       }
