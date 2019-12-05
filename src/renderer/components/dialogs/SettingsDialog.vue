@@ -8,9 +8,12 @@
     :width="'480px'"
     :visible.sync="show"
   >
-    <el-tabs>
+    <el-tabs
+      v-model="currentTab"
+    >
       <el-tab-pane
         label="General"
+        name="general"
       >
         <general-settings
           @changed="settingsChangedHandler"
@@ -18,10 +21,17 @@
       </el-tab-pane>
       <el-tab-pane
         label="Proxy"
+        name="proxy"
       >
         <proxy-settings
           @changed="settingsChangedHandler"
         ></proxy-settings>
+      </el-tab-pane>
+      <el-tab-pane
+        label="About"
+        name="about"
+      >
+        <app-about></app-about>
       </el-tab-pane>
     </el-tabs>
     <div
@@ -50,11 +60,13 @@
 import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
+import About from './About';
 
 export default {
   components: {
     'general-settings': GeneralSettings,
-    'proxy-settings': ProxySettings
+    'proxy-settings': ProxySettings,
+    'app-about': About
   },
 
   props: {
@@ -67,7 +79,8 @@ export default {
 
   data() {
     return {
-      settingsChanged: false
+      settingsChanged: false,
+      currentTab: 'general'
     }
   },
 

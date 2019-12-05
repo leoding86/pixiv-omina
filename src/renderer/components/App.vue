@@ -7,9 +7,9 @@
       <app-header></app-header>
     </div>
 
-    <app-test v-if="debug"></app-test>
-
     <div id="container">
+      <app-test v-if="debug"></app-test>
+
       <div id="app-container-mask"
         v-if="inited && !logined">
         <div class="app-container-mask__body">
@@ -248,11 +248,10 @@ export default {
 }
 
 #container {
-  display: flex;
-  flex-direction: column;
   flex: 1;
   box-sizing: border-box;
   position: relative;
+  overflow-y: auto;
 }
 
 #footer {
