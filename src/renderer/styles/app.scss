@@ -1,0 +1,109 @@
+html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,blockquote,p,button,img,button,select,iframe{
+  padding:0;
+  margin:0;
+  border:0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: #f9f9f9;
+}
+
+.el-button {
+  [class*=" el-icon-"], [class^=el-icon-] {
+    transform: scale(1.5);
+  }
+}
+
+.el-button--default {
+  [class*=" el-icon-"], [class^=el-icon-] {
+    // color: #dedede;
+    // text-shadow: 0 -1px 0 #6d6d6d;
+  }
+}
+
+.el-message-box {
+  padding-bottom: 0;
+
+  .el-message-box__header {
+    padding: 10px 15px;
+  }
+
+  .el-message-box__headerbtn {
+    right: 15px;
+    top: 10px;
+  }
+
+  .el-message-box__title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.app-dialog {
+  border-radius: 5px;
+  overflow: hidden;
+
+  .el-dialog__header {
+    padding: 10px 20px;
+    border-bottom: 2px solid #e9e9e9;
+  }
+
+  .el-dialog__headerbtn {
+    top: 15px;
+    right: 20px;
+  }
+
+  .el-dialog__title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .el-form-item__label {
+    font-size: 12px;
+    text-align: left;
+  }
+
+  .el-dialog__body {
+    padding: 0 0 10px 0;
+  }
+
+  .el-dialog__footer {
+    padding: 10px 20px;
+    background: #f9f9f9;
+  }
+
+  .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .el-form-item {
+    margin-bottom: 10px;
+  }
+
+  .el-tabs__nav-scroll {
+    padding: 0 20px;
+  }
+
+  .el-tabs__content {
+    padding: 0 20px;
+  }
+}
+
+.el-tooltip__popper {
+  padding: 3px 5px;
+}
+
+.el-notification__title {
+  line-height: 24px;
+}
+
+.header__download-filter {
+  margin-left: 15px;
+  vertical-align: top;
+}

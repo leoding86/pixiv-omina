@@ -1,0 +1,78 @@
+{
+  "name": "pixiv-omina",
+  "productName": "Pixiv Omina",
+  "version": "0.1.0",
+  "license": "MPL-2.0",
+  "checkUpdateUrl": "",
+  "scripts": {
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "yarn compile && electron-builder",
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "element-ui": "^2.12.0",
+    "fs-extra": "^8.1.0",
+    "gif-encoder": "^0.7.2",
+    "jimp": "^0.8.5",
+    "jszip": "^3.2.2",
+    "mime-types": "^2.1.25",
+    "source-map-support": "^0.5.12",
+    "vue-virtual-scroller": "^1.0.0-rc.2"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
+    "electron": "^6.1.5",
+    "electron-builder": "^21.0.11",
+    "electron-webpack": "^2.7.4",
+    "electron-webpack-vue": "^2.3.0",
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.0",
+    "vue": "^2.6.10",
+    "webpack": "~4.35.3"
+  },
+  "build": {
+    "appId": "pixiv_omina.leo",
+    "directories": {
+      "buildResources": "build"
+    },
+    "extraResources": [
+      "./static/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "license": "LICENSE.txt"
+    },
+    "mac": {
+        "target": "dmg",
+        "extendInfo": {
+            "NSRequiresAquaSystemAppearance": false
+        }
+    },
+    "protocols": {
+      "name": "pixiv-omina-protocal",
+      "schemes": [
+        "pixiv-omina"
+      ]
+    }
+  },
+  "electronWebpack": {
+    "main": {
+      "webpackConfig": "webpack.main.additions.js"
+    }
+  }
+}
