@@ -26,7 +26,9 @@ function defaultSetting() {
 
     proxyUsername: '',
 
-    proxyPassword: ''
+    proxyPassword: '',
+
+    closeToTray: false
   }
 }
 

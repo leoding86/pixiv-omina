@@ -60,7 +60,7 @@
 import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
-import About from './About';
+import About from '../About';
 
 export default {
   components: {

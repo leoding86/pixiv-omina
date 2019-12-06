@@ -35,13 +35,7 @@ class MainEntry {
         });
 
         ipcRenderer.on('setting-service:change', (event, changedSettings) => {
-          this.$notify({
-            title: 'Setting saved!',
-            type: 'success',
-            position: 'bottom-left',
-            duration: 1500,
-            showClose: false
-          });
+          this.$message('Setting saved');
 
           this.appSettings = Object.assign({}, this.appSettings, changedSettings);
         });

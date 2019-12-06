@@ -1,31 +1,81 @@
-# electron-webpack-quick-start
-> A bare minimum project structure to get started developing with [`electron-webpack`](https://github.com/electron-userland/electron-webpack).
+<h1 style="text-align:center">
+<img src="./build/icon.png" width=200><br>
+Pixiv Omina
+</h1>
 
-Thanks to the power of `electron-webpack` this template comes packed with...
+Pixiv Omina is a software to download works on Pixiv. It's simple and easy to use. It's even better if you are a [Pixiv Toolkit](https://github.com/leoding86/webextension-pixiv-toolkit) user, you can use click-to-download feature.
 
-* Use of [`webpack-dev-server`](https://github.com/webpack/webpack-dev-server) for development
-* HMR for both `renderer` and `main` processes
-* Use of [`babel-preset-env`](https://github.com/babel/babel-preset-env) that is automatically configured based on your `electron` version
-* Use of [`electron-builder`](https://github.com/electron-userland/electron-builder) to package and build a distributable electron application
+Pixiv Omina is powered by [Electron](https://electronjs.org/).
 
-Make sure to check out [`electron-webpack`'s documentation](https://webpack.electron.build/) for more details.
+# Platforms💻
 
-## Getting Started
-Simply clone down this repository, install dependencies, and get started on your application.
+Test on Window 10(1903) and macOS 10.14 in VM (I don't have a mac).
 
-The use of the [yarn](https://yarnpkg.com/) package manager is **strongly** recommended, as opposed to using `npm`.
+If you are a Linux user, I think you have the abilities to build by your own.
 
+# Features✨
+
+* Easy UI
+* Generate gif for ugoira work automatically and pack frame information to zip file
+* Download user works (input the user profile url to the download dialog)
+* Auto rename using the rename settings
+* Restore downloads after application restart
+* Skip downloaded works, so it can download works incrementally
+* Click-to-Download (You need install [Pixiv Toolkit](https://github.com/leoding86/webextension-pixiv-toolkit) in your browser)
+* Check new version automatically (No auto-update, I think auto-update is evil sometimes)
+* Close to tray (You need to enable this feature at setting page)
+* Support http/socks proxy (If you use socks proxy you need input proxy url with schemel)
+
+# Downloads⚓
+
+[Go to releases page](https://github.com/leoding86/pixiv-omina/releases)
+
+# Q & A ❓
+
+Q: Why named it Pixiv Omina?
+
+A: Nothing special, the name just came out my mind when I wanted to build it.
+
+Q: Why I can't use it?
+
+A: If you can't visit Pixiv or you don't have a Pixiv account you can't use this.
+
+Q: Why is the completed task missing when I restart the application?
+
+A: Application will remove completed downloads task after restarted.
+
+Q: How to download more than 2 works at the same time?
+
+A: No, you can't for now, because generate gif is a pretty heavy task. Maybe I'll add a setting to control how many download tasks can be performed at the same time.
+
+# Important💥
+
+* Every single work will be saved a sub folder with the name which follow the rename setting
+
+* DO NOT add too many downloads! I have not tested the downloads limitation, too many downloads may crash the application. It's easy to add large number download tasks by downloading user works(input the user profile url to the download dialog), so be really careful to use this feature like download multiple users works at same time (Some of the users have thousands works, It's nuts!).
+
+# Issues🤔
+
+Nothing right now, feel free to open issue if you meet any problem or have any idea😀
+
+# Screenshots📺
+
+Download by input the work url
+
+![screenshot](./screenshots/001.gif)
+
+Click-to-Download
+
+![screenshot](./screenshots/002.gif)
+
+Some settings
+
+![screenshot](./screenshots/003.jpg)
+
+# Development🔧
+
+## Install dependencies
 ```bash
-# create a directory of your choice, and copy template using curl
-mkdir new-electron-webpack-project && cd new-electron-webpack-project
-curl -fsSL https://github.com/electron-userland/electron-webpack-quick-start/archive/master.tar.gz | tar -xz --strip-components 1
-
-# or copy template using git clone
-git clone https://github.com/electron-userland/electron-webpack-quick-start.git
-cd electron-webpack-quick-start
-rm -rf .git
-
-# install dependencies
 yarn
 ```
 

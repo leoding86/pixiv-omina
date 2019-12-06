@@ -1,4 +1,5 @@
 import SettingService from '@/services/SettingService';
+import UpdateService from '@/services/UpdateService';
 import UserService from '@/services/UserService';
 import DownloadService from '@/services/DownloadService';
 import DebugService from '@/services/DebugService';
@@ -34,6 +35,7 @@ class ServiceContainer {
       ServiceContainer.instance.services
         .set('debug', DebugService.getService())
         .set('setting', SettingService.getService())
+        .set('update', UpdateService.getService())
         .set('user', UserService.getService())
         .set('download', DownloadService.getService());
     }

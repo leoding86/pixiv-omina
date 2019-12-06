@@ -9,7 +9,7 @@ import SettingStorage from '@/modules/SettingStorage';
 
 console.log(`Electron version: ${process.versions['electron']}`);
 
-// const isDevelopment = process.env.NODE_ENV !== 'production'//
+// const isDevelopment = process.env.NODE_ENV !== 'production'
 
 /**
  * Make sure there is only one instance will be created.
@@ -17,8 +17,12 @@ console.log(`Electron version: ${process.versions['electron']}`);
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
+  console.log(`Quit`);
+
   app.quit();
 } else {
+  console.log(`Start`);
+
   // const isDevelopment = process.env.NODE_ENV !== 'production'
 
   /**
@@ -308,7 +312,7 @@ if (!gotTheLock) {
 
     // Control main window close to tray
     mainWindow.on('close', event => {
-      if (!quiting) {
+      if (!quiting && SettingStorage.getSetting('closeToTray')) {
         event.preventDefault();
         event.returnValue = false;
         event.sender.hide();

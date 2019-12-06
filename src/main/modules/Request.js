@@ -35,18 +35,18 @@ class Request extends net.ClientRequest {
     });
 
     this.on('response', response => {
-      debug.sendStatus(`Get response from ${this.options.url}`);
+      debug.sendStatus(`Response: Get response from ${this.options.url}`);
 
       response.on('data', () => {
         debug.sendStatus(`Response: Receiving data from ${this.options.url}`);
       });
 
       response.on('aborted', () => {
-        debug.sendStatus(`Response: Abort receive data from ${this.options.url}`);
+        debug.sendStatus(`Response: Aborted from ${this.options.url}`);
       });
 
       response.on('error', error => {
-        debug.sendStatus(`Response: Error ${error.message} occured while receiving data from ${this.options.url}`);
+        debug.sendStatus(`Response: Error (${error.message}) occured while receiving data from ${this.options.url}`);
       });
 
       response.on('end', () => {
@@ -59,7 +59,7 @@ class Request extends net.ClientRequest {
     });
 
     this.on('error', error => {
-      debug.sendStatus(`Request: ${this.options.url} error ${error.message}`);
+      debug.sendStatus(`Request: ${this.options.url} error (${error.message})`);
     });
 
     this.on('finish', () => {
