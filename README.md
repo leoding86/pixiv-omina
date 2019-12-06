@@ -28,7 +28,7 @@ If you are a Linux user, I think you have the abilities to build by your own.
 
 # Downloads⚓
 
-
+[Go to releases page](https://github.com/leoding86/pixiv-omina/releases)
 
 # Q & A ❓
 
