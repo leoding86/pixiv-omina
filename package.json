@@ -3,7 +3,7 @@
   "productName": "Pixiv Omina",
   "version": "0.1.0",
   "license": "MPL-2.0",
-  "checkUpdateUrl": "",
+  "checkUpdateUrl": "https://raw.githubusercontent.com/leoding86/pixiv-omina/master/package.json",
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
