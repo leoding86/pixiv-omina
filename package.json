@@ -1,7 +1,7 @@
 {
   "name": "pixiv-omina",
   "productName": "Pixiv Omina",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MPL-2.0",
   "checkUpdateUrl": "https://raw.githubusercontent.com/leoding86/pixiv-omina/master/package.json",
   "scripts": {
