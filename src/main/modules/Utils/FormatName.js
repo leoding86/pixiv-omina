@@ -36,7 +36,7 @@ class FormatName {
    */
   static replaceIllegalChars(str, skipChars) {
     FormatName.getIllegalChars().forEach(char => {
-      if (skipChars.indexOf(char) > -1) return;
+      if (skipChars && skipChars.indexOf(char) > -1) return;
 
       while (str.indexOf(char) > -1) {
         str = str.replace(char, '_');
