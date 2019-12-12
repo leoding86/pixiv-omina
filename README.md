@@ -50,8 +50,6 @@ A: No, you can't for now, because generate gif is a pretty heavy task. Maybe I'l
 
 # Important💥
 
-* Every single work will be saved a sub folder with the name which follow the rename setting
-
 * DO NOT add too many downloads! I have not tested the downloads limitation, too many downloads may crash the application. It's easy to add large number download tasks by downloading user works(input the user profile url to the download dialog), so be really careful to use this feature like download multiple users works at same time (Some of the users have thousands works, It's nuts!).
 
 # Issues🤔
