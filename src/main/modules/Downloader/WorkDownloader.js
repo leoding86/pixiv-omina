@@ -63,6 +63,11 @@ class WorkDownloader extends EventEmitter {
      * @type {string|number}
      */
     this.type = null;
+
+    /**
+     * @property {boolean}
+     */
+    this.saveInSubfolder = true;
   }
 
   get speed() {
@@ -98,6 +103,27 @@ class WorkDownloader extends EventEmitter {
    */
   static createDownloader({workId, options}) {
     throw Error('Abstract method, not implemented');
+  }
+
+  /**
+   *
+   */
+  disableSaveInSubfolder() {
+    this.saveInSubfolder = false;
+  }
+
+  enableSaveInSubfolder() {
+    this.saveInSubfolder = true;
+  }
+
+  getImageSaveFolderName() {
+    throw Error('Method getImageSaveFolderName is not implemented');
+  }
+
+  getImageSaveFolder() {
+    return this.saveInSubfolder ?
+      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
+      this.options.saveTo;
   }
 
   isUser() {

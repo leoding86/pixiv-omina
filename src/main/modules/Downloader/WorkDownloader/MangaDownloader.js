@@ -98,14 +98,32 @@ class MangaDownloader extends WorkDownloader {
     });
   }
 
+  /**
+   * @returns {String}
+   */
   getImageSaveName() {
     return FormatName.format(SettingStorage.getSetting('mangaImageRename'), this.context);
   }
 
+  /**
+   * @override
+   * @returns {String}
+   */
   getImageSaveFolderName() {
     return FormatName.format(SettingStorage.getSetting('mangaRename'), this.context);
   }
 
+  /**
+   * @override
+   * @returns {String}
+   */
+  getImageSaveFolder() {
+    return path.join(this.options.saveTo, this.getImageSaveFolderName());
+  }
+
+  /**
+   * @returns {void}
+   */
   downloadImages() {
     let url = this.images[this.imageIndex].urls.original;
 
@@ -119,7 +137,7 @@ class MangaDownloader extends WorkDownloader {
       this.options,
       {
         url: url,
-        saveTo: path.join(this.options.saveTo, this.getImageSaveFolderName()),
+        saveTo: this.getImageSaveFolder(),
         saveName: this.getImageSaveName()
       }
     );

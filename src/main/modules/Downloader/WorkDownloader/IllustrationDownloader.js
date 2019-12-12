@@ -1,4 +1,3 @@
-import path from 'path';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
@@ -43,6 +42,16 @@ class IllustrationDownloader extends MangaDownloader {
 
   getImageSaveFolderName() {
     return FormatName.format(SettingStorage.getSetting('illustrationRename'), this.context);
+  }
+
+  /**
+   * @override
+   * @returns {String}
+   */
+  getImageSaveFolder() {
+    return this.saveInSubfolder ?
+      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
+      this.options.saveTo;
   }
 }
 
