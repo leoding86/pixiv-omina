@@ -6,6 +6,7 @@ import ServiceContainer from '@/ServiceContainer';
 import WindowManager from './modules/WindowManager';
 import PartitionManager from '@/modules/PartitionManager';
 import SettingStorage from '@/modules/SettingStorage';
+import NotificationManager from './modules/NotificationManager';
 
 console.log(`Electron version: ${process.versions['electron']}`);
 
@@ -184,9 +185,9 @@ if (!gotTheLock) {
     ServiceContainer.getContainer();
 
     /**
-     * update proxy
+     * update modules
      */
-    function updateProxy() {
+    function updateModules() {
       const settings = SettingStorage.getSettings();
 
       if (settings['enableProxy'] && settings['proxyService'] && settings['proxyServicePort']) {
@@ -215,12 +216,18 @@ if (!gotTheLock) {
 
         Request.removeGlobalOptions(['proxyUsername', 'proxyPassword']);
       }
+
+      if (settings['showNotification']) {
+        NotificationManager.getDefault().enableNotification();
+      } else {
+        NotificationManager.getDefault().disableNotification();
+      }
     }
 
-    updateProxy();
+    updateModules();
 
     SettingStorage.getStorage().on('change', () => {
-      updateProxy();
+      updateModules();
     });
 
     /**

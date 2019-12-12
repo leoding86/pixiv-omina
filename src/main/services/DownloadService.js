@@ -11,6 +11,7 @@ import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import DownloadCacheManager from '@/modules/DownloadCacheManager';
+import NotificationManager from '@/modules/NotificationManager';
 import BaseService from '@/services/BaseService';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
@@ -34,12 +35,18 @@ class DownloadService extends BaseService {
 
     this.downloadManager = DownloadManager.getManager();
 
+    this.notificationManager = NotificationManager.getDefault();
+
     this.downloadCacheManager = DownloadCacheManager.getManager({
       cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
     });
 
     this.downloadManager.on('add', downloader => {
       this.downloadCacheManager.cacheDownload(downloader);
+
+      this.notificationManager.showDownloadAddedNotification({
+        title: `Download ${downloader.id} is added`
+      });
 
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
