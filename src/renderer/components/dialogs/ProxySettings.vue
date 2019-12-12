@@ -108,12 +108,20 @@ export default {
 
   watch: {
     settings(value) {
-      this.scopedSettings = value;
+      const updatedSettings = {}
+
+      Object.keys(this.scopedSettings).forEach(key => {
+        if (value[key] !== undefined) {
+          updatedSettings[key] = value[key];
+        }
+      });
+
+      this.scopedSettings = Object.assign({}, this.scopedSettings, updatedSettings);
     },
 
     scopedSettings: {
       handler(value) {
-        this.$emit('changed', value);
+        this.$emit('changed', Object.assign({}, value));
       },
 
       deep: true
