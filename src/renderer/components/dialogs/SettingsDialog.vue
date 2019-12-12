@@ -19,6 +19,16 @@
           @changed="settingsChangedHandler"
         ></general-settings>
       </el-tab-pane>
+
+      <el-tab-pane
+        label="Rename"
+        name="rename"
+      >
+        <rename-settings
+          @changed="settingsChangedHandler"
+        ></rename-settings>
+      </el-tab-pane>
+
       <el-tab-pane
         label="Proxy"
         name="proxy"
@@ -27,6 +37,7 @@
           @changed="settingsChangedHandler"
         ></proxy-settings>
       </el-tab-pane>
+
       <el-tab-pane
         label="About"
         name="about"
@@ -60,12 +71,14 @@
 import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
+import RenameSettings from './RenameSettings';
 import About from '../About';
 
 export default {
   components: {
     'general-settings': GeneralSettings,
     'proxy-settings': ProxySettings,
+    'rename-settings': RenameSettings,
     'app-about': About
   },
 

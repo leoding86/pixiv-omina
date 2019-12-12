@@ -4,37 +4,16 @@
       <el-switch v-model="scopedSettings.closeToTray"></el-switch>
     </el-form-item>
 
+    <el-form-item label="Show notification" :label-width="formLabelWidth">
+      <el-switch v-model="scopedSettings.showNotification"></el-switch>
+    </el-form-item>
+
     <el-form-item label="User Agent" :label-width="formLabelWidth">
       <el-input type="textarea" v-model="scopedSettings.userAgent" :rows="4"></el-input>
     </el-form-item>
 
     <el-form-item label="Save to" :label-width="formLabelWidth">
       <directory-selector v-model="scopedSettings.saveTo"></directory-selector>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">Format ugoira</span>
-      <el-input v-model="scopedSettings.ugoiraRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">Format manga</span>
-      <el-input v-model="scopedSettings.mangaRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">Format manga image</span>
-      <el-input v-model="scopedSettings.mangaImageRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">Format illust</span>
-      <el-input v-model="scopedSettings.illustrationRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">Format illust image</span>
-      <el-input v-model="scopedSettings.illustrationImageRename"></el-input>
     </el-form-item>
   </el-form>
 </template>
@@ -54,13 +33,9 @@ export default {
 
       scopedSettings: {
         closeToTray: false,
+        showNotification: true,
         userAgent: '',
-        saveTo: '',
-        ugoiraRename: '',
-        mangaRename: '',
-        mangaImageRename: '',
-        illustrationRename: '',
-        illustrationImageRename: ''
+        saveTo: ''
       },
 
       settingsRule: {
@@ -79,12 +54,20 @@ export default {
 
   watch: {
     settings(value) {
-      this.scopedSettings = value;
+      const updatedSettings = {}
+
+      Object.keys(this.scopedSettings).forEach(key => {
+        if (value[key] !== undefined) {
+          updatedSettings[key] = value[key];
+        }
+      });
+
+      this.scopedSettings = Object.assign({}, this.scopedSettings, updatedSettings);
     },
 
     scopedSettings: {
       handler(value) {
-        this.$emit('changed', value);
+        this.$emit('changed', Object.assign({}, value));
       },
 
       deep: true
