@@ -10,7 +10,7 @@
         </div>
         <div class="app-version-info__content">
           <p>Version {{packageInfo.version}}</p>
-          <p>{{ versionStatus }}</p>
+          <p>{{ versionStatus }} <a v-if="newVersion" target="_blank" href="https://github.com/leoding86/pixiv-omina/releases">View</a> </p>
         </div>
       </div>
     </div>
@@ -29,12 +29,18 @@ export default {
 
       checkingUpdate: false,
 
+      checkingError: false,
+
       newVersion: null
     };
   },
 
   computed: {
     iconClass() {
+      if (this.checkingError) {
+        return 'el-icon-error';
+      }
+
       if (this.newVersion) {
         return 'el-icon-warning';
       } else if (this.checkingUpdate) {
@@ -45,6 +51,10 @@ export default {
     },
 
     versionStatus() {
+      if (this.checkingError) {
+        return 'Error ocurred when checking version';
+      }
+
       if (this.checkingUpdate) {
         return 'Checking';
       } else if (this.newVersion) {
@@ -58,26 +68,32 @@ export default {
   beforeMount() {
     this.checkingUpdate = true;
 
-    this.findNewVersoinHandler_ = this.findNewVersoinHandler.bind(this);
+    this.findNewVersionHandler_ = this.findNewVersionHandler.bind(this);
+    this.findNewVersionErrorHandler_ = this.findNewVersionErrorHandler.bind(this);
     this.checkUpdateCompleteHandler_ = this.checkUpdateCompleteHandler.bind(this);
 
     ipcRenderer.send('update-service', {
       action: 'checkUpdate'
     });
 
-    ipcRenderer.on('update-service:find-new-version', this.findNewVersoinHandler_);
-
+    ipcRenderer.on('update-service:find-new-version', this.findNewVersionHandler_);
+    ipcRenderer.on('update-service:find-new-version-error', this.findNewVersionErrorHandler_);
     ipcRenderer.on('update-service:complete', this.checkUpdateCompleteHandler_);
   },
 
   beforeDestroy() {
-    ipcRenderer.on('update-service:find-new-version', this.findNewVersoinHandler_);
-    ipcRenderer.on('update-service:complete', this.checkUpdateCompleteHandler_);
+    ipcRenderer.removeListener('update-service:find-new-version', this.findNewVersionHandler_);
+    ipcRenderer.removeListener('update-service:find-new-version-error', this.findNewVersionErrorHandler_);
+    ipcRenderer.removeListener('update-service:complete', this.checkUpdateCompleteHandler_);
   },
 
   methods: {
-    findNewVersoinHandler(event, version) {
+    findNewVersionHandler(event, version) {
       this.newVersion = version;
+    },
+
+    findNewVersionErrorHandler(event) {
+      this.checkingError = true;
     },
 
     checkUpdateCompleteHandler() {
