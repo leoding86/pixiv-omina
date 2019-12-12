@@ -1,3 +1,4 @@
+import path from 'path';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
 import Download from '@/modules/Download';

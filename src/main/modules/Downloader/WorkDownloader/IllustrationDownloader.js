@@ -1,3 +1,4 @@
+import path from 'path';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
