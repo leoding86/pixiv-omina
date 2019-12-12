@@ -54,6 +54,13 @@ class UgoiraDownloader extends WorkDownloader {
     return downloader;
   }
 
+  /**
+   * @returns {String}
+   */
+  getImageSaveFolderName() {
+    return FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context);
+  }
+
   fetchMeta() {
     return new Promise((resolve, reject) => {
       const url = UrlBuilder.getUgoiraMetaUrl(this.id);
@@ -193,7 +200,7 @@ class UgoiraDownloader extends WorkDownloader {
       this.options,
       {
         url: url,
-        saveTo: path.join(this.options.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)),
+        saveTo: this.getImageSaveFolder(),
         saveName: FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)
       }
     );
