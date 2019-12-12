@@ -45,12 +45,17 @@
       </el-button-group>
     </div>
     <div class="header__right">
-      <el-button
-        icon="el-icon-setting"
-        size="small"
-        :style="!logined ? {zIndex: 99999} : null"
-        @click="showSettingsDialog = true"
-      ></el-button>
+      <div class="settings-button">
+        <i v-if="hasNewVersion"
+          class="el-icon-top settings-button__update-icon"
+        ></i>
+        <el-button
+          icon="el-icon-setting"
+          size="small"
+          :style="!logined ? {zIndex: 99999} : null"
+          @click="showSettingsDialog = true"
+        ></el-button>
+      </div>
     </div>
 
     <add-download-dialog
@@ -83,7 +88,9 @@ export default {
 
       showSettingsDialog: false,
 
-      downloadFilter: 'all'
+      downloadFilter: 'all',
+
+      hasNewVersion: false
     }
   },
 
@@ -91,6 +98,12 @@ export default {
     filter() {
       return this.downloadFilter;
     }
+  },
+
+  beforeMount() {
+    ipcRenderer.on('update-service:find-new-version', () => {
+      this.hasNewVersion = true;
+    });
   },
 
   methods: {
@@ -113,4 +126,21 @@ export default {
     text-align: right;
   }
 }
+
+.settings-button {
+  display: inline-block;
+  position: relative;
+
+  &__update-icon {
+    position: absolute;
+    right:-5px;
+    top:-5px;
+    padding: 2px;
+    border-radius: 100%;
+    background:green;
+    color: #fff;
+    font-size: 12px;
+  }
+}
+
 </style>
