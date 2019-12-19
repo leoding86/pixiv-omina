@@ -31,7 +31,8 @@
         @start="startDownloadHandler"
         @stop="stopDownloadHandler"
         @delete="deleteDownloadHandler"
-        @redownload="redownloadHandle"
+        @redownload="redownloadHandler"
+        @clickDownload="downloadClickHandler"
       ></app-download-list>
     </div>
 
@@ -126,6 +127,7 @@ export default {
 
     appendDownload(download) {
       if (!this.findDownload(download)) {
+        download.selected = false;
         this.downloads.push(download);
         this.downloadsList[download.id] = this.downloads[this.downloads.length - 1];
       }
@@ -210,13 +212,17 @@ export default {
       }
     },
 
-    redownloadHandle(download) {
+    redownloadHandler(download) {
       ipcRenderer.send('download-service', {
         action: 'redownload',
         args: {
           downloadId: download.id
         }
       });
+    },
+
+    downloadClickHandler(download) {
+      download.selected = !download.selected;
     },
 
     userLogin() {
