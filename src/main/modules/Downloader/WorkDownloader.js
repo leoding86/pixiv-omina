@@ -179,6 +179,9 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = message || 'Finished';
     this.state = WorkDownloader.state.finish;
 
+    this.request = null;
+    this.download = null;
+
     this.progress = 1;
 
     this.emit('finish', { downloader: this });
