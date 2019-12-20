@@ -69,6 +69,12 @@ class WorkDownloader extends EventEmitter {
      * @property {boolean}
      */
     this.saveInSubfolder = true;
+
+    /**
+     * the target used to open in explorer or finder
+     * @property {String}
+     */
+    this.savedTarget = null;
   }
 
   get speed() {
@@ -242,9 +248,9 @@ class WorkDownloader extends EventEmitter {
     if (this.download || this.request) {
       this.download && this.download.abort();
       this.request && this.request.abort();
-    } else {
-      this.setStop();
     }
+
+    this.setStop();
   }
 
   delete() {

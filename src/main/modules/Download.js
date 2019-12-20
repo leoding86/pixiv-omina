@@ -342,7 +342,7 @@ class Download extends Request {
   setFinish() {
     this.progress = 1;
 
-    this.emit('dl-finish');
+    this.emit('dl-finish', { file: path.join(this.saveTo, this.saveName) });
 
     debug.sendStatus(`Download ${this.options.url} finish`);
   }

@@ -1,5 +1,8 @@
 import EventEmitter from 'events';
 import { shell } from 'electron';
+import {
+  debug
+} from '@/global';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
@@ -231,6 +234,18 @@ class DownloadManager extends EventEmitter {
     return this.workDownloaderPool;
   }
 
+  canStartDownload(download) {
+    return ['finish', 'stopping', 'downloading', 'processing'].indexOf(download.state) < 0;
+  }
+
+  canStopDownload(download) {
+    return ['pending', 'downloading'].indexOf(download.state) > -1;
+  }
+
+  canDeleteDownload(download) {
+    return ['stopping', 'processing'].indexOf(download.state) < 0;
+  }
+
   /**
    * Create a downloader
    * @param {Object} args
@@ -257,7 +272,7 @@ class DownloadManager extends EventEmitter {
   startWorkDownloader({downloadId, reset}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canStartDownload(workDownloader)) {
 
       if (reset) {
         workDownloader.reset();
@@ -304,7 +319,7 @@ class DownloadManager extends EventEmitter {
   stopWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canStopDownload(workDownloader)) {
       workDownloader.stop();
     }
   }
@@ -316,7 +331,7 @@ class DownloadManager extends EventEmitter {
   deleteWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canDeleteDownload(workDownloader)) {
       this.workDownloaderPool.delete(downloadId);
 
       workDownloader.stop();
@@ -335,7 +350,7 @@ class DownloadManager extends EventEmitter {
     let downloader = this.getWorkDownloader(downloadId);
 
     if (downloader) {
-      shell.openItem(downloader.options.saveTo);
+      shell.showItemInFolder(downloader.savedTarget);
     }
   }
 

@@ -144,7 +144,11 @@ class MangaDownloader extends WorkDownloader {
 
     this.download = new Download(downloadOptions);
 
-    this.download.on('dl-finish', () => {
+    this.download.on('dl-finish', ({ file }) => {
+      if (!this.savedTarget) {
+        this.savedTarget = file;
+      }
+
       this.imageIndex++;
 
       this.progress = this.imageIndex / this.images.length;
