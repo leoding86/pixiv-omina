@@ -120,7 +120,7 @@ class DownloadService extends BaseService {
     debug.sendStatus('Downloads have been restored');
 
     const mute = true;
-console.log(downloaders);
+
     this.downloadManager.addDownloaders(downloaders, mute);
   }
 
@@ -229,6 +229,30 @@ console.log(downloaders);
     debug.sendStatus('Re-download')
 
     this.downloadManager.startWorkDownloader({downloadId, reset: true});
+  }
+
+  batchStartDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch start downloads');
+
+    downloadIds.forEach(downloadId => {
+      this.downloadManager.startWorkDownloader({downloadId})
+    });
+  }
+
+  batchStopDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch stop downloads');
+
+    downloadIds.forEach(downloadId => {
+      this.downloadManager.stopWorkDownloader({downloadId});
+    });
+  }
+
+  batchDeleteDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch delete downloads');
+
+    downloadIds.forEach(downloadId => {
+      this.downloadManager.deleteWorkDownloader({downloadId});
+    });
   }
 
   openFolderAction({downloadId}) {

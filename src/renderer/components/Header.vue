@@ -8,41 +8,7 @@
         @click="showAddDownloadDialog = true"
       ></el-button>
 
-      <el-button-group class="header__download-filter">
-        <el-tooltip
-          placement="bottom"
-          content="All"
-        >
-          <el-button
-            :type="filter === 'all' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-files"
-            @click="filterDownloads('all')"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="Downloading"
-        >
-          <el-button
-            :type="filter === 'downloading' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-download"
-            @click="filterDownloads('downloading')"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="finished"
-        >
-          <el-button
-            :type="filter === 'finished' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-finished"
-            @click="filterDownloads('finished')"
-          ></el-button>
-        </el-tooltip>
-      </el-button-group>
+      <slot></slot>
     </div>
     <div class="header__right">
       <div class="settings-button">
@@ -88,15 +54,7 @@ export default {
 
       showSettingsDialog: false,
 
-      downloadFilter: 'all',
-
       hasNewVersion: false
-    }
-  },
-
-  computed: {
-    filter() {
-      return this.downloadFilter;
     }
   },
 
@@ -104,13 +62,6 @@ export default {
     ipcRenderer.on('update-service:find-new-version', () => {
       this.hasNewVersion = true;
     });
-  },
-
-  methods: {
-    filterDownloads(type) {
-      this.downloadFilter = type;
-      this.$root.$emit('download-list:filter', this.downloadFilter);
-    }
   }
 }
 </script>

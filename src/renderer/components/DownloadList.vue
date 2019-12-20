@@ -4,7 +4,7 @@
       <el-card class="download-list-item"
         :class="{'download-list-item--selected': download.selected}"
         v-for="download in filteredDownloads"
-        @click.native="downloadClickHandler(download)"
+        @click.stop.native="downloadClickHandler(download, $event)"
         :key=download.id
       >
         <div :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</div>
@@ -175,8 +175,8 @@ export default {
       this.$emit('delete', download);
     },
 
-    downloadClickHandler(download) {
-      this.$emit('clickDownload', download);
+    downloadClickHandler(download, event) {
+      this.$emit('clickDownload', { download, event });
     },
 
     openFolder(download) {

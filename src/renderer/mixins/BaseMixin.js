@@ -28,6 +28,22 @@ export default {
       });
 
       return changedSettings;
+    },
+
+    isPlatform(platform) {
+      return this.$root.appPlatform === platform;
+    },
+
+    isCtrlKeyHeld(event) {
+      if ((this.isPlatform('windows') || this.isPlatform('linux')) && event.ctrlKey) {
+        return true;
+      } else if (this.isPlatform('macos') && event.metaKey) {
+        return true;
+      }
+    },
+
+    isShiftKeyHeld(event) {
+      return event.shiftKey;
     }
   }
 }
