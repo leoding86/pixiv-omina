@@ -132,11 +132,15 @@ export default {
   watch: {
     downloadFilter() {
       this.clearSelections();
-    }
-  },
+    },
 
-  mounted() {
-    console.log("app");
+    inited(value, oldValue) {
+      if (oldValue === false && value === true) {
+        ipcRenderer.send('download-service', {
+          action: 'fetchAllDownloads'
+        });
+      }
+    }
   },
 
   beforeMount() {
@@ -177,10 +181,6 @@ export default {
 
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
       this.addDownloads(downloads);
-    });
-
-    ipcRenderer.send('download-service', {
-      action: 'fetchAllDownloads'
     });
   },
 
@@ -243,6 +243,17 @@ export default {
           this.appendDownload(download);
         }
       });
+
+      if (this.logined) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
+        });
+      } else {
+        this.$message('You need login first');
+      }
     },
 
     /**
@@ -278,12 +289,18 @@ export default {
     },
 
     startDownloadHandler(download) {
-      ipcRenderer.send('download-service', {
-        action: 'startDownload',
-        args: {
-          downloadId: download.id
+      if (this.logined) {
+        if (this.downloads.length > 0) {
+          ipcRenderer.send('download-service', {
+            action: 'startDownload',
+            args: {
+              downloadId: download.id
+            }
+          });
         }
-      });
+      } else {
+        this.$message('You need to login first');
+      }
     },
 
     stopDownloadHandler(download) {
@@ -336,12 +353,16 @@ export default {
         }
       }
 
-      ipcRenderer.send('download-service', {
-        action: 'batchStartDownloads',
-        args: {
-          downloadIds: downloadIds
-        }
-      })
+      if (this.logined) {
+        ipcRenderer.send('download-service', {
+          action: 'batchStartDownloads',
+          args: {
+            downloadIds: downloadIds
+          }
+        });
+      } else {
+        this.$message('You need login first');
+      }
     },
 
     batchStopDownloads() {
