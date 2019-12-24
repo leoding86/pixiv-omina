@@ -119,9 +119,13 @@ class DownloadService extends BaseService {
 
     debug.sendStatus('Downloads have been restored');
 
-    const mute = true;
-
-    this.downloadManager.addDownloaders(downloaders, mute);
+    /**
+     * do not start downloads automatically after downloads are restored
+     */
+    this.downloadManager.addDownloaders(downloaders, {
+      mute: true,
+      autoStart: false
+    });
   }
 
   fetchAllDownloadsAction() {
@@ -222,7 +226,11 @@ class DownloadService extends BaseService {
   startDownloadAction({downloadId}) {
     debug.sendStatus('Start download');
 
-    this.downloadManager.startWorkDownloader({downloadId});
+    if (!downloadId) {
+      this.downloadManager.downloadNext();
+    } else {
+      this.downloadManager.startWorkDownloader({downloadId});
+    }
   }
 
   redownloadAction({downloadId}) {
