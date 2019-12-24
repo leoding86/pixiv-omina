@@ -75,6 +75,12 @@ class WorkDownloader extends EventEmitter {
      * @property {String}
      */
     this.savedTarget = null;
+
+    /**
+     * when a downloader marked recycled, not events will fired
+     * @property {Boolean}
+     */
+    this.recycle = false;
   }
 
   get speed() {
@@ -123,6 +129,10 @@ class WorkDownloader extends EventEmitter {
     this.saveInSubfolder = true;
   }
 
+  willRecycle() {
+    this.recycle = true;
+  }
+
   getImageSaveFolderName() {
     throw Error('Method getImageSaveFolderName is not implemented');
   }
@@ -150,35 +160,45 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = message || 'Start';
     this.state = WorkDownloader.state.downloading;
 
-    this.emit('start', { downloader: this });
+    if (!this.recycle) {
+      this.emit('start', { downloader: this });
+    }
   }
 
   setDownloading(message) {
     this.statusMessage = message || 'Downloading';
     this.state = WorkDownloader.state.downloading;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setProcessing(message) {
     this.statusMessage = message || 'Processing';
     this.state = WorkDownloader.state.processing;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setStopping(message) {
     this.statusMessage = message || 'Stopping';
     this.state = WorkDownloader.state.stopping;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setStop(message) {
     this.statusMessage = message || 'Stopped';
     this.state = WorkDownloader.state.stop;
 
-    this.emit('stop', { downloader: this });
+    if (!this.recycle) {
+      this.emit('stop', { downloader: this });
+    }
   }
 
   setFinish(message) {
@@ -190,7 +210,9 @@ class WorkDownloader extends EventEmitter {
 
     this.progress = 1;
 
-    this.emit('finish', { downloader: this });
+    if (!this.recycle) {
+      this.emit('finish', { downloader: this });
+    }
   }
 
   /**
@@ -201,7 +223,9 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = error.message;
     this.state = WorkDownloader.state.error;
 
-    this.emit('error', { downloader: this });
+    if (!this.recycle) {
+      this.emit('error', { downloader: this });
+    }
   }
 
   isPending() {
