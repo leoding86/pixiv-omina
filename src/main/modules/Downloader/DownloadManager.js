@@ -67,11 +67,15 @@ class DownloadManager extends EventEmitter {
 
   /**
    * Add multiple downloaders to download manager
-   * @param {Array.<WorkDownloader>} downloaders//
-   * @param {boolean} mute determine to send event
+   * @param {Array.<WorkDownloader>} downloaders
+   * @param {Object} [options]
+   * @param {Boolean} [options.mute=false]
+   * @param {Boolean} [options.autoStart=true]
    * @returns {void}
    */
-  addDownloaders(downloaders, mute = false) {
+  addDownloaders(downloaders, options) {
+    const { mute, autoStart } = Object.assign({mute: false, autoStart: true}, options);//
+
     let addedDownloaders = [];
 
     downloaders.forEach(downloader => {
@@ -86,7 +90,9 @@ class DownloadManager extends EventEmitter {
 
     if (!mute) this.emit('add-batch', addedDownloaders);
 
-    this.downloadNext();
+    if (autoStart) {
+      this.downloadNext();
+    }
   }
 
   reachMaxDownloading() {
@@ -333,6 +339,8 @@ class DownloadManager extends EventEmitter {
 
     if (workDownloader && this.canDeleteDownload(workDownloader)) {
       this.workDownloaderPool.delete(downloadId);
+
+      workDownloader.willRecycle();
 
       workDownloader.stop();
 
