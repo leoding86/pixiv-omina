@@ -36,7 +36,9 @@ function defaultSetting() {
 
     saveUgoiraInSubfolder: true,
 
-    saveIllustrationInSubfolder: true
+    saveIllustrationInSubfolder: true,
+
+    locale: 'en'
   }
 }
 
