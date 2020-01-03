@@ -47,6 +47,14 @@ class SettingStorage extends EventEmitter {
     return SettingStorage.instance;
   }
 
+  /**
+   * alias for method getStroage
+   * @returns {SettingStorage}
+   */
+  static getDefault() {
+    return SettingStorage.getStorage();
+  }
+
   static getSettings() {
     return SettingStorage.instance.getSettings();
   }

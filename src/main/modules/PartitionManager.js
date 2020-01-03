@@ -18,6 +18,14 @@ class PartitionManager {
     return PartitionManager.instance;
   }
 
+  /**
+   * alias for getManager
+   * @returns {PartitionManager}
+   */
+  static getDefault() {
+    return PartitionManager.getManager();
+  }
+
   createPartition(name, persist = false) {
     if (typeof name !== 'string' || name.length < 1) {
       Error('Partition must be a string');

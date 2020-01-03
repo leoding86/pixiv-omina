@@ -32,6 +32,14 @@ class WindowManager {
   }
 
   /**
+   * alias for getManager
+   * @returns {WindowManager}
+   */
+  static getDefault() {
+    return WindowManager.getManager();
+  }
+
+  /**
    * @param {string} name
    * @returns {Electron.BrowserWindow}
    */
