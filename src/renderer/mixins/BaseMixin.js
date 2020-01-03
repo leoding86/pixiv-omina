@@ -14,6 +14,13 @@ export default {
   },
 
   methods: {
+    msg(message) {
+      this.$message({
+        message: message,
+        duration: 1500
+      });
+    },
+
     diffSettings(newSettings) {
       let changedSettings = null;
 
@@ -40,6 +47,8 @@ export default {
       } else if (this.isPlatform('macos') && event.metaKey) {
         return true;
       }
+
+      return false;
     },
 
     isShiftKeyHeld(event) {
