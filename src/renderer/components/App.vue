@@ -1,14 +1,14 @@
 <template>
   <div id="app"
     v-loading="!inited"
-    element-loading-text="Initializing and chekcing login status...">
+    :element-loading-text="$t('_initializing_and_checking_login_status')">
 
     <div id="header">
       <app-header>
         <el-button-group class="header__download-filter">
           <el-tooltip
             placement="bottom"
-            content="All"
+            :content="$t('_all')"
           >
             <el-button
               :type="filter === 'all' ? 'primary' : 'default'"
@@ -19,7 +19,7 @@
           </el-tooltip>
           <el-tooltip
             placement="bottom"
-            content="Downloading"
+            :content="$t('_downloading')"
           >
             <el-button
               :type="filter === 'downloading' ? 'primary' : 'default'"
@@ -30,7 +30,7 @@
           </el-tooltip>
           <el-tooltip
             placement="bottom"
-            content="finished"
+            :content="$t('_finished')"
           >
             <el-button
               :type="filter === 'finished' ? 'primary' : 'default'"
@@ -73,13 +73,14 @@
           <el-button
             type="primary"
             @click="userLogin"
-          >LOGIN PIXIV</el-button>
+          >{{ $t('_login_pixiv') }}</el-button>
         </div>
       </div>
 
       <div class="download-list__empty-notice"
-        v-if="downloads.length < 1">
-        There is no download
+        v-if="downloads.length < 1"
+      >
+        {{ $t('_there_is_no_download') }}
       </div>
       <app-download-list
         class="app-download-list"
@@ -172,11 +173,11 @@ export default {
     });
 
     ipcRenderer.on('download-service:duplicated', (event, downloadId) => {
-      alert('Download is already exists, delete it and try again');
+      alert(this.$t('_download_is_already_exists_delete_it_and_try_again'));
     });
 
     ipcRenderer.on('download-service:error', (event, downloadId) => {
-      alert('This is not a valid url');
+      alert(this.$t('_this_is_not_a_valid_url'));
     });
 
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
@@ -252,7 +253,7 @@ export default {
           }
         });
       } else {
-        this.$message('You need login first');
+        this.$message(this.$t('_you_need_login_first'));
       }
     },
 
@@ -299,7 +300,7 @@ export default {
           });
         }
       } else {
-        this.$message('You need to login first');
+        this.$message(this.$t('_you_need_login_first'));
       }
     },
 
@@ -361,7 +362,7 @@ export default {
           }
         });
       } else {
-        this.$message('You need login first');
+        this.$message(this.$t('_you_need_login_first'));
       }
     },
 
@@ -483,7 +484,7 @@ export default {
           action: 'userLogin'
         });
       } else {
-        alert('You are logined');
+        this.$message(this.$t('_you_are_logined'));
       }
     }
   }

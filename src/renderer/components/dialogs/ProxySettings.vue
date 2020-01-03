@@ -10,7 +10,7 @@
     >
       <span
         slot="label"
-      >Enable proxy</span>
+      >{{ $t('_enable_proxy') }}</span>
       <el-switch v-model="scopedSettings.enableProxy"></el-switch>
     </el-form-item>
 
@@ -19,7 +19,7 @@
     >
       <span
         slot="label"
-      >Proxy service</span>
+      >{{ $t('_proxy_server') }}</span>
 
       <el-input style="display:inline-block;width:125px;"
         :disabled="!scopedSettings.enableProxy"
@@ -39,7 +39,7 @@
     >
       <span
         slot="label"
-      >Enable auth</span>
+      >{{ $t('_enable_auth') }}</span>
       <el-switch
         v-model="scopedSettings.enableProxyAuth"
         :disabled="!scopedSettings.enableProxy"
@@ -51,7 +51,7 @@
     >
       <span
         slot="label"
-      >Username</span>
+      >{{ $t('_username') }}</span>
       <el-input
         placeholder="Username"
         :disabled="!scopedSettings.enableProxy || !scopedSettings.enableProxyAuth"
@@ -64,7 +64,7 @@
     >
       <span
         slot="label"
-      >Password</span>
+      >{{ $t('_password') }}</span>
       <el-input
         placeholder="Password"
         :disabled="!scopedSettings.enableProxy || !scopedSettings.enableProxyAuth"

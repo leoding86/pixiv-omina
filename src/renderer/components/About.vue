@@ -9,7 +9,7 @@
           <i :class="iconClass"></i>
         </div>
         <div class="app-version-info__content">
-          <p>Version {{packageInfo.version}}</p>
+          <p>{{ $t('_version') }} {{packageInfo.version}}</p>
           <p>{{ versionStatus }} <a v-if="newVersion" target="_blank" href="https://github.com/leoding86/pixiv-omina/releases">View</a> </p>
         </div>
       </div>
@@ -52,16 +52,16 @@ export default {
 
     versionStatus() {
       if (this.checkingError) {
-        return 'Error ocurred when checking version';
+        return this.$t('_error_ocurred_when_checking_version');
       }
 
       if (this.checkingUpdate) {
-        return 'Checking';
+        return this.$t('_checking');
       } else if (this.newVersion) {
-        return `New version avaliable ${this.newVersion}`;
+        return `${this.$t('_new_version_avaliable')} ${this.newVersion}`;
       }
 
-      return `It's up to date`;
+      return this.$t('_It_s_up_to_date');
     }
   },
 

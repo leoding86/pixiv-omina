@@ -1,18 +1,28 @@
 <template>
   <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule">
-    <el-form-item label="Close to tray" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_language')" :label-width="formLabelWidth">
+      <el-select v-model="scopedSettings.locale">
+        <el-option v-for="(lang, local) in avaliableLocales"
+          :key="local"
+          :label="lang"
+          :value="local"
+        ></el-option>
+      </el-select>
+    </el-form-item>
+
+    <el-form-item :label="$t('_close_to_tray')" :label-width="formLabelWidth">
       <el-switch v-model="scopedSettings.closeToTray"></el-switch>
     </el-form-item>
 
-    <el-form-item label="Show notification" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_show_notification')" :label-width="formLabelWidth">
       <el-switch v-model="scopedSettings.showNotification"></el-switch>
     </el-form-item>
 
-    <el-form-item label="User Agent" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_user_agent')" :label-width="formLabelWidth">
       <el-input type="textarea" v-model="scopedSettings.userAgent" :rows="4"></el-input>
     </el-form-item>
 
-    <el-form-item label="Save to" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_save_to')" :label-width="formLabelWidth">
       <directory-selector v-model="scopedSettings.saveTo"></directory-selector>
     </el-form-item>
   </el-form>
@@ -35,7 +45,13 @@ export default {
         closeToTray: false,
         showNotification: true,
         userAgent: '',
-        saveTo: ''
+        saveTo: '',
+        locale: 'en'
+      },
+
+      avaliableLocales: {
+        'en': 'English',
+        'zh_CN': '简体中文'
       },
 
       settingsRule: {

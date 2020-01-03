@@ -2,7 +2,7 @@
   <el-dialog
     append-to-body
     custom-class="app-dialog"
-    title="Settings"
+    :title="$t('_settings')"
     :show-close="false"
     :close-on-click-modal="false"
     :width="'480px'"
@@ -12,7 +12,7 @@
       v-model="currentTab"
     >
       <el-tab-pane
-        label="General"
+        :label="$t('_general')"
         name="general"
       >
         <general-settings
@@ -21,7 +21,7 @@
       </el-tab-pane>
 
       <el-tab-pane
-        label="Rename"
+        :label="$t('_rename')"
         name="rename"
       >
         <rename-settings
@@ -30,7 +30,7 @@
       </el-tab-pane>
 
       <el-tab-pane
-        label="Proxy"
+        :label="$t('_proxy')"
         name="proxy"
       >
         <proxy-settings
@@ -39,7 +39,7 @@
       </el-tab-pane>
 
       <el-tab-pane
-        label="About"
+        :label="$t('_about')"
         name="about"
       >
         <app-about></app-about>
@@ -53,16 +53,16 @@
         style="float:left;"
         size="mini"
         @click="showHelp"
-      >Help</el-button>
+      >{{ $t('_help') }}</el-button>
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
-      >Close</el-button>
+      >{{ $t('_close') }}</el-button>
       <el-button
         type="primary"
         @click="saveSettings"
         size="mini"
-      >Save<span v-if="settingsChanged">*</span></el-button>
+      >{{ $t('_save') }}<span v-if="settingsChanged">*</span></el-button>
     </div>
   </el-dialog>
 </template>
@@ -120,21 +120,23 @@ export default {
     saveSettings() {
       const changedSettings = this.diffSettings(this.changedSettings);
 
-      ipcRenderer.send('setting-service', {
-        action: 'updateSettings',
-        args: {
-          settings: changedSettings
-        }
-      })
+      if (changedSettings !== null) {
+        ipcRenderer.send('setting-service', {
+          action: 'updateSettings',
+          args: {
+            settings: changedSettings
+          }
+        });
+      }
     },
 
     showHelp() {
       const h = this.$createElement;
 
       this.$msgbox({
-        title: 'Help',
+        title: this.$t('_help'),
         message: h('div', null, [
-          h('p', null, 'Valid rename placeholds: '),
+          h('p', null, this.$t('_valid_rename_placeholders') + ': '),
           h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%')
         ]),
         showConfirmButton: false

@@ -2,7 +2,7 @@
   <el-dialog
     append-to-body
     custom-class="app-dialog add-download-dialog"
-    title="Add download"
+    :title="$t('_add_download')"
     :show-close="false"
     :close-on-click-modal="false"
     :width="'400px'"
@@ -27,7 +27,7 @@
       </el-form-item>
 
       <el-form-item
-        label="Save to"
+        :label="$t('_save_to')"
         :label-width="formLabelWidth"
       >
         <directory-selector
@@ -42,12 +42,12 @@
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
-      >Cancel</el-button>
+      >{{ $t('_cancel') }}</el-button>
       <el-button
         type="primary"
         @click="addDownload"
         size="mini"
-      >Add</el-button>
+      >{{ $t('_add') }}</el-button>
     </span>
   </el-dialog>
 </template>
