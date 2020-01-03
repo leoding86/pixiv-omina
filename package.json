@@ -3,7 +3,11 @@
   "productName": "Pixiv Omina",
   "version": "0.3.0",
   "license": "MPL-2.0",
+  "homepage": "https://github.com/leoding86/pixiv-omina",
   "checkUpdateUrl": "https://raw.githubusercontent.com/leoding86/pixiv-omina/master/package.json",
+  "bugs": {
+    "url": "https://github.com/leoding86/pixiv-omina/issues"
+  },
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
@@ -19,6 +23,7 @@
     "jszip": "^3.2.2",
     "mime-types": "^2.1.25",
     "source-map-support": "^0.5.12",
+    "vue-i18n": "^8.15.3",
     "vue-virtual-scroller": "^1.0.0-rc.2"
   },
   "devDependencies": {
@@ -58,10 +63,10 @@
       "license": "LICENSE.txt"
     },
     "mac": {
-        "target": "dmg",
-        "extendInfo": {
-            "NSRequiresAquaSystemAppearance": false
-        }
+      "target": "dmg",
+      "extendInfo": {
+        "NSRequiresAquaSystemAppearance": false
+      }
     },
     "protocols": {
       "name": "pixiv-omina-protocal",
