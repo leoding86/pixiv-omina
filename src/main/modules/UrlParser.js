@@ -4,7 +4,7 @@ class UrlParser {
 
   static pixivWorkUrlPattern = /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?artworks\/(\d+)(?:\?.*)?$/;
 
-  static pixivUserUrlPattern = /^https?:\/{2}www\.pixiv\.net\/member\.php\?id=(\d+)(&.*)?$/;
+  static pixivUserUrlPattern = /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(\d+)(&.*)?$/;
 
   static getWorkIdFromUrl(url) {
     let matches = url.match(UrlParser.pixivWorkUrlPattern);
