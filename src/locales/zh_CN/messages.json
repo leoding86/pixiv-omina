@@ -79,7 +79,7 @@
 
   "_checking": "检查中",
 
-  "_new_version_avaliable": "有新版本可用",
+  "_new_version_avaliable": "有新的可用版本",
 
   "_It_s_up_to_date": "当前为最新版",
 
@@ -97,5 +97,7 @@
 
   "_settings_saved": "设置已保存",
 
-  "_please_input_url": "请输入链接地址"
+  "_please_input_url": "请输入链接地址",
+
+  "view": "前往查看"
 }

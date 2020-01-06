@@ -79,7 +79,7 @@
 
   "_checking": "Checking",
 
-  "_new_version_avaliable": "New version avaliable",
+  "_new_version_avaliable": "New avaliable version",
 
   "_It_s_up_to_date": "It's up to date",
 
@@ -97,5 +97,7 @@
 
   "_settings_saved": "Settings saved",
 
-  "_please_input_url": "Please input url"
+  "_please_input_url": "Please input url",
+
+  "view": "view"
 }
