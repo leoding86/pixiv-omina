@@ -10,7 +10,7 @@
         </div>
         <div class="app-version-info__content">
           <p>{{ $t('_version') }} {{packageInfo.version}}</p>
-          <p>{{ versionStatus }} <a v-if="newVersion" target="_blank" href="https://github.com/leoding86/pixiv-omina/releases">View</a> </p>
+          <p>{{ versionStatus }} <a v-if="newVersion" target="_blank" href="https://github.com/leoding86/pixiv-omina/releases">{{ $t('view') }}</a> </p>
         </div>
       </div>
     </div>
@@ -139,5 +139,11 @@ export default {
 
 .app-version-info__content {
   flex: auto;
+
+  a {
+    text-decoration: none;
+    color: #606266;
+    font-weight: 700;
+  }
 }
 </style>

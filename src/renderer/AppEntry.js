@@ -73,6 +73,11 @@ class MainEntry {
         ipcRenderer.send('setting-service', {
           action: 'getSettings'
         });
+
+        // Check new version
+        ipcRenderer.send('update-service', {
+          action: 'checkUpdate'
+        });
       },
 
       methods: {
