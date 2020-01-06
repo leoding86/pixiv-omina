@@ -82,7 +82,7 @@ export default {
 
       addDownloadRule: {
         url: [
-          { required: true, message: 'Please input url', trigger: 'blur' }
+          { required: true, message: this.$t('_please_input_url'), trigger: 'blur' }
         ]
       },
 
@@ -123,7 +123,7 @@ export default {
               args: this.download
             });
           }).catch(() => {
-            this.$message('You are not logined');
+            this.$message(this.$t('_you_need_login_first'));
             this.$emit('user:logout');
           }).finally(() => {
             this.checking = false;
