@@ -37,6 +37,9 @@ class DownloadService extends BaseService {
 
     this.notificationManager = NotificationManager.getDefault();
 
+    /**
+     * @type {DownloadCacheManager}
+     */
     this.downloadCacheManager = DownloadCacheManager.getManager({
       cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
     });
@@ -61,6 +64,20 @@ class DownloadService extends BaseService {
       this.downloadCacheManager.cacheDownloads(downloaders);
 
       this.mainWindow.webContents.send(this.responseChannel('add-batch'), data);
+    });
+
+    this.downloadManager.on('delete-batch', downloadIds => {
+      this.downloadCacheManager.removeDownloads(downloadIds);//
+
+      this.mainWindow.webContents.send(this.responseChannel('delete-batch'), downloadIds);
+    });
+
+    this.downloadManager.on('stop', download => {
+      this.mainWindow.webContents.send(this.responseChannel('stop'), download.id);
+    });
+
+    this.downloadManager.on('stop-batch', downloadIds => {
+      this.mainWindow.webContents.send(this.responseChannel('stop-batch'), downloadIds);
     });
 
     this.downloadManager.on('update', downloader => {
@@ -250,17 +267,13 @@ class DownloadService extends BaseService {
   batchStopDownloadsAction({downloadIds}) {
     debug.sendStatus('Batch stop downloads');
 
-    downloadIds.forEach(downloadId => {
-      this.downloadManager.stopWorkDownloader({downloadId});
-    });
+    this.downloadManager.stopDownloads({downloadIds});
   }
 
   batchDeleteDownloadsAction({downloadIds}) {
     debug.sendStatus('Batch delete downloads');
 
-    downloadIds.forEach(downloadId => {
-      this.downloadManager.deleteWorkDownloader({downloadId});
-    });
+    this.downloadManager.deleteDownloads({downloadIds});
   }
 
   openFolderAction({downloadId}) {

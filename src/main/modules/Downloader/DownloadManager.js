@@ -153,12 +153,10 @@ class DownloadManager extends EventEmitter {
      * Because this listener can be called by a delete operation
      */
     if (this.workDownloaderPool.has(downloader.id)) {
-      this.emit('update', downloader);
+      this.emit('stop', downloader);
     }
 
     this.deattachListenersFromDownloader(downloader);
-
-    this.downloadNext();
   }
 
   /**
@@ -319,6 +317,7 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Once stop a download, try to start next avaliable download
    * @param {Object} param
    * @param {number|string} param.downloadId//
    */
@@ -328,6 +327,8 @@ class DownloadManager extends EventEmitter {
     if (workDownloader && this.canStopDownload(workDownloader)) {
       workDownloader.stop();
     }
+
+    this.downloadNext();
   }
 
   /**
@@ -348,6 +349,61 @@ class DownloadManager extends EventEmitter {
     }
 
     this.emit('delete', downloadId);
+  }
+
+  /**
+   * @param {Object} param
+   * @param {Array} param.downloadIds
+   */
+  deleteDownloads({downloadIds}) {
+    let deletedDownloadIds = [];
+
+    downloadIds.forEach(downloadId => {
+      let download = this.getWorkDownloader(downloadId);
+
+      if (download && this.canDeleteDownload(download)) {
+        this.workDownloaderPool.delete(downloadId);
+
+        deletedDownloadIds.push(download.id);
+
+        download.willRecycle();
+
+        download.stop({
+          mute: true
+        });
+
+        download = null;
+      }
+    });
+
+    this.emit('delete-batch', deletedDownloadIds);
+  }
+
+  /**
+   * Once stop downloads, try to start next avaliable download
+   * @param {Object} param
+   * @param {Array} param.downloadIds
+   */
+  stopDownloads({downloadIds}) {
+    let stoppedDownloadIds = [];
+
+    downloadIds.forEach(downloadId => {
+      let download = this.getWorkDownloader(downloadId);
+
+      if (download && this.canStopDownload(download)) {
+        download.stop({
+          mute: true
+        });
+
+        this.deattachListenersFromDownloader(download);
+
+        stoppedDownloadIds.push(download.id);
+      }
+    });
+
+    this.emit('stop-batch', stoppedDownloadIds);
+
+    this.downloadNext();
   }
 
   /**

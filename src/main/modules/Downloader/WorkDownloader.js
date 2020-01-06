@@ -81,6 +81,11 @@ class WorkDownloader extends EventEmitter {
      * @property {Boolean}
      */
     this.recycle = false;
+
+    /**
+     * If mute is true, the intance will not fire any events
+     */
+    this.mute = false;
   }
 
   get speed() {
@@ -151,6 +156,10 @@ class WorkDownloader extends EventEmitter {
     this.context = context;
   }
 
+  setMute(mute = false) {
+    this.mute = mute;
+  }
+
   setPending(message) {
     this.statusMessage = message || 'Pending';
     this.state = WorkDownloader.state.pending;
@@ -187,7 +196,7 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = message || 'Stopping';
     this.state = WorkDownloader.state.stopping;
 
-    if (!this.recycle) {
+    if (!this.recycle && !this.mute) {
       this.emit('progress', { downloader: this });
     }
   }
@@ -196,7 +205,7 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = message || 'Stopped';
     this.state = WorkDownloader.state.stop;
 
-    if (!this.recycle) {
+    if (!this.recycle && !this.mute) {
       this.emit('stop', { downloader: this });
     }
   }
@@ -258,7 +267,14 @@ class WorkDownloader extends EventEmitter {
     throw 'Not implemeneted';
   }
 
-  stop() {
+  /**
+   *
+   * @param {Object} options
+   * @param {Boolean} [options.mute=false]
+   */
+  stop(options) {
+    let { mute = false } = Object.assign({}, options);//
+
     if (this.isProcessing()) {
       return;
     }
@@ -267,14 +283,19 @@ class WorkDownloader extends EventEmitter {
       return;
     }
 
+    this.setMute(mute);
+
     this.setStopping();
 
-    if (this.download || this.request) {
-      this.download && this.download.abort();
-      this.request && this.request.abort();
-    }
+    this.download && this.download.abort();
+    this.request && this.request.abort();
 
     this.setStop();
+
+    /**
+     * Enable firing events again
+     */
+    this.setMute(false);
   }
 
   delete() {

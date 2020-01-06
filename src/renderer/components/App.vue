@@ -164,8 +164,30 @@ export default {
       this.addDownloads(downloads);
     });
 
+    ipcRenderer.on('download-service:stop', (event, downloadId) => {
+      this.updateDownloads({
+        id: downloadId,
+        state: 'stop'
+      });
+    });
+
+    ipcRenderer.on('download-service:stop-batch', (event, downloadIds) => {
+      downloadIds.forEach(downloadId => {
+        this.updateDownloads({
+          id: downloadId,
+          state: 'stop'
+        });
+      })
+    });
+
     ipcRenderer.on('download-service:delete', (event, downloadId) => {
       this.deleteDownload(downloadId);
+    });
+
+    ipcRenderer.on('download-service:delete-batch', (event, downloadIds) => {
+      downloadIds.forEach(downloadId => {
+        this.deleteDownload(downloadId);
+      });
     });
 
     ipcRenderer.on('download-service:update', (event, download) => {
@@ -195,7 +217,7 @@ export default {
     },
 
     canStopDownload(download) {
-      return 'downloading' === download.state;
+      return ['downloading', 'pending'].indexOf(download.state) > -1;
     },
 
     canDeleteDownload(download) {
