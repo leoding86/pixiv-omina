@@ -9,49 +9,31 @@ import WindowManager from '@/modules/WindowManager';
 
 class Application {
   constructor() {
-    if (this.quitIfNotSingleInstance()) {
-      return;
-    } else {
-      this.mainWindow = null;
+    this.mainWindow = null;
 
-      this.tray = null;
+    this.tray = null;
 
-      this.quiting = false;
+    this.quiting = false;
 
-      this.settingStorage = SettingStorage.getDefault();
+    this.settingStorage = SettingStorage.getDefault();
 
-      this.partitionManager = PartitionManager.getDefault();
+    this.partitionManager = PartitionManager.getDefault();
 
-      this.windowManager = WindowManager.getDefault();
+    this.windowManager = WindowManager.getDefault();
 
-      this.notificationManager = NotificationManager.getDefault();
+    this.notificationManager = NotificationManager.getDefault();
 
-      // create partition 'main'
-      this.partitionManager.createPartition('main', true);
+    // create partition 'main'
+    this.partitionManager.createPartition('main', true);
 
-      // set WindowManager global partition
-      WindowManager.setGlobalPartition(this.partitionManager.getPartition('main'));
+    // set WindowManager global partition
+    WindowManager.setGlobalPartition(this.partitionManager.getPartition('main'));
 
-      // listen setting changes
-      SettingStorage.getDefault().on('change', this.onSettingChange.bind(this));
+    // listen setting changes
+    SettingStorage.getDefault().on('change', this.onSettingChange.bind(this));
 
-      // fixed the browserWindow.removeMenu() is not working
-      Menu.setApplicationMenu(null);
-    }
-  }
-
-  /**
-   * @returns {Boolean}
-   */
-  quitIfNotSingleInstance() {
-    const gotTheLock = app.requestSingleInstanceLock();
-
-    if (!gotTheLock) {
-      app.quit();
-      return true;
-    } else {
-      return false;
-    }
+    // fixed the browserWindow.removeMenu() is not working
+    Menu.setApplicationMenu(null);
   }
 
   /**

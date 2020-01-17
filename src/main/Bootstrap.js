@@ -9,7 +9,25 @@ class Bootstrap {
     this.bindAppEvents(new Application());
   }
 
+  /**
+   * @returns {Boolean}
+   */
+  static quitIfNotSingleInstance() {
+    const gotTheLock = app.requestSingleInstanceLock();
+
+    if (!gotTheLock) {
+      app.quit();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   static boot() {
+    if (Bootstrap.quitIfNotSingleInstance()) {
+      return;
+    }
+
     if (!Bootstrap.instance) {
       Bootstrap.instance = new Bootstrap();
     }
