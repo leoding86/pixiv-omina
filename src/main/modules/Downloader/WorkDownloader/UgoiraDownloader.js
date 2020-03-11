@@ -54,6 +54,13 @@ class UgoiraDownloader extends WorkDownloader {
     return downloader;
   }
 
+  /**
+   * @returns {String}
+   */
+  getImageSaveFolderName() {
+    return FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context);
+  }
+
   fetchMeta() {
     return new Promise((resolve, reject) => {
       const url = UrlBuilder.getUgoiraMetaUrl(this.id);
@@ -117,7 +124,7 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.setDownloading('Generating GIF');
 
-    let gifSaveFile = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
+    let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
 
     /**
      * Check if the gif file has been generated
@@ -193,14 +200,18 @@ class UgoiraDownloader extends WorkDownloader {
       this.options,
       {
         url: url,
-        saveTo: path.join(this.options.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)),
+        saveTo: this.getImageSaveFolder(),
         saveName: FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)
       }
     );
 
     this.download = new Download(downloadOptions);
 
-    this.download.on('dl-finish', () => {
+    this.download.on('dl-finish', ({ file }) => {
+      if (!this.savedTarget) {
+        this.savedTarget = file;
+      }
+
       this.progress = this.download.progress / 2;
       this.setDownloading();
 

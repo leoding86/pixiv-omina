@@ -9,8 +9,8 @@
           <i :class="iconClass"></i>
         </div>
         <div class="app-version-info__content">
-          <p>Version {{packageInfo.version}}</p>
-          <p>{{ versionStatus }}</p>
+          <p>{{ $t('_version') }} {{packageInfo.version}}</p>
+          <p>{{ versionStatus }} <a v-if="newVersion" target="_blank" href="https://github.com/leoding86/pixiv-omina/releases">{{ $t('view') }}</a> </p>
         </div>
       </div>
     </div>
@@ -29,12 +29,18 @@ export default {
 
       checkingUpdate: false,
 
+      checkingError: false,
+
       newVersion: null
     };
   },
 
   computed: {
     iconClass() {
+      if (this.checkingError) {
+        return 'el-icon-error';
+      }
+
       if (this.newVersion) {
         return 'el-icon-warning';
       } else if (this.checkingUpdate) {
@@ -45,39 +51,49 @@ export default {
     },
 
     versionStatus() {
-      if (this.checkingUpdate) {
-        return 'Checking';
-      } else if (this.newVersion) {
-        return `New version avaliable ${this.newVersion}`;
+      if (this.checkingError) {
+        return this.$t('_error_ocurred_when_checking_version');
       }
 
-      return `It's up to date`;
+      if (this.checkingUpdate) {
+        return this.$t('_checking');
+      } else if (this.newVersion) {
+        return `${this.$t('_new_version_avaliable')} ${this.newVersion}`;
+      }
+
+      return this.$t('_It_s_up_to_date');
     }
   },
 
   beforeMount() {
     this.checkingUpdate = true;
 
-    this.findNewVersoinHandler_ = this.findNewVersoinHandler.bind(this);
+    this.findNewVersionHandler_ = this.findNewVersionHandler.bind(this);
+    this.findNewVersionErrorHandler_ = this.findNewVersionErrorHandler.bind(this);
     this.checkUpdateCompleteHandler_ = this.checkUpdateCompleteHandler.bind(this);
 
     ipcRenderer.send('update-service', {
       action: 'checkUpdate'
     });
 
-    ipcRenderer.on('update-service:find-new-version', this.findNewVersoinHandler_);
-
+    ipcRenderer.on('update-service:find-new-version', this.findNewVersionHandler_);
+    ipcRenderer.on('update-service:find-new-version-error', this.findNewVersionErrorHandler_);
     ipcRenderer.on('update-service:complete', this.checkUpdateCompleteHandler_);
   },
 
   beforeDestroy() {
-    ipcRenderer.on('update-service:find-new-version', this.findNewVersoinHandler_);
-    ipcRenderer.on('update-service:complete', this.checkUpdateCompleteHandler_);
+    ipcRenderer.removeListener('update-service:find-new-version', this.findNewVersionHandler_);
+    ipcRenderer.removeListener('update-service:find-new-version-error', this.findNewVersionErrorHandler_);
+    ipcRenderer.removeListener('update-service:complete', this.checkUpdateCompleteHandler_);
   },
 
   methods: {
-    findNewVersoinHandler(event, version) {
+    findNewVersionHandler(event, version) {
       this.newVersion = version;
+    },
+
+    findNewVersionErrorHandler(event) {
+      this.checkingError = true;
     },
 
     checkUpdateCompleteHandler() {
@@ -123,5 +139,11 @@ export default {
 
 .app-version-info__content {
   flex: auto;
+
+  a {
+    text-decoration: none;
+    color: #606266;
+    font-weight: 700;
+  }
 }
 </style>

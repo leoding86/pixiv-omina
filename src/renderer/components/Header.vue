@@ -8,49 +8,20 @@
         @click="showAddDownloadDialog = true"
       ></el-button>
 
-      <el-button-group class="header__download-filter">
-        <el-tooltip
-          placement="bottom"
-          content="All"
-        >
-          <el-button
-            :type="filter === 'all' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-files"
-            @click="filterDownloads('all')"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="Downloading"
-        >
-          <el-button
-            :type="filter === 'downloading' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-download"
-            @click="filterDownloads('downloading')"
-          ></el-button>
-        </el-tooltip>
-        <el-tooltip
-          placement="bottom"
-          content="finished"
-        >
-          <el-button
-            :type="filter === 'finished' ? 'primary' : 'default'"
-            size="small"
-            icon="el-icon-finished"
-            @click="filterDownloads('finished')"
-          ></el-button>
-        </el-tooltip>
-      </el-button-group>
+      <slot></slot>
     </div>
     <div class="header__right">
-      <el-button
-        icon="el-icon-setting"
-        size="small"
-        :style="!logined ? {zIndex: 99999} : null"
-        @click="showSettingsDialog = true"
-      ></el-button>
+      <div class="settings-button">
+        <i v-if="hasNewVersion"
+          class="el-icon-top settings-button__update-icon"
+        ></i>
+        <el-button
+          icon="el-icon-setting"
+          size="small"
+          :style="!logined ? {zIndex: 99999} : null"
+          @click="showSettingsDialog = true"
+        ></el-button>
+      </div>
     </div>
 
     <add-download-dialog
@@ -83,21 +54,14 @@ export default {
 
       showSettingsDialog: false,
 
-      downloadFilter: 'all'
+      hasNewVersion: false
     }
   },
 
-  computed: {
-    filter() {
-      return this.downloadFilter;
-    }
-  },
-
-  methods: {
-    filterDownloads(type) {
-      this.downloadFilter = type;
-      this.$root.$emit('download-list:filter', this.downloadFilter);
-    }
+  beforeMount() {
+    ipcRenderer.on('update-service:find-new-version', () => {
+      this.hasNewVersion = true;
+    });
   }
 }
 </script>
@@ -113,4 +77,21 @@ export default {
     text-align: right;
   }
 }
+
+.settings-button {
+  display: inline-block;
+  position: relative;
+
+  &__update-icon {
+    position: absolute;
+    right:-5px;
+    top:-5px;
+    padding: 2px;
+    border-radius: 100%;
+    background:green;
+    color: #fff;
+    font-size: 12px;
+  }
+}
+
 </style>

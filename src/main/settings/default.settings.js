@@ -28,7 +28,17 @@ function defaultSetting() {
 
     proxyPassword: '',
 
-    closeToTray: false
+    closeToTray: false,
+
+    showNotification: true,
+
+    saveToSubDir: true,
+
+    saveUgoiraInSubfolder: true,
+
+    saveIllustrationInSubfolder: true,
+
+    locale: 'en'
   }
 }
 

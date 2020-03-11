@@ -2,18 +2,19 @@
   <div class="download-list">
     <div class="download-list-item__content">
       <el-card class="download-list-item"
+        :class="{'download-list-item--selected': download.selected}"
         v-for="download in filteredDownloads"
+        @click.stop.native="downloadClickHandler(download, $event)"
         :key=download.id
       >
+        <div :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</div>
+
         <div class="download-list-item__mask"
           v-if="download.frozing"></div>
         <div class="download-list-item__body">
           <div class="download-list-item__title-actions">
             <div class="download-list-item__title">
-              <h3>
-                <span :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</span>
-                <a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a>
-              </h3>
+              <p><a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a></p>
             </div>
             <div class="download-list-item__actions">
               <el-button-group>
@@ -22,7 +23,7 @@
                   type="primary"
                   size="mini"
                   icon="el-icon-video-play"
-                  @click="$emit('start', download)"
+                  @click.stop.prevent="$emit('start', download)"
                 ></el-button>
                 <el-button
                   v-if="download.state === 'pending' || download.state === 'downloading'"
@@ -30,14 +31,14 @@
                   size="mini"
                   icon="el-icon-video-pause"
                   :disabled="download.state === 'processing'"
-                  @click="clickStopHandler(download)"
+                  @click.stop.prevent="clickStopHandler(download)"
                 ></el-button>
                 <el-button
                   v-if="download.state === 'finish'"
                   type="primary"
                   size="mini"
                   icon="el-icon-folder"
-                  @click="openFolder(download)"
+                  @click.stop.prevent="openFolder(download)"
                 ></el-button>
                 <!-- Hidden redownload button -->
                 <el-button
@@ -45,14 +46,14 @@
                   type="primary"
                   size="mini"
                   icon="el-icon-refresh"
-                  @click="download.state === 'finish' && $emit('redownload', download)"
+                  @click.stop.prevent="download.state === 'finish' && $emit('redownload', download)"
                 ></el-button>
                 <el-button
                   type="danger"
                   size="mini"
                   icon="el-icon-delete"
                   :disabled="download.state === 'processing'"
-                  @click="clickDeleteHandler(download)"
+                  @click.stop.prevent="clickDeleteHandler(download)"
                 ></el-button>
               </el-button-group>
             </div>
@@ -174,6 +175,10 @@ export default {
       this.$emit('delete', download);
     },
 
+    downloadClickHandler(download, event) {
+      this.$emit('clickDownload', { download, event });
+    },
+
     openFolder(download) {
       ipcRenderer.send('download-service', {
         action: 'openFolder',
@@ -205,6 +210,7 @@ export default {
   padding: 15px 10px;
   border-radius: 5px;
   background: #fff;
+  border: 2px solid #fff;
   // border: 1px solid #dadada;
   // box-shadow: 0 1px 1px #dedede;
 
@@ -215,6 +221,11 @@ export default {
 
   .el-card__body {
     padding: 0;
+  }
+
+  &--selected {
+    border: 2px solid #409EFF;
+    background: #f9fcff;
   }
 }
 
@@ -236,51 +247,63 @@ export default {
 }
 
 .download-list-item__title {
+  flex: 1;
   height: 32px;
+  overflow: hidden;
 
-  h3 {
+  p {
+    height: 32px;
     line-height: 32px;
     font-size: 14px;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
-    a {
-      text-decoration: none;
-      color: #3c3c3c;
+  a {
+    text-decoration: none;
+    color: #3c3c3c;
 
-      &:hover {
-        color: #000;
-      }
+    &:hover {
+      color: #000;
     }
   }
 }
 
 .download-list-item__title-type {
-  padding: 2px 3px;
+  padding: 1px 2px;
   background: #999;
   color: white;
+  box-sizing: border-box;
   border-radius: 3px;
+  text-align: center;
+  font-size: 12px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .download-list-item__title-type--ugoira {
   @extend .download-list-item__title-type;
 
-  background: coral;
+  background: rgb(255, 170, 139);
 }
 
 .download-list-item__title-type--illustration {
   @extend .download-list-item__title-type;
 
-  background: brown;
+  background: rgb(226, 118, 118);
 }
 
 .download-list-item__title-type--manga {
   @extend .download-list-item__title-type;
 
-  background: cadetblue;
+  background: rgb(146, 215, 218);
 }
 
 .download-list-item__actions {
-  flex: 1;
+  width: 100px;
 
   .el-button-group {
     float: right;

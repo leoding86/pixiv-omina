@@ -97,6 +97,21 @@ class DownloadCacheManager {
       this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
     }
   }
+
+  /**
+   * @param {Array} downloadIds
+   */
+  removeDownloads(downloadIds) {
+    downloadIds.forEach(downloadId => {
+      delete this.cachedDownloads[downloadId];
+    });
+
+    try {
+      fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
+    } catch (error) {
+      this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
+    }
+  }
 }
 
 export default DownloadCacheManager;

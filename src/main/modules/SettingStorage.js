@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import fs from 'fs-extra';
 import path from 'path';
 import { app } from 'electron';
+import FormatName from '@/modules/Utils/FormatName';
 import defaultSettings from '@/settings/default.settings';
 
 /**
@@ -44,6 +45,14 @@ class SettingStorage extends EventEmitter {
     }
 
     return SettingStorage.instance;
+  }
+
+  /**
+   * alias for method getStroage
+   * @returns {SettingStorage}
+   */
+  static getDefault() {
+    return SettingStorage.getStorage();
   }
 
   static getSettings() {
@@ -112,7 +121,7 @@ class SettingStorage extends EventEmitter {
       rule = `%id%_${rule}`;
     }
 
-    return rule;
+    return FormatName.replaceIllegalChars(rule, ['%']);
   }
 
   needCheckAndRebuildWorkImageRenameRuleSetting(key) {
@@ -128,7 +137,7 @@ class SettingStorage extends EventEmitter {
       rule = `${rule}_%page_num%`;
     }
 
-    return rule;
+    return FormatName.replaceIllegalChars(rule, ['%']);
   }
 
   needCheckAndRebuildSaveToSetting(key) {

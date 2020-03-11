@@ -1,29 +1,31 @@
 <template>
   <div class="footer-container">
     <div class="footer-left">
-      <div class="footer-status">Status: <span :title="statusMessage">{{ statusMessage }}</span></div>
+      <div class="footer-status">{{ $t('_status') }}: <span :title="statusMessage">{{ statusMessage }}</span></div>
     </div>
     <div class="footer-right">
       <div class="footer-btn"
-        @click="openDevTools()">DevTools</div>
-      <div class="footer-btn">Report</div>
+        @click="openDevTools()">{{ $t('_dev_tools') }}</div>
+      <div class="footer-btn"><a :href="bugsUrl" target="_blank">{{ $t('_report') }}</a></div>
     </div>
   </div>
 </template>
 
 <script>
+import packageInfo from '@/../../package.json';
 import { ipcRenderer } from 'electron';
 
 export default {
   data() {
     return {
+      bugsUrl: packageInfo.bugs.url,
       statusMessage: ''
     }
   },
 
   beforeMount() {
     ipcRenderer.on('debug-service:status', (event, data) => {
-      console.log(this.statusMessage);
+      console.log(`[PO] - ${this.statusMessage}`);
       this.statusMessage = data.statusMessage;
     });
 
@@ -88,6 +90,11 @@ export default {
 
     &:hover {
       background: #c6c6c6;
+    }
+
+    a {
+      color: #333;
+      text-decoration: none;
     }
   }
 }

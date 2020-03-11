@@ -1,3 +1,4 @@
+import path from 'path';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
 import Download from '@/modules/Download';
@@ -63,6 +64,28 @@ class WorkDownloader extends EventEmitter {
      * @type {string|number}
      */
     this.type = null;
+
+    /**
+     * @property {boolean}
+     */
+    this.saveInSubfolder = true;
+
+    /**
+     * the target used to open in explorer or finder
+     * @property {String}
+     */
+    this.savedTarget = null;
+
+    /**
+     * when a downloader marked recycled, not events will fired
+     * @property {Boolean}
+     */
+    this.recycle = false;
+
+    /**
+     * If mute is true, the intance will not fire any events
+     */
+    this.mute = false;
   }
 
   get speed() {
@@ -100,12 +123,41 @@ class WorkDownloader extends EventEmitter {
     throw Error('Abstract method, not implemented');
   }
 
+  /**
+   *
+   */
+  disableSaveInSubfolder() {
+    this.saveInSubfolder = false;
+  }
+
+  enableSaveInSubfolder() {
+    this.saveInSubfolder = true;
+  }
+
+  willRecycle() {
+    this.recycle = true;
+  }
+
+  getImageSaveFolderName() {
+    throw Error('Method getImageSaveFolderName is not implemented');
+  }
+
+  getImageSaveFolder() {
+    return this.saveInSubfolder ?
+      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
+      this.options.saveTo;
+  }
+
   isUser() {
     return !!this.options.isUser;
   }
 
   setContext(context) {
     this.context = context;
+  }
+
+  setMute(mute = false) {
+    this.mute = mute;
   }
 
   setPending(message) {
@@ -117,44 +169,59 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = message || 'Start';
     this.state = WorkDownloader.state.downloading;
 
-    this.emit('start', { downloader: this });
+    if (!this.recycle) {
+      this.emit('start', { downloader: this });
+    }
   }
 
   setDownloading(message) {
     this.statusMessage = message || 'Downloading';
     this.state = WorkDownloader.state.downloading;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setProcessing(message) {
     this.statusMessage = message || 'Processing';
     this.state = WorkDownloader.state.processing;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setStopping(message) {
     this.statusMessage = message || 'Stopping';
     this.state = WorkDownloader.state.stopping;
 
-    this.emit('progress', { downloader: this });
+    if (!this.recycle && !this.mute) {
+      this.emit('progress', { downloader: this });
+    }
   }
 
   setStop(message) {
     this.statusMessage = message || 'Stopped';
     this.state = WorkDownloader.state.stop;
 
-    this.emit('stop', { downloader: this });
+    if (!this.recycle && !this.mute) {
+      this.emit('stop', { downloader: this });
+    }
   }
 
   setFinish(message) {
     this.statusMessage = message || 'Finished';
     this.state = WorkDownloader.state.finish;
 
+    this.request = null;
+    this.download = null;
+
     this.progress = 1;
 
-    this.emit('finish', { downloader: this });
+    if (!this.recycle) {
+      this.emit('finish', { downloader: this });
+    }
   }
 
   /**
@@ -165,7 +232,9 @@ class WorkDownloader extends EventEmitter {
     this.statusMessage = error.message;
     this.state = WorkDownloader.state.error;
 
-    this.emit('error', { downloader: this });
+    if (!this.recycle) {
+      this.emit('error', { downloader: this });
+    }
   }
 
   isPending() {
@@ -198,7 +267,14 @@ class WorkDownloader extends EventEmitter {
     throw 'Not implemeneted';
   }
 
-  stop() {
+  /**
+   *
+   * @param {Object} options
+   * @param {Boolean} [options.mute=false]
+   */
+  stop(options) {
+    let { mute = false } = Object.assign({}, options);//
+
     if (this.isProcessing()) {
       return;
     }
@@ -207,14 +283,19 @@ class WorkDownloader extends EventEmitter {
       return;
     }
 
+    this.setMute(mute);
+
     this.setStopping();
 
-    if (this.download || this.request) {
-      this.download && this.download.abort();
-      this.request && this.request.abort();
-    } else {
-      this.setStop();
-    }
+    this.download && this.download.abort();
+    this.request && this.request.abort();
+
+    this.setStop();
+
+    /**
+     * Enable firing events again
+     */
+    this.setMute(false);
   }
 
   delete() {

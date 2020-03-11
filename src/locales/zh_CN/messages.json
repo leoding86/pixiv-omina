@@ -1,0 +1,103 @@
+{
+  "_initializing_and_checking_login_status": "初始化并检查登录中",
+
+  "_download": "下载",
+
+  "_all": "全部",
+
+  "_downloading": "下载中",
+
+  "_finished": "已完成",
+
+  "_login_pixiv": "登录PIXIV",
+
+  "_status": "状态",
+
+  "_there_is_no_download": "当前没有下载",
+
+  "_download_is_already_exists_delete_it_and_try_again": "正在下载中，可以删除后重新添加",
+
+  "_this_is_not_a_valid_url": "无效的下载链接",
+
+  "_you_need_login_first": "你需要先登录",
+
+  "_you_are_logined": "你已登录",
+
+  "_settings": "设置",
+
+  "_general": "基本",
+
+  "_rename": "重命名",
+
+  "_proxy": "代理",
+
+  "_about": "关于",
+
+  "_help": "帮助",
+
+  "_close": "关闭",
+
+  "_save": "保存",
+
+  "_valid_rename_placeholders": "可用的重命名占位",
+
+  "_language": "语言",
+
+  "_close_to_tray": "关闭到状态栏",
+
+  "_show_notification": "显示通知",
+
+  "_user_agent": "User Agent",
+
+  "_save_to": "保存到",
+
+  "_save_ugoira_in_subfolder": "保存动图到子文件夹",
+
+  "_format_ugoira": "重命名动图",
+
+  "_format_manga": "重命名漫画",
+
+  "_format_manga_image": "重命名漫画图片",
+
+  "_save_illust_in_subfolder": "保存插图到子文件夹",
+
+  "_format_illust": "重命名插图",
+
+  "_format_illust_image": "重命名插图图片",
+
+  "_enable_proxy": "启用代理",
+
+  "_proxy_server": "代理服务器",
+
+  "_enable_auth": "启用代理验证",
+
+  "_username": "用户名",
+
+  "_password": "密码",
+
+  "_error_ocurred_when_checking_version": "检查版本时发生错误",
+
+  "_checking": "检查中",
+
+  "_new_version_avaliable": "有新的可用版本",
+
+  "_It_s_up_to_date": "当前为最新版",
+
+  "_version": "版本",
+
+  "_add_download": "添加任务",
+
+  "_cancel": "取消",
+
+  "_add": "添加",
+
+  "_dev_tools": "调试",
+
+  "_report": "反馈",
+
+  "_settings_saved": "设置已保存",
+
+  "_please_input_url": "请输入链接地址",
+
+  "view": "前往查看"
+}

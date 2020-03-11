@@ -1,5 +1,8 @@
 import EventEmitter from 'events';
 import { shell } from 'electron';
+import {
+  debug
+} from '@/global';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
@@ -64,11 +67,15 @@ class DownloadManager extends EventEmitter {
 
   /**
    * Add multiple downloaders to download manager
-   * @param {Array.<WorkDownloader>} downloaders//
-   * @param {boolean} mute determine to send event
+   * @param {Array.<WorkDownloader>} downloaders
+   * @param {Object} [options]
+   * @param {Boolean} [options.mute=false]
+   * @param {Boolean} [options.autoStart=true]
    * @returns {void}
    */
-  addDownloaders(downloaders, mute = false) {
+  addDownloaders(downloaders, options) {
+    const { mute, autoStart } = Object.assign({mute: false, autoStart: true}, options);//
+
     let addedDownloaders = [];
 
     downloaders.forEach(downloader => {
@@ -83,7 +90,9 @@ class DownloadManager extends EventEmitter {
 
     if (!mute) this.emit('add-batch', addedDownloaders);
 
-    this.downloadNext();
+    if (autoStart) {
+      this.downloadNext();
+    }
   }
 
   reachMaxDownloading() {
@@ -144,12 +153,10 @@ class DownloadManager extends EventEmitter {
      * Because this listener can be called by a delete operation
      */
     if (this.workDownloaderPool.has(downloader.id)) {
-      this.emit('update', downloader);
+      this.emit('stop', downloader);
     }
 
     this.deattachListenersFromDownloader(downloader);
-
-    this.downloadNext();
   }
 
   /**
@@ -231,6 +238,18 @@ class DownloadManager extends EventEmitter {
     return this.workDownloaderPool;
   }
 
+  canStartDownload(download) {
+    return ['finish', 'stopping', 'downloading', 'processing'].indexOf(download.state) < 0;
+  }
+
+  canStopDownload(download) {
+    return ['pending', 'downloading'].indexOf(download.state) > -1;
+  }
+
+  canDeleteDownload(download) {
+    return ['stopping', 'processing'].indexOf(download.state) < 0;
+  }
+
   /**
    * Create a downloader
    * @param {Object} args
@@ -257,7 +276,7 @@ class DownloadManager extends EventEmitter {
   startWorkDownloader({downloadId, reset}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canStartDownload(workDownloader)) {
 
       if (reset) {
         workDownloader.reset();
@@ -298,15 +317,18 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Once stop a download, try to start next avaliable download
    * @param {Object} param
    * @param {number|string} param.downloadId//
    */
   stopWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canStopDownload(workDownloader)) {
       workDownloader.stop();
     }
+
+    this.downloadNext();
   }
 
   /**
@@ -316,8 +338,10 @@ class DownloadManager extends EventEmitter {
   deleteWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader) {
+    if (workDownloader && this.canDeleteDownload(workDownloader)) {
       this.workDownloaderPool.delete(downloadId);
+
+      workDownloader.willRecycle();
 
       workDownloader.stop();
 
@@ -329,13 +353,68 @@ class DownloadManager extends EventEmitter {
 
   /**
    * @param {Object} param
+   * @param {Array} param.downloadIds
+   */
+  deleteDownloads({downloadIds}) {
+    let deletedDownloadIds = [];
+
+    downloadIds.forEach(downloadId => {
+      let download = this.getWorkDownloader(downloadId);
+
+      if (download && this.canDeleteDownload(download)) {
+        this.workDownloaderPool.delete(downloadId);
+
+        deletedDownloadIds.push(download.id);
+
+        download.willRecycle();
+
+        download.stop({
+          mute: true
+        });
+
+        download = null;
+      }
+    });
+
+    this.emit('delete-batch', deletedDownloadIds);
+  }
+
+  /**
+   * Once stop downloads, try to start next avaliable download
+   * @param {Object} param
+   * @param {Array} param.downloadIds
+   */
+  stopDownloads({downloadIds}) {
+    let stoppedDownloadIds = [];
+
+    downloadIds.forEach(downloadId => {
+      let download = this.getWorkDownloader(downloadId);
+
+      if (download && this.canStopDownload(download)) {
+        download.stop({
+          mute: true
+        });
+
+        this.deattachListenersFromDownloader(download);
+
+        stoppedDownloadIds.push(download.id);
+      }
+    });
+
+    this.emit('stop-batch', stoppedDownloadIds);
+
+    this.downloadNext();
+  }
+
+  /**
+   * @param {Object} param
    * @param {number|string} param.downloadId
    */
   openFolder({downloadId}) {
     let downloader = this.getWorkDownloader(downloadId);
 
     if (downloader) {
-      shell.openItem(downloader.options.saveTo);
+      shell.showItemInFolder(downloader.savedTarget);
     }
   }
 

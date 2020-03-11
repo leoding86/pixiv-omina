@@ -14,6 +14,13 @@ export default {
   },
 
   methods: {
+    msg(message) {
+      this.$message({
+        message: message,
+        duration: 1500
+      });
+    },
+
     diffSettings(newSettings) {
       let changedSettings = null;
 
@@ -28,6 +35,24 @@ export default {
       });
 
       return changedSettings;
+    },
+
+    isPlatform(platform) {
+      return this.$root.appPlatform === platform;
+    },
+
+    isCtrlKeyHeld(event) {
+      if ((this.isPlatform('windows') || this.isPlatform('linux')) && event.ctrlKey) {
+        return true;
+      } else if (this.isPlatform('macos') && event.metaKey) {
+        return true;
+      }
+
+      return false;
+    },
+
+    isShiftKeyHeld(event) {
+      return event.shiftKey;
     }
   }
 }

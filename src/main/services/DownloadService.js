@@ -11,6 +11,7 @@ import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import DownloadCacheManager from '@/modules/DownloadCacheManager';
+import NotificationManager from '@/modules/NotificationManager';
 import BaseService from '@/services/BaseService';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
@@ -34,12 +35,21 @@ class DownloadService extends BaseService {
 
     this.downloadManager = DownloadManager.getManager();
 
+    this.notificationManager = NotificationManager.getDefault();
+
+    /**
+     * @type {DownloadCacheManager}
+     */
     this.downloadCacheManager = DownloadCacheManager.getManager({
       cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
     });
 
     this.downloadManager.on('add', downloader => {
       this.downloadCacheManager.cacheDownload(downloader);
+
+      this.notificationManager.showDownloadAddedNotification({
+        title: `Download ${downloader.id} is added`
+      });
 
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
     });
@@ -54,6 +64,20 @@ class DownloadService extends BaseService {
       this.downloadCacheManager.cacheDownloads(downloaders);
 
       this.mainWindow.webContents.send(this.responseChannel('add-batch'), data);
+    });
+
+    this.downloadManager.on('delete-batch', downloadIds => {
+      this.downloadCacheManager.removeDownloads(downloadIds);//
+
+      this.mainWindow.webContents.send(this.responseChannel('delete-batch'), downloadIds);
+    });
+
+    this.downloadManager.on('stop', download => {
+      this.mainWindow.webContents.send(this.responseChannel('stop'), download.id);
+    });
+
+    this.downloadManager.on('stop-batch', downloadIds => {
+      this.mainWindow.webContents.send(this.responseChannel('stop-batch'), downloadIds);
     });
 
     this.downloadManager.on('update', downloader => {
@@ -112,9 +136,13 @@ class DownloadService extends BaseService {
 
     debug.sendStatus('Downloads have been restored');
 
-    const mute = true;
-console.log(downloaders);
-    this.downloadManager.addDownloaders(downloaders, mute);
+    /**
+     * do not start downloads automatically after downloads are restored
+     */
+    this.downloadManager.addDownloaders(downloaders, {
+      mute: true,
+      autoStart: false
+    });
   }
 
   fetchAllDownloadsAction() {
@@ -215,13 +243,37 @@ console.log(downloaders);
   startDownloadAction({downloadId}) {
     debug.sendStatus('Start download');
 
-    this.downloadManager.startWorkDownloader({downloadId});
+    if (!downloadId) {
+      this.downloadManager.downloadNext();
+    } else {
+      this.downloadManager.startWorkDownloader({downloadId});
+    }
   }
 
   redownloadAction({downloadId}) {
     debug.sendStatus('Re-download')
 
     this.downloadManager.startWorkDownloader({downloadId, reset: true});
+  }
+
+  batchStartDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch start downloads');
+
+    downloadIds.forEach(downloadId => {
+      this.downloadManager.startWorkDownloader({downloadId})
+    });
+  }
+
+  batchStopDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch stop downloads');
+
+    this.downloadManager.stopDownloads({downloadIds});
+  }
+
+  batchDeleteDownloadsAction({downloadIds}) {
+    debug.sendStatus('Batch delete downloads');
+
+    this.downloadManager.deleteDownloads({downloadIds});
   }
 
   openFolderAction({downloadId}) {

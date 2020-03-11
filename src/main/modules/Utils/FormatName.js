@@ -1,31 +1,52 @@
 class FormatName {
-  static format(renameFormat, context, fallback) {
-    let specials = {
-      win: {//
-        illegals: [
-          '<', '>', ':', '"', '/', '\\', '|', '?', '*'
-        ],
-        /**
-        illegalNames: [
-          "con","aux","nul","prn","com0","com1","com2","com3","com4","com5","com6","com7","com8","com9","lpt0","lpt1","lpt2","lpt3","lpt4","lpt5","lpt6","lpt7","lpt8","lpt9"
-        ],
-        */
-        max: 200 // full path limitation is 258
-      },
-      linux: {
-        illegals: [
-          '/', /** not suggest to use */ '@', '#', '$', '&', '\'',
-        ],
-        max: 256
-      },
-      unix: {
-        illegals: [
-          '/', ' '
-        ],
-        max: 256
-      }
-    };
+  static specials = {
+    win: {//
+      illegals: [
+        '<', '>', ':', '"', '/', '\\', '|', '?', '*'
+      ],
+      /**
+      illegalNames: [
+        "con","aux","nul","prn","com0","com1","com2","com3","com4","com5","com6","com7","com8","com9","lpt0","lpt1","lpt2","lpt3","lpt4","lpt5","lpt6","lpt7","lpt8","lpt9"
+      ],
+      */
+      max: 200 // full path limitation is 258
+    },
+    linux: {
+      illegals: [
+        '/', /** not suggest to use */ '@', '#', '$', '&', '\'',
+      ],
+      max: 256
+    },
+    unix: {
+      illegals: [
+        '/', ' '
+      ],
+      max: 256
+    }
+  }
 
+  static getIllegalChars() {
+    return FormatName.specials.win.illegals.concat(FormatName.specials.linux.illegals, FormatName.specials.unix.illegals, ['~']);
+  }
+
+  /**
+   *
+   * @param {String} str
+   * @param {Array} skipChars
+   */
+  static replaceIllegalChars(str, skipChars) {
+    FormatName.getIllegalChars().forEach(char => {
+      if (skipChars && skipChars.indexOf(char) > -1) return;
+
+      while (str.indexOf(char) > -1) {
+        str = str.replace(char, '_');
+      }
+    });
+
+    return str;
+  }
+
+  static format(renameFormat, context, fallback) {
     let filename = '';
 
     function getContextMetaValue(context, key) {
@@ -89,22 +110,14 @@ class FormatName {
       filename = !!name ? name : fallback;
     }
 
-    /**
-     * use merged platform rule to filter filename.
-     **/
-    let rule = specials.win;
-    let illegalChars = specials.win.illegals.concat(specials.linux.illegals, specials.unix.illegals, ['~']);
-
-    illegalChars.forEach(char => {
-      filename = filename.replace(char, '_');
-    });
+    filename = FormatName.replaceIllegalChars(filename);
 
     /**
      * Remove dots at end of the filename
      */
     filename = filename.replace(/\.*$/, '');
 
-    filename = filename.substr(0, rule.max);
+    filename = filename.substr(0, FormatName.specials.win.max);
 
     return filename.length === 0 ? `file_${Date.now()}` : filename;
   }

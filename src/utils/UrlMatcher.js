@@ -20,8 +20,13 @@ class UrlMatcher {
     return /^https?:\/{2}www\.pixiv\.net\/([a-z]+\/)?artworks\/[\d]+(\?.*)?$/.test(url);
   }
 
+  /**
+   *
+   * @param {String} url avaliable urls has: https://www.pixiv.net/member_illust.php?id=123456
+   *                                         https://www.pixiv.net/member.php?id=123456
+   */
   static isPixivUser(url) {
-    return /^https?:\/{2}www\.pixiv\.net\/member\.php\?id=(\d+)(&.*)?$/.test(url);
+    return /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(\d+)(&.*)?$/.test(url);
   }
 }
 

@@ -86,20 +86,32 @@ class UpdateService extends BaseService {
                 }
               }
             } catch (error) {
+              this.sendDataToWindow(
+                this.responseChannel('find-new-version-error')
+              );
               debug.sendStatus('Check update error');
             }
           });
 
           response.on('error', error => {
+            this.sendDataToWindow(
+              this.responseChannel('find-new-version-error')
+            );
             debug.sendStatus('Check update fail');
           });
 
           response.on('aborted', () => {
+            this.sendDataToWindow(
+              this.responseChannel('find-new-version-error')
+            );
             debug.sendStatus('Check update aborted');
           });
         });
 
         this.request.on('error', error => {
+          this.sendDataToWindow(
+            this.responseChannel('find-new-version-error')
+          );
           debug.sendStatus('Check update fail');
         });
 

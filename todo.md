@@ -2,7 +2,7 @@
 
 If there are not issues cause application broken, the task on the list below will be my next works.
 
-- [ ] Chinese language support
-- [ ] Add notification feature
+- [x] Chinese language support
+- [x] Add notification feature
 - [ ] Dark theme
 - [ ] Download novel support

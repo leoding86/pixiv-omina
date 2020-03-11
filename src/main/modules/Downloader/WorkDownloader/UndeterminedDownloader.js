@@ -1,4 +1,5 @@
 import Request from '@/modules/Request';
+import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
@@ -168,11 +169,21 @@ class UndeterminedDownloader extends WorkDownloader {
           this.setContext(jsonData.body);
 
           if (jsonData.body.illustType === 0) {
-            resolve(IllustrationDownloader.createFromWorkDownloader(this));
+            let illustrationDownloader = IllustrationDownloader.createFromWorkDownloader(this);
+
+            SettingStorage.getSetting('saveIllustrationInSubfolder') ?
+              illustrationDownloader.enableSaveInSubfolder() : illustrationDownloader.disableSaveInSubfolder();
+
+            resolve(illustrationDownloader);
           } else if (jsonData.body.illustType === 1) {
             resolve(MangaDownloader.createFromWorkDownloader(this));
           } else if (jsonData.body.illustType === 2) {
-            resolve(UgoiraDownloader.createFromWorkDownloader(this));
+            let ugoiraDownloader = UgoiraDownloader.createFromWorkDownloader(this);
+
+            SettingStorage.getSetting('saveUgoiraInSubfolder') ?
+              ugoiraDownloader.enableSaveInSubfolder() : ugoiraDownloader.disableSaveInSubfolder();
+
+            resolve(ugoiraDownloader);
           } else {
             let error = Error(`unsupported work type '${jsonData.body.illustType}'`);
 

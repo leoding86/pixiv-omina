@@ -1,10 +1,67 @@
 <template>
   <div id="app"
     v-loading="!inited"
-    element-loading-text="Initializing and chekcing login status...">
+    :element-loading-text="$t('_initializing_and_checking_login_status')">
 
     <div id="header">
-      <app-header></app-header>
+      <app-header>
+        <el-button-group class="header__download-filter">
+          <el-tooltip
+            placement="bottom"
+            :content="$t('_all')"
+          >
+            <el-button
+              :type="filter === 'all' ? 'primary' : 'default'"
+              size="small"
+              icon="el-icon-files"
+              @click="filterDownloads('all')"
+            ></el-button>
+          </el-tooltip>
+          <el-tooltip
+            placement="bottom"
+            :content="$t('_downloading')"
+          >
+            <el-button
+              :type="filter === 'downloading' ? 'primary' : 'default'"
+              size="small"
+              icon="el-icon-download"
+              @click="filterDownloads('downloading')"
+            ></el-button>
+          </el-tooltip>
+          <el-tooltip
+            placement="bottom"
+            :content="$t('_finished')"
+          >
+            <el-button
+              :type="filter === 'finished' ? 'primary' : 'default'"
+              size="small"
+              icon="el-icon-finished"
+              @click="filterDownloads('finished')"
+            ></el-button>
+          </el-tooltip>
+        </el-button-group>
+
+        <el-button-group
+          v-if="hasSelectedDownload"
+          class="header__download-filter"
+        >
+          <el-button
+            size="small"
+            icon="el-icon-video-play"
+            @click="batchStartDownloads"
+          ></el-button>
+          <el-button
+            size="small"
+            icon="el-icon-video-pause"
+            @click="batchStopDownloads"
+          ></el-button>
+          <el-button
+            size="small"
+            icon="el-icon-delete"
+            @click="batchDeleteDownloads"
+          ></el-button>
+        </el-button-group>
+      </app-header>
     </div>
 
     <div id="container">
@@ -16,13 +73,14 @@
           <el-button
             type="primary"
             @click="userLogin"
-          >LOGIN PIXIV</el-button>
+          >{{ $t('_login_pixiv') }}</el-button>
         </div>
       </div>
 
       <div class="download-list__empty-notice"
-        v-if="downloads.length < 1">
-        There is no download
+        v-if="downloads.length < 1"
+      >
+        {{ $t('_there_is_no_download') }}
       </div>
       <app-download-list
         class="app-download-list"
@@ -31,7 +89,8 @@
         @start="startDownloadHandler"
         @stop="stopDownloadHandler"
         @delete="deleteDownloadHandler"
-        @redownload="redownloadHandle"
+        @redownload="redownloadHandler"
+        @clickDownload="downloadClickHandler"
       ></app-download-list>
     </div>
 
@@ -59,16 +118,43 @@ export default {
   data() {
     return {
       downloads: [],
+      downloadFilter: 'all',
+      hasSelectedDownload: false,
       debug: false
     }
   },
 
-  mounted() {
-    console.log("app");
+  computed: {
+    filter() {
+      return this.downloadFilter;
+    }
+  },
+
+  watch: {
+    downloadFilter() {
+      this.clearSelections();
+    },
+
+    inited(value, oldValue) {
+      if (oldValue === false && value === true) {
+        ipcRenderer.send('download-service', {
+          action: 'fetchAllDownloads'
+        });
+      }
+    }
   },
 
   beforeMount() {
     this.downloadsList = {};
+
+    this.selectedDownloads = {};
+
+    this.firstSelectedDownload = null;
+
+    document.body.addEventListener('click', () => {
+      this.clearSelections();
+      this.firstSelectedDownload = null;
+    });
 
     ipcRenderer.on('download-service:add', (event, download) => {
       this.addDownloads(download);
@@ -78,8 +164,30 @@ export default {
       this.addDownloads(downloads);
     });
 
+    ipcRenderer.on('download-service:stop', (event, downloadId) => {
+      this.updateDownloads({
+        id: downloadId,
+        state: 'stop'
+      });
+    });
+
+    ipcRenderer.on('download-service:stop-batch', (event, downloadIds) => {
+      downloadIds.forEach(downloadId => {
+        this.updateDownloads({
+          id: downloadId,
+          state: 'stop'
+        });
+      })
+    });
+
     ipcRenderer.on('download-service:delete', (event, downloadId) => {
       this.deleteDownload(downloadId);
+    });
+
+    ipcRenderer.on('download-service:delete-batch', (event, downloadIds) => {
+      downloadIds.forEach(downloadId => {
+        this.deleteDownload(downloadId);
+      });
     });
 
     ipcRenderer.on('download-service:update', (event, download) => {
@@ -87,25 +195,33 @@ export default {
     });
 
     ipcRenderer.on('download-service:duplicated', (event, downloadId) => {
-      alert('Download is already exists, delete it and try again');
+      alert(this.$t('_download_is_already_exists_delete_it_and_try_again'));
     });
 
     ipcRenderer.on('download-service:error', (event, downloadId) => {
-      alert('This is not a valid url');
+      alert(this.$t('_this_is_not_a_valid_url'));
     });
 
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
       this.addDownloads(downloads);
-    });
-
-    ipcRenderer.send('download-service', {
-      action: 'fetchAllDownloads'
     });
   },
 
   methods: {
     devToolsToggledHandler(val) {
       this.debug = val;
+    },
+
+    canStartDownload(download) {
+      return ['pending', 'stop', 'error'].indexOf(download.state) > -1;
+    },
+
+    canStopDownload(download) {
+      return ['downloading', 'pending'].indexOf(download.state) > -1;
+    },
+
+    canDeleteDownload(download) {
+      return 'processing' !== download.state;
     },
 
     findDownload(download) {
@@ -126,11 +242,20 @@ export default {
 
     appendDownload(download) {
       if (!this.findDownload(download)) {
+        /**
+         * Add reactive properties before push the download to downloads stack
+         */
+        download.selected = false;
+        download.frozing = false;
         this.downloads.push(download);
         this.downloadsList[download.id] = this.downloads[this.downloads.length - 1];
       }
     },
 
+
+    /**
+     * Reactive add from the main process
+     */
     addDownloads(downloads) {
       if (!Array.isArray(downloads)) {
         downloads = [downloads];
@@ -141,20 +266,39 @@ export default {
           this.appendDownload(download);
         }
       });
+
+      if (this.logined) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
+        });
+      } else {
+        this.$message(this.$t('_you_need_login_first'));
+      }
     },
 
+    /**
+     * Reactive the update from the main process
+     */
     updateDownloads(download) {
       let _download = this.findDownload(download);
 
       if (_download) {
         let index = this.downloads.indexOf(_download);
 
-        this.$set(this.downloads, index, download);
+        _download.frozing = false;
+
+        this.$set(this.downloads, index, Object.assign(_download, download));
 
         this.downloadsList[download.id] = this.downloads[index];
       }
     },
 
+    /**
+     * Reactive the delete from the main process
+     */
     deleteDownload(downloadId) {
       let _download = this.findDownload(downloadId);
 
@@ -168,49 +312,53 @@ export default {
     },
 
     startDownloadHandler(download) {
+      if (this.logined) {
+        if (this.downloads.length > 0) {
+          ipcRenderer.send('download-service', {
+            action: 'startDownload',
+            args: {
+              downloadId: download.id
+            }
+          });
+        }
+      } else {
+        this.$message(this.$t('_you_need_login_first'));
+      }
+    },
+
+    stopDownloadHandler(download) {
+      download.frozing = true;
+
+      this.$set(this.downloads, this.downloads.indexOf(download), download);
+
       ipcRenderer.send('download-service', {
-        action: 'startDownload',
+        action: 'stopDownload',
         args: {
           downloadId: download.id
         }
       });
     },
 
-    stopDownloadHandler(download) {
-      let _download = this.findDownload(download);
-
-      if (_download) {
-        _download.frozing = true;
-
-        this.$set(this.downloads, this.downloads.indexOf(_download), _download);
-
-        ipcRenderer.send('download-service', {
-          action: 'stopDownload',
-          args: {
-            downloadId: _download.id
-          }
-        });
-      }
-    },
-
+    /**
+     * delete the download
+     */
     deleteDownloadHandler(download) {
-      let _download = this.findDownload(download);
+      download.frozing = true;
 
-      if (_download) {
-        _download.frozing = true;
+      this.$set(this.downloads, this.downloads.indexOf(download), download);
 
-        this.$set(this.downloads, this.downloads.indexOf(_download), _download);
-
-        ipcRenderer.send('download-service', {
-          action: 'deleteDownload',
-          args: {
-            downloadId: download.id
-          }
-        });
-      }
+      ipcRenderer.send('download-service', {
+        action: 'deleteDownload',
+        args: {
+          downloadId: download.id
+        }
+      });
     },
 
-    redownloadHandle(download) {
+    /**
+     * redownload, useless for this moment
+     */
+    redownloadHandler(download) {
       ipcRenderer.send('download-service', {
         action: 'redownload',
         args: {
@@ -219,13 +367,146 @@ export default {
       });
     },
 
+    batchStartDownloads() {
+      let downloadIds = [];
+
+      for (let id in this.selectedDownloads) {
+        if (this.canStartDownload(this.selectedDownloads[id])) {
+          downloadIds.push(id);
+        }
+      }
+
+      if (this.logined) {
+        ipcRenderer.send('download-service', {
+          action: 'batchStartDownloads',
+          args: {
+            downloadIds: downloadIds
+          }
+        });
+      } else {
+        this.$message(this.$t('_you_need_login_first'));
+      }
+    },
+
+    batchStopDownloads() {
+      let downloadIds = [];
+
+      for (let id in this.selectedDownloads) {
+        if (this.canStopDownload(this.selectedDownloads[id])) {
+          downloadIds.push(id);
+        }
+      }
+
+      ipcRenderer.send('download-service', {
+        action: 'batchStopDownloads',
+        args: {
+          downloadIds: downloadIds
+        }
+      });
+    },
+
+    batchDeleteDownloads() {
+      let downloadIds = [];
+
+      for (let id in this.selectedDownloads) {
+        if (this.canDeleteDownload(this.selectedDownloads[id])) {
+          downloadIds.push(id);
+        }
+      }
+
+      ipcRenderer.send('download-service', {
+        action: 'batchDeleteDownloads',
+        args: {
+          downloadIds: downloadIds
+        }
+      });
+    },
+
+    downloadClickHandler({ download, event }) {
+      console.log(event);
+
+      if (this.isCtrlKeyHeld(event)) {
+        this.selectDownload(download);
+      } else if (this.isShiftKeyHeld(event)) {
+        this.clearSelections();
+
+        this.selectDownload(download);
+
+        if (this.firstSelectedDownload) {
+          let startIndex = this.downloads.indexOf(this.firstSelectedDownload);
+          let endIndex = this.downloads.indexOf(download);
+          let s = null, e = null;
+
+          if (startIndex !== endIndex) {
+            if (startIndex > endIndex) {
+              s = endIndex;
+              e = startIndex;
+            } else if (startIndex < endIndex) {
+              s = startIndex;
+              e = endIndex;
+            }
+
+            while (s <= e) {
+              this.selectDownload(this.downloads[s]);
+
+              s++;
+            }
+          }
+        }
+
+        this.hasSelectedDownload = true;
+
+        return;
+      } else {
+        this.selectDownload(download);
+
+        /**
+         * Clear selections if ctrl or command key is not held
+         */
+        for (let downloadId in this.selectedDownloads) {
+          if (download.id !== downloadId) {
+            this.removeSelectedDownload(this.selectedDownloads[downloadId]);
+          }
+        }
+      }
+
+      this.hasSelectedDownload = true;
+
+      this.firstSelectedDownload = download;
+    },
+
+    clearSelections() {
+      for (let downloadId in this.selectedDownloads) {
+        this.removeSelectedDownload(this.selectedDownloads[downloadId]);
+      }
+
+      this.hasSelectedDownload = false;
+    },
+
+    selectDownload(download) {
+      if (!download.selected) {
+        download.selected = true;
+        this.selectedDownloads[download.id] = download;
+      }
+    },
+
+    removeSelectedDownload(download) {
+      download.selected = false;
+      delete this.selectedDownloads[download.id];
+    },
+
+    filterDownloads(type) {
+      this.downloadFilter = type;
+      this.$root.$emit('download-list:filter', this.downloadFilter);
+    },
+
     userLogin() {
       if (!this.logined) {
         ipcRenderer.send("user-service", {
           action: 'userLogin'
         });
       } else {
-        alert('You are logined');
+        this.$message(this.$t('_you_are_logined'));
       }
     }
   }
