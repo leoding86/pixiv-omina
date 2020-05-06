@@ -1,9 +1,9 @@
 import EventEmitter from 'events';
+import FormatName from '@/modules/Utils/FormatName';
+import { app } from 'electron';
+import defaultSettings from '@/settings/default.settings';
 import fs from 'fs-extra';
 import path from 'path';
-import { app } from 'electron';
-import FormatName from '@/modules/Utils/FormatName';
-import defaultSettings from '@/settings/default.settings';
 
 /**
  * @class
@@ -97,6 +97,8 @@ class SettingStorage extends EventEmitter {
           settings[key] = this.rebuildWorkImageRenameRule(settings[key])
         } else if (this.needCheckAndRebuildSaveToSetting(key)) {
           settings[key] = this.rebuildSaveTo(settings[key]);
+        } else if (this.needCheckAndRebuildSaveWorkToRelative(key)) {
+          settings[key] = this.rebuildSaveWorkToRelative(settings[key]);
         }
       } else {
         delete settings[key];
@@ -110,6 +112,18 @@ class SettingStorage extends EventEmitter {
     this.emit('change', settings);
 
     return settings;
+  }
+
+  needCheckAndRebuildSaveWorkToRelative(key) {
+    return ['saveIllustrationToRelativeFolder', 'saveUgoiraToRelativeFolder', 'saveMangaToRelativeFolder'].indexOf(key) > -1;
+  }
+
+  /**
+   *
+   * @param {String} folder
+   */
+  rebuildSaveWorkToRelative(folder) {
+    return folder.replace(/\/+/g, '/');
   }
 
   needCheckAndRebuildWorkRenameRuleSetting(key) {
