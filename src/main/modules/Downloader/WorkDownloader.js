@@ -1,8 +1,8 @@
-import path from 'path';
+import Download from '@/modules/Download';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
-import Download from '@/modules/Download';
 import WindowManager from '@/modules/WindowManager';
+import path from 'path';
 
 /**
  * @class
@@ -143,9 +143,11 @@ class WorkDownloader extends EventEmitter {
   }
 
   getImageSaveFolder() {
-    return this.saveInSubfolder ?
-      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
-      this.options.saveTo;
+    throw Error('Method getImageSaveFolder is not implemented');
+  }
+
+  getRelativeSaveFolder() {
+    throw Error('Method getRelativeSaveFolder is not implemented');
   }
 
   isUser() {
