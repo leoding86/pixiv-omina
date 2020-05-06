@@ -1,11 +1,5 @@
 <template>
   <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule">
-    <el-form-item :label-width="formLabelWidth"
-      :label="$t('_save_ugoira_in_subfolder')"
-    >
-      <el-switch v-model="scopedSettings.saveUgoiraInSubfolder"></el-switch>
-    </el-form-item>
-
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_ugoira') }}</span>
       <el-input v-model="scopedSettings.ugoiraRename"></el-input>
@@ -48,7 +42,6 @@ export default {
       formLabelWidth: "160px",
 
       scopedSettings: {
-        saveUgoiraInSubfolder: true,
         saveIllustrationInSubfolder: true,
         ugoiraRename: '',
         mangaRename: '',
