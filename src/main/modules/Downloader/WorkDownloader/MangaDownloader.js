@@ -1,10 +1,10 @@
-import path from 'path';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import UrlBuilder from '@/../utils/UrlBuilder';
-import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
+import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
+import UrlBuilder from '@/../utils/UrlBuilder';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import path from 'path';
 
 /**
  * @class
@@ -117,8 +117,16 @@ class MangaDownloader extends WorkDownloader {
    * @override
    * @returns {String}
    */
+  getRelativeSaveFolder() {
+    return FormatName.format(SettingStorage.getSetting('saveMangaToRelativeFolder'), this.context, null, { mode: 'folder' });
+  }
+
+  /**
+   * @override
+   * @returns {String}
+   */
   getImageSaveFolder() {
-    return path.join(this.options.saveTo, this.getImageSaveFolderName());
+    return path.join(this.options.saveTo, this.getRelativeSaveFolder(), this.getImageSaveFolderName());
   }
 
   /**

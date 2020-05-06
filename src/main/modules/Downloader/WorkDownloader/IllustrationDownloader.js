@@ -1,7 +1,7 @@
-import path from 'path';
 import FormatName from '@/modules/Utils/FormatName';
-import SettingStorage from '@/modules/SettingStorage';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
+import SettingStorage from '@/modules/SettingStorage';
+import path from 'path';
 
 /**
  * @class
@@ -49,10 +49,20 @@ class IllustrationDownloader extends MangaDownloader {
    * @override
    * @returns {String}
    */
+  getRelativeSaveFolder() {
+    return FormatName.format(SettingStorage.getSetting('saveIllustrationToRelativeFolder'), this.context, null, { mode: 'folder' });
+  }
+
+  /**
+   * @override
+   * @returns {String}
+   */
   getImageSaveFolder() {
-    return this.saveInSubfolder ?
-      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
-      this.options.saveTo;
+    return path.join(
+      this.options.saveTo,
+      this.getRelativeSaveFolder(),
+      this.saveInSubfolder ? this.getImageSaveFolderName() : ''
+    )
   }
 }
 

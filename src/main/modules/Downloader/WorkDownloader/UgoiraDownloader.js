@@ -1,15 +1,15 @@
-import { app } from 'electron';
-import fs from 'fs-extra';
-import path from 'path';
-import { debug } from '@/global';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import UrlBuilder from '@/../utils/UrlBuilder';
-import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
+import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
+import UrlBuilder from '@/../utils/UrlBuilder';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import Zip from 'jszip';
+import { app } from 'electron';
+import { debug } from '@/global';
 import { fork } from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -55,10 +55,19 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   /**
+   * @override
    * @returns {String}
    */
-  getImageSaveFolderName() {
-    return FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context);
+  getRelativeSaveFolder() {
+    return FormatName.format(SettingStorage.getSetting('saveUgoiraToRelativeFolder'), this.context, null, { mode: 'folder' });
+  }
+
+  /**
+   * @override
+   * @returns {String}
+   */
+  getImageSaveFolder() {
+    return path.join(this.options.saveTo, this.getRelativeSaveFolder())
   }
 
   fetchMeta() {
