@@ -5,6 +5,7 @@ import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/Illustra
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
 import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownloader';
 import UrlBuilder from '@/../utils/UrlBuilder';
+import DateFormatter from '@/../utils/DateFormatter';
 
 /**
  * It's a special downloader is used for get real downloader like illustration/manga/ugoira downloader
@@ -166,7 +167,15 @@ class UndeterminedDownloader extends WorkDownloader {
           /**
            * Set work info as context to downloader
            */
-          this.setContext(jsonData.body);
+          let dateFormatter = DateFormatter.getDefault(jsonData.body.createDate);
+
+          let context = Object.assign(jsonData.body, {
+            year: dateFormatter.getYear(),
+            month: dateFormatter.getMonth(),
+            day: dateFormatter.getDay()
+          });
+
+          this.setContext(context);
 
           if (jsonData.body.illustType === 0) {
             let illustrationDownloader = IllustrationDownloader.createFromWorkDownloader(this);
