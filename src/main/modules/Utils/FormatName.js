@@ -46,7 +46,7 @@ class FormatName {
     return str;
   }
 
-  static format(renameFormat, context, fallback) {
+  static format(renameFormat, context, fallback, extra = {}) {
     let filename = '';
 
     function getContextMetaValue(context, key) {
@@ -70,6 +70,18 @@ class FormatName {
         page_num: {
           key: 'pageNum',
           possibleKeys: ['pageNum']
+        },
+        year: {
+          key: 'year',
+          possibleKeys: ['year']
+        },
+        month: {
+          key: 'month',
+          possibleKeys: ['month']
+        },
+        day: {
+          key: 'day',
+          possibleKeys: ['day']
         }
       };
 
@@ -110,7 +122,7 @@ class FormatName {
       filename = !!name ? name : fallback;
     }
 
-    filename = FormatName.replaceIllegalChars(filename);
+    filename = FormatName.replaceIllegalChars(filename, extra.mode === 'folder' ? ['/'] : '');
 
     /**
      * Remove dots at end of the filename
