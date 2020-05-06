@@ -59,11 +59,11 @@
 
   "_format_manga_image": "重命名漫画图片",
 
-  "_save_illust_in_subfolder": "保存插图到子文件夹",
+  "_save_illust_in_subfolder": "保存插画到子文件夹",
 
-  "_format_illust": "重命名插图",
+  "_format_illust": "重命名插画",
 
-  "_format_illust_image": "重命名插图图片",
+  "_format_illust_image": "重命名插画图片",
 
   "_enable_proxy": "启用代理",
 
@@ -99,5 +99,19 @@
 
   "_please_input_url": "请输入链接地址",
 
-  "view": "前往查看"
+  "view": "前往查看",
+
+  "_save_illustration_to": "保存插画到",
+
+  "_save_ugoira_to": "保存动图到",
+
+  "_save_manga_to": "保存漫画到",
+
+  "_folders_for_saving_ugoira": "动图保存文件夹",
+
+  "_folders_for_saving_illustration": "插画保存文件夹",
+
+  "_folders_for_saving_manga": "漫画保存文件夹",
+
+  "_the_path_wills_suffix_to_download_location": "以下路径会后缀在下载路径"
 }

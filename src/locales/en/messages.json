@@ -99,5 +99,19 @@
 
   "_please_input_url": "Please input url",
 
-  "view": "view"
+  "view": "view",
+
+  "_save_illustration_to": "Save illust to",
+
+  "_save_ugoira_to": "Save ugoira to",
+
+  "_save_manga_to": "Save manga to",
+
+  "_folders_for_saving_ugoira": "Folder(s) for saving ugoira",
+
+  "_folders_for_saving_illustration": "Folder(s) for saving illust",
+
+  "_folders_for_saving_manga": "Folder(s) for saving manga",
+
+  "_the_path_wills_suffix_to_download_location": "The paths will suffix to download location"
 }
