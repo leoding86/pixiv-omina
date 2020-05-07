@@ -1,19 +1,20 @@
-import path from 'path';
-import fs from 'fs-extra';
 import {
   app,
   ipcMain
 } from 'electron';
+
+import BaseService from '@/services/BaseService';
+import DownloadCacheManager from '@/modules/DownloadCacheManager';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
+import NotificationManager from '@/modules/NotificationManager';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import UrlParser from '@/modules/UrlParser';
+import WindowManager from '@/modules/WindowManager';
 import {
   debug
 } from '@/global';
-import UrlParser from '@/modules/UrlParser';
-import WindowManager from '@/modules/WindowManager';
-import DownloadManager from '@/modules/Downloader/DownloadManager';
-import DownloadCacheManager from '@/modules/DownloadCacheManager';
-import NotificationManager from '@/modules/NotificationManager';
-import BaseService from '@/services/BaseService';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import fs from 'fs-extra';
+import path from 'path';
 
 class DownloadService extends BaseService {
   /**
@@ -73,7 +74,7 @@ class DownloadService extends BaseService {
     });
 
     this.downloadManager.on('stop', download => {
-      this.mainWindow.webContents.send(this.responseChannel('stop'), download.id);
+      this.mainWindow.webContents.send(this.responseChannel('stop'), download.toJSON());
     });
 
     this.downloadManager.on('stop-batch', downloadIds => {
