@@ -26,11 +26,10 @@
                   @click.stop.prevent="$emit('start', download)"
                 ></el-button>
                 <el-button
-                  v-if="download.state === 'pending' || download.state === 'downloading'"
+                  v-if="download.state === 'processing' || download.state === 'downloading'"
                   type="primary"
                   size="mini"
                   icon="el-icon-video-pause"
-                  :disabled="download.state === 'processing'"
                   @click.stop.prevent="clickStopHandler(download)"
                 ></el-button>
                 <el-button
@@ -52,7 +51,6 @@
                   type="danger"
                   size="mini"
                   icon="el-icon-delete"
-                  :disabled="download.state === 'processing'"
                   @click.stop.prevent="clickDeleteHandler(download)"
                 ></el-button>
               </el-button-group>
@@ -159,19 +157,10 @@ export default {
     },
 
     clickStopHandler(download) {
-      if (download.state === 'processing') {
-        this.$alert('Cannot stop download in processing state');
-        return;
-      }
-
       this.$emit('stop', download);
     },
 
     clickDeleteHandler(download) {
-      if (download.state === 'processing') {
-        this.$alert('Cannot delete download in processing state');
-      }
-
       this.$emit('delete', download);
     },
 

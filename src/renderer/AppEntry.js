@@ -1,12 +1,13 @@
-import { ipcRenderer } from 'electron';
-import Vue from 'vue';
-import VueI18n from 'vue-i18n';
-import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import './styles/app.scss';
+
 import App from './components/App';
 import BaseMixin from './mixins/BaseMixin';
+import ElementUI from 'element-ui';
 import User from './modules/User';
+import Vue from 'vue';
+import VueI18n from 'vue-i18n';
+import { ipcRenderer } from 'electron';
 import locales from '../locales';
 
 Vue.use(VueI18n)

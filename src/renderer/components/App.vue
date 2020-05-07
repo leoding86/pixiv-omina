@@ -164,18 +164,16 @@ export default {
       this.addDownloads(downloads);
     });
 
-    ipcRenderer.on('download-service:stop', (event, downloadId) => {
-      this.updateDownloads({
-        id: downloadId,
-        state: 'stop'
-      });
+    ipcRenderer.on('download-service:stop', (event, download) => {
+      this.updateDownloads(download);
     });
 
     ipcRenderer.on('download-service:stop-batch', (event, downloadIds) => {
       downloadIds.forEach(downloadId => {
         this.updateDownloads({
           id: downloadId,
-          state: 'stop'
+          state: 'stop',
+          statusMessage: 'stop'
         });
       })
     });
@@ -217,7 +215,7 @@ export default {
     },
 
     canStopDownload(download) {
-      return ['downloading', 'pending'].indexOf(download.state) > -1;
+      return ['downloading', 'processing'].indexOf(download.state) > -1;
     },
 
     canDeleteDownload(download) {
