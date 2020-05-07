@@ -2,6 +2,7 @@ import Download from '@/modules/Download';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
+import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
 import path from 'path';
 
 /**
@@ -270,20 +271,24 @@ class WorkDownloader extends EventEmitter {
   }
 
   /**
-   *
+   * Check if the downloader can be stopped
+   */
+  isStoppable() {
+    return !(this.isStopping() || this.isProcessing());
+  }
+
+  /**
+   * Stop the downloader
    * @param {Object} options
    * @param {Boolean} [options.mute=false]
+   * @throws {WorkDownloaderUnstoppableError}
    */
   stop(options) {
+    if (!this.isStoppable()) {
+      throw new WorkDownloaderUnstoppableError();
+    }
+
     let { mute = false } = Object.assign({}, options);//
-
-    if (this.isProcessing()) {
-      return;
-    }
-
-    if (this.isStopping()) {
-      return;
-    }
 
     this.setMute(mute);
 

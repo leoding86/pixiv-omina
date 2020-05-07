@@ -1,10 +1,10 @@
 import EventEmitter from 'events';
-import { shell } from 'electron';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import {
   debug
 } from '@/global';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import { shell } from 'electron';
 
 /**
  * @class
@@ -242,14 +242,6 @@ class DownloadManager extends EventEmitter {
     return ['finish', 'stopping', 'downloading', 'processing'].indexOf(download.state) < 0;
   }
 
-  canStopDownload(download) {
-    return ['pending', 'downloading'].indexOf(download.state) > -1;
-  }
-
-  canDeleteDownload(download) {
-    return ['stopping', 'processing'].indexOf(download.state) < 0;
-  }
-
   /**
    * Create a downloader
    * @param {Object} args
@@ -324,7 +316,7 @@ class DownloadManager extends EventEmitter {
   stopWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader && this.canStopDownload(workDownloader)) {
+    if (workDownloader && workDownloader.isStoppable()) {
       workDownloader.stop();
     }
 
@@ -338,7 +330,7 @@ class DownloadManager extends EventEmitter {
   deleteWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader && this.canDeleteDownload(workDownloader)) {
+    if (workDownloader && !workDownloader.isStopping()) {
       this.workDownloaderPool.delete(downloadId);
 
       workDownloader.willRecycle();
@@ -361,7 +353,7 @@ class DownloadManager extends EventEmitter {
     downloadIds.forEach(downloadId => {
       let download = this.getWorkDownloader(downloadId);
 
-      if (download && this.canDeleteDownload(download)) {
+      if (download && !download.isStopping()) {
         this.workDownloaderPool.delete(downloadId);
 
         deletedDownloadIds.push(download.id);
@@ -390,14 +382,22 @@ class DownloadManager extends EventEmitter {
     downloadIds.forEach(downloadId => {
       let download = this.getWorkDownloader(downloadId);
 
-      if (download && this.canStopDownload(download)) {
-        download.stop({
-          mute: true
-        });
+      if (download) {
+        try {
+          download.stop({
+            mute: true
+          });
 
-        this.deattachListenersFromDownloader(download);
+          this.deattachListenersFromDownloader(download);
 
-        stoppedDownloadIds.push(download.id);
+          stoppedDownloadIds.push(download.id);
+        } catch (error) {
+          if (error.name === 'WorkDownloaderUnstoppableError') {
+            debug.sendStatus(`Download ${download.id} cannot be stopped`);
+          } else {
+            debug.sendStatus(`Download ${download.id} error ${error.message}`)
+          }
+        }
       }
     });
 

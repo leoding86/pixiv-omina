@@ -4,6 +4,7 @@ import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import WorkDownloaderUnstoppableError from '../WorkDownloaderUnstoppableError';
 import Zip from 'jszip';
 import { app } from 'electron';
 import { debug } from '@/global';
@@ -26,6 +27,8 @@ class UgoiraDownloader extends WorkDownloader {
     this.meta = null;
 
     this.type = 2;
+
+    this.workers = [];
   }
 
   /**
@@ -154,7 +157,16 @@ class UgoiraDownloader extends WorkDownloader {
       worker = fork(path.join(process.resourcesPath, 'app.asar', 'UgoiraDownloaderGifEncoderWorker.js'));
     }
 
+    /**
+     * Push the worker to workers pool
+     */
+    this.workers.push(worker);
+
     worker.on('message', data => {
+      if (this.recycle) {
+        return;
+      }
+
       if (data.status === 'finish') {
         worker.kill();
 
@@ -176,7 +188,7 @@ class UgoiraDownloader extends WorkDownloader {
     });
   }
 
-  packFramesInfo(file) {//
+  packFramesInfo(file) {
     this.setProcessing('Packing frames infomation');
 
     debug.sendStatus(`Packing frames information to ${this.id}`);
@@ -265,6 +277,57 @@ class UgoiraDownloader extends WorkDownloader {
 
       this.downloadZip();
     }
+  }
+
+  /**
+   * Kill all workers
+   */
+  killWorkers() {
+    this.workers.forEach(worker => {
+      worker.kill();
+    });
+  }
+
+  /**
+   * Check if the downloader can be stopped
+   * @override
+   */
+  isStoppable() {
+    return !this.isStopping();
+  }
+
+  /**
+   * Stop the downloader
+   * @override
+   * @param {Object} options
+   * @param {Boolean} [options.mute=false]
+   * @throws {WorkDownloaderUnstoppableError}
+   */
+  stop(options) {
+    if (!this.isStoppable()) {
+      throw new WorkDownloaderUnstoppableError('WorkDownloader cannot be stopped');
+    }
+
+    let { mute = false } = Object.assign({}, options);//
+
+    this.setMute(mute);
+
+    this.setStopping();
+
+    this.download && this.download.abort();
+    this.request && this.request.abort();
+
+    /**
+     * Kill workers
+     */
+    this.killWorkers();
+
+    this.setStop();
+
+    /**
+     * Enable firing events again
+     */
+    mute === true && this.setMute(false);
   }
 }
 
