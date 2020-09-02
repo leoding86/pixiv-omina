@@ -1,80 +1,95 @@
 <template>
   <div class="download-list">
     <div class="download-list-item__content">
-      <el-card class="download-list-item"
-        :class="{'download-list-item--selected': download.selected}"
-        v-for="download in filteredDownloads"
-        @click.stop.native="downloadClickHandler(download, $event)"
-        :key=download.id
+      <recycle-scroller
+        style="width:100%;height:100%"
+        :items="filteredDownloads"
+        :item-size="120"
+        page-mode
+        key-field="id"
+        v-slot="{ item }"
       >
-        <div :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</div>
+        <el-card class="download-list-item"
+          :class="{'download-list-item--selected': item.selected}"
+          @click.stop.native="downloadClickHandler(item, $event)"
+          :key=item.id
+        >
+          <div :class="getDownloadTypeClassname(item.type)">{{ getDownloadType(item.type) }}</div>
 
-        <div class="download-list-item__mask"
-          v-if="download.frozing"></div>
-        <div class="download-list-item__body">
-          <div class="download-list-item__title-actions">
-            <div class="download-list-item__title">
-              <p><a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a></p>
+          <div class="download-list-item__mask"
+            v-if="item.frozing"></div>
+          <div class="download-list-item__body">
+            <div class="download-list-item__title-actions">
+              <div class="download-list-item__title">
+                <p><a target="_blank" :href="`https://www.pixiv.net/artworks/${item.id}`">{{ item.title }} <i class="el-icon-link"></i></a></p>
+              </div>
+              <div class="download-list-item__actions">
+                <el-button-group>
+                  <el-button
+                    v-if="item.state === 'stop' || item.state === 'error'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-video-play"
+                    @click.stop.prevent="$emit('start', item)"
+                  ></el-button>
+                  <el-button
+                    v-if="item.state === 'processing' || item.state === 'downloading'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-video-pause"
+                    @click.stop.prevent="clickStopHandler(item)"
+                  ></el-button>
+                  <el-button
+                    v-if="item.state === 'finish'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-folder"
+                    @click.stop.prevent="openFolder(item)"
+                  ></el-button>
+                  <!-- Hidden redownload button -->
+                  <el-button
+                    v-if="false && item.state === 'finish'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-refresh"
+                    @click.stop.prevent="item.state === 'finish' && $emit('redownload', item)"
+                  ></el-button>
+                  <el-button
+                    type="danger"
+                    size="mini"
+                    icon="el-icon-delete"
+                    @click.stop.prevent="clickDeleteHandler(item)"
+                  ></el-button>
+                </el-button-group>
+              </div>
             </div>
-            <div class="download-list-item__actions">
-              <el-button-group>
-                <el-button
-                  v-if="download.state === 'stop' || download.state === 'error'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-video-play"
-                  @click.stop.prevent="$emit('start', download)"
-                ></el-button>
-                <el-button
-                  v-if="download.state === 'processing' || download.state === 'downloading'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-video-pause"
-                  @click.stop.prevent="clickStopHandler(download)"
-                ></el-button>
-                <el-button
-                  v-if="download.state === 'finish'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-folder"
-                  @click.stop.prevent="openFolder(download)"
-                ></el-button>
-                <!-- Hidden redownload button -->
-                <el-button
-                  v-if="false && download.state === 'finish'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-refresh"
-                  @click.stop.prevent="download.state === 'finish' && $emit('redownload', download)"
-                ></el-button>
-                <el-button
-                  type="danger"
-                  size="mini"
-                  icon="el-icon-delete"
-                  @click.stop.prevent="clickDeleteHandler(download)"
-                ></el-button>
-              </el-button-group>
+            <div class="download-list-item__progress">
+              <el-progress
+                :percentage="item.progress * 100"
+                :show-text="false"></el-progress>
             </div>
           </div>
-          <div class="download-list-item__progress">
-            <el-progress
-              :percentage="download.progress * 100"
-              :show-text="false"></el-progress>
+          <div class="download-list-item__footer">
+            <div class="download-list-item__status">
+              <p>{{ item.statusMessage }}<span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
+            </div>
           </div>
-        </div>
-        <div class="download-list-item__footer">
-          <div class="download-list-item__status">
-            <p>{{ download.statusMessage }}<span v-show="download.state === 'downloading'"> {{ getSpeedUnit(download.speed) }}</span> </p>
-          </div>
-        </div>
-      </el-card>
+        </el-card>
+      </recycle-scroller>
     </div>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from 'electron';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+import { RecycleScroller } from 'vue-virtual-scroller';
+
 export default {
+  components: {
+    'recycle-scroller': RecycleScroller
+  },
+
   props: {
     downloads: {
       required: true,
