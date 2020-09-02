@@ -2,7 +2,6 @@
   <div class="download-list">
     <div class="download-list-item__content">
       <recycle-scroller
-        style="width:100%;height:100%"
         :items="filteredDownloads"
         :item-size="120"
         page-mode
