@@ -1,12 +1,14 @@
-import fs from 'fs-extra';
 import path, { extname } from 'path';
-import formatUrl from 'url';
-import mime from 'mime-types';
+
+// import Request from '@/modules/Request';
+import Request from '@/modules/Request';
 import {
   debug
 } from '@/global';
-// import Request from '@/modules/Request';
-import Request from '@/modules/Request';
+import formatUrl from 'url';
+import fs from 'fs-extra';
+import mime from 'mime-types';
+import { start } from 'repl';
 
 /**
  * Notice that the dl-progress event is not triggered every time, review codes for detail.
@@ -263,7 +265,7 @@ class Download extends Request {
             this.speed = Math.floor(speedChunkDataLength / duration * 1000);
             this.progress = (totalSize ? Math.floor(completeSize / totalSize * 100) : 0) / 100;
 
-            this.emit('dl-progress');
+            this.setProgress();
 
             startTime = nowTime;
             speedChunkDataLength = 0;
