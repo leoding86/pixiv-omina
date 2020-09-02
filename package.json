@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.0",
-    "electron": "^6.1.5",
+    "electron": "^7.2.4",
     "electron-builder": "^21.0.11",
     "electron-webpack": "^2.7.4",
     "electron-webpack-vue": "^2.3.0",
