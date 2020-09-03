@@ -32,7 +32,7 @@
                     @click.stop.prevent="$emit('start', item)"
                   ></el-button>
                   <el-button
-                    v-if="item.state === 'processing' || item.state === 'downloading'"
+                    v-if="item.state === 'pending' || item.state === 'processing' || item.state === 'downloading'"
                     type="primary"
                     size="mini"
                     icon="el-icon-video-pause"

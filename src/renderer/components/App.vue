@@ -219,11 +219,11 @@ export default {
     },
 
     canStartDownload(download) {
-      return ['pending', 'stop', 'error'].indexOf(download.state) > -1;
+      return ['stop', 'error'].indexOf(download.state) > -1;
     },
 
     canStopDownload(download) {
-      return ['downloading', 'processing'].indexOf(download.state) > -1;
+      return ['pending', 'downloading', 'processing'].indexOf(download.state) > -1;
     },
 
     canDeleteDownload(download) {
