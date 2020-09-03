@@ -37,20 +37,11 @@ class IllustrationDownloader extends MangaDownloader {
     return downloader;
   }
 
-  getImageSaveName() {
-    return FormatName.format(SettingStorage.getSetting('illustrationImageRename'), this.context);
-  }
-
-  getImageSaveFolderName() {
-    return FormatName.format(SettingStorage.getSetting('illustrationRename'), this.context);
-  }
-
   /**
-   * @override
    * @returns {String}
    */
-  getRelativeSaveFolder() {
-    return FormatName.format(SettingStorage.getSetting('saveIllustrationToRelativeFolder'), this.context, null, { mode: 'folder' });
+  getImageSaveName() {
+    return FormatName.format(SettingStorage.getSetting('illustrationRename').split('/').pop(), this.context);
   }
 
   /**
@@ -58,11 +49,13 @@ class IllustrationDownloader extends MangaDownloader {
    * @returns {String}
    */
   getImageSaveFolder() {
-    return path.join(
-      this.options.saveTo,
-      this.getRelativeSaveFolder(),
-      this.saveInSubfolder ? this.getImageSaveFolderName() : ''
-    )
+    let parts = SettingStorage.getSetting('illustrationRename').split('/');
+
+    if (parts.length > 1) {
+      parts.pop();
+    }
+
+    return path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
   }
 }
 

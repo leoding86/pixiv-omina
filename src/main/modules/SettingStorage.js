@@ -130,28 +130,40 @@ class SettingStorage extends EventEmitter {
     return ['illustrationRename', 'mangaRename', 'ugoiraRename'].indexOf(key) > -1;
   }
 
+  /**
+   *
+   * @param {string} rule
+   */
   rebuildWorkRenameRule(rule) {
-    if (rule.indexOf('%id%') < 0) {
-      rule = `%id%_${rule}`;
+    rule = FormatName.replaceIllegalChars(rule, ['%', '/']).replace(/^\//g, '').replace(/\/$/g, '');
+
+    if (rule.length === 0 || rule.indexOf('%') < 0) {
+      rule = '%id%';
     }
 
-    return FormatName.replaceIllegalChars(rule, ['%']);
+    return rule;
   }
 
   needCheckAndRebuildWorkImageRenameRuleSetting(key) {
     return ['illustrationImageRename', 'mangaImageRename'].indexOf(key) > -1;
   }
 
+  /**
+   *
+   * @param {string} rule
+   */
   rebuildWorkImageRenameRule(rule) {
-    if (rule.indexOf('%id%') < 0) {
-      rule = `%id%_${rule}`;
+    rule = FormatName.replaceIllegalChars(rule, ['%', '/']).replace(/^\//g, '').replace(/\/$/g, '');
+
+    if (rule.length === 0 || rule.indexOf('%') < 0) {
+      rule = '%id%';
     }
 
     if (rule.indexOf('%page_num%') < 0) {
-      rule = `${rule}_%page_num%`;
+      rule += `_p%page_num%`;
     }
 
-    return FormatName.replaceIllegalChars(rule, ['%']);
+    return rule;
   }
 
   needCheckAndRebuildSaveToSetting(key) {

@@ -58,11 +58,24 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   /**
+   * @returns {String}
+   */
+  getImageSaveName() {
+    return FormatName.format(SettingStorage.getSetting('ugoiraRename').split('/').pop(), this.context);
+  }
+
+  /**
    * @override
    * @returns {String}
    */
   getRelativeSaveFolder() {
-    return FormatName.format(SettingStorage.getSetting('saveUgoiraToRelativeFolder'), this.context, null, { mode: 'folder' });
+    let parts = SettingStorage.getSetting('ugoiraRename').split('/');
+
+    if (parts.length > 1) {
+      parts.pop();
+    }
+
+    return path.join(FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
   }
 
   /**
@@ -136,7 +149,8 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.setDownloading('Generating GIF');
 
-    let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
+    // let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
+    let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, this.getImageSaveName()) + '.gif';
 
     /**
      * Check if the gif file has been generated
@@ -222,7 +236,7 @@ class UgoiraDownloader extends WorkDownloader {
       {
         url: url,
         saveTo: this.getImageSaveFolder(),
-        saveName: FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)
+        saveName: this.getImageSaveName()
       }
     );
 
