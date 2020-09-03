@@ -227,7 +227,7 @@ class Application {
     this.mainWindow.on('close', event => {
       if (this.quiting) {
         this.partitionManager.getSession('main').clearCache();
-      } else if (SettingStorage.getSettings('closeToTray')) {
+      } else if (SettingStorage.getSetting('closeToTray')) {
         event.preventDefault();
         event.returnValue = false;
         event.sender.hide();
