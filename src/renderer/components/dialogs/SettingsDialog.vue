@@ -21,15 +21,6 @@
       </el-tab-pane>
 
       <el-tab-pane
-        :label="$t('_download')"
-        name="download"
-      >
-        <download-settings
-          @changed="settingsChangedHandler"
-        ></download-settings>
-      </el-tab-pane>
-
-      <el-tab-pane
         :label="$t('_rename')"
         name="rename"
       >
@@ -79,7 +70,6 @@
 <script>
 import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
-import DownloadSettings from './DownloadSettings';
 import ProxySettings from './ProxySettings';
 import RenameSettings from './RenameSettings';
 import About from '../About';
@@ -87,7 +77,6 @@ import About from '../About';
 export default {
   components: {
     'general-settings': GeneralSettings,
-    'download-settings': DownloadSettings,
     'proxy-settings': ProxySettings,
     'rename-settings': RenameSettings,
     'app-about': About
@@ -148,7 +137,8 @@ export default {
         title: this.$t('_help'),
         message: h('div', null, [
           h('p', null, this.$t('_valid_rename_placeholders') + ': '),
-          h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%, %year%, %month%, %day%')
+          h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%, %year%, %month%, %day%'),
+          h('p', null, this.$t('_you_can_add_forward_slashs_to_save_images_in_subfolder_eg') + '%user_id%/%title%')
         ]),
         showConfirmButton: false
       }).catch(() => {

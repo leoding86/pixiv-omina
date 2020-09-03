@@ -10,25 +10,15 @@
       <el-input v-model="scopedSettings.mangaRename"></el-input>
     </el-form-item>
 
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">{{ $t('_format_manga_image') }}</span>
-      <el-input v-model="scopedSettings.mangaImageRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth"
+    <!-- <el-form-item :label-width="formLabelWidth"
       :label="$t('_save_illust_in_subfolder')"
     >
       <el-switch v-model="scopedSettings.saveIllustrationInSubfolder"></el-switch>
-    </el-form-item>
+    </el-form-item> -->
 
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_illust') }}</span>
-      <el-input :disabled="!scopedSettings.saveIllustrationInSubfolder" v-model="scopedSettings.illustrationRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">{{ $t('_format_illust_image') }}</span>
-      <el-input v-model="scopedSettings.illustrationImageRename"></el-input>
+      <el-input v-model="scopedSettings.illustrationRename"></el-input>
     </el-form-item>
   </el-form>
 </template>
@@ -45,9 +35,7 @@ export default {
         saveIllustrationInSubfolder: true,
         ugoiraRename: '',
         mangaRename: '',
-        mangaImageRename: '',
-        illustrationRename: '',
-        illustrationImageRename: ''
+        illustrationRename: ''
       },
 
       settingsRule: {
