@@ -40,15 +40,9 @@ function defaultSetting() {
 
     saveIllustrationToLocation: '',
 
-    saveIllustrationToRelativeFolder: '%id%_%title%/',
-
     saveUgoiraToLocation: '',
 
-    saveUgoiraToRelativeFolder: '%id%_%title%/',
-
     saveMangaToLocation: '',
-
-    saveMangaToRelativeFolder: '%id%_%title%/',
 
     locale: 'en'
   }
