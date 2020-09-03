@@ -1,11 +1,12 @@
-import path from 'path';
-import { app, shell, Tray, Menu, systemPreferences, nativeImage } from 'electron';
-import ServiceContainer from '@/ServiceContainer';
-import Request from '@/modules/Request';
-import SettingStorage from '@/modules/SettingStorage';
+import { Menu, Tray, app, nativeImage, shell, systemPreferences } from 'electron';
+
 import NotificationManager from '@/modules/NotificationManager';
 import PartitionManager from '@/modules/PartitionManager';
+import Request from '@/modules/Request';
+import ServiceContainer from '@/ServiceContainer';
+import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
+import path from 'path';
 
 class Application {
   constructor() {
@@ -230,6 +231,8 @@ class Application {
         event.preventDefault();
         event.returnValue = false;
         event.sender.hide();
+      } else {
+        app.quit();
       }
     });
 
