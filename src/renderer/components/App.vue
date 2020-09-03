@@ -205,6 +205,14 @@ export default {
     });
   },
 
+  mounted() {
+    document.addEventListener('keydown', this.keydownHandler);
+  },
+
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.keydownHandler);
+  },
+
   methods: {
     devToolsToggledHandler(val) {
       this.debug = val;
@@ -496,6 +504,17 @@ export default {
     filterDownloads(type) {
       this.downloadFilter = type;
       this.$root.$emit('download-list:filter', this.downloadFilter);
+    },
+
+    /**
+     * @param {	KeyboardEvent} event
+     */
+    keydownHandler(event) {
+      if (event.ctrlKey && event.keyCode === 65) {
+        this.downloads.forEach(download => {
+          this.selectDownload(download);
+        });
+      }
     },
 
     userLogin() {
