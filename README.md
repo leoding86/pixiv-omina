@@ -91,17 +91,21 @@ A：目前为了节省程序占用的内存，重启程序后，只会添加未�
 
 Q：怎么样同时下载2个以上的任务？
 
-A：目前不能办到，因为生产动图作品的GIF图片会占用相当做的资源。可能以后会添加相关的设置。
+A：目前不能办到，因为生产动图作品的GIF图片会占用相当多的资源。可能以后会添加相关的设置。
 
-# Issues🤔
+# Known Issues🤔
 
 * DO NOT add too many downloads! I have not tested the downloads limitation, too many downloads may crash the application. It's easy to add large number download tasks by downloading user works(input the user profile url to the download dialog), so be really careful to use this feature like download multiple users works at same time (Some of the users have thousands works, It's nuts!).
+
+* The installation will not register the custom protocol on Window 10 sometimes. If you find the Pixiv Toolkit's "Pixiv Omina" button does nothing, you can try `panteras81`'s solution in [comment](https://github.com/leoding86/webextension-pixiv-toolkit/issues/27#issuecomment-605540955) from issue `#27`.
 
 Feel free to open issue if you meet any problem or have any idea😀
 
 # 已知问题🤔
 
 * 不要一次同时添加过多的任务！我并没有测试同时下载多个作品的限制，但是如果同时添加很多的任务可能会使程序崩溃。而且通过下载画师所有作品的功能可能会一次性添加非常非常多的下载任务，所以使用此功能时要谨慎（有些画师有上千个作品，太猛了）。
+
+* 有时候在Windows 10安装程序没有正确注册自定义协议。如果你发现Pixiv工具箱中的“Pixiv Omina”按钮没有作用是，可以试试`panteras81`在问题`#27`中的[评论](https://github.com/leoding86/webextension-pixiv-toolkit/issues/27#issuecomment-605540955)中的解决办法。
 
 如果你发现了问题或有什么想法欢迎提交issue😀
 
