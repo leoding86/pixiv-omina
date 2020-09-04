@@ -8,6 +8,8 @@
 
     <button @click="checkUserLogined">check</button>
 
+    <button @click="restoreDownloads">Restore downloads</button>
+
     <el-form>
       <el-input v-model="workId"></el-input>
       <el-button @click="createDownloader">Submit</el-button>
@@ -45,6 +47,12 @@ export default {
           workId: this.workId
         }
       })
+    },
+
+    restoreDownloads() {
+      ipcRenderer.send('download-service', {
+        action: 'restoreDownloads'
+      });
     }
   }
 }
