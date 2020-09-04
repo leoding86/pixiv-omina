@@ -64,7 +64,7 @@ class UndeterminedDownloader extends WorkDownloader {
             options: this.options
           }))
         });
-        this.willRecycle();
+
         this.setFinish();
         this.downloadManager.addDownloaders(downloaders, { replace: this });
       }).catch(error => {
@@ -94,7 +94,6 @@ class UndeterminedDownloader extends WorkDownloader {
           return;
         }
 
-        this.willRecycle();
         this.setFinish();
         this.downloadManager.transformWorkDownloader(downloader);
       }).catch(error => {
