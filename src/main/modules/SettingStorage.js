@@ -92,7 +92,7 @@ class SettingStorage extends EventEmitter {
     for (let key in settings) {
       if (this.settings[key] !== undefined) {
         if (this.needCheckAndRebuildWorkRenameRuleSetting(key)) {
-          settings[key] = this.rebuildWorkRenameRule(settings[key]);
+          settings[key] = this.rebuildWorkRenameRule(settings[key], key);
         } else if (this.needCheckAndRebuildWorkImageRenameRuleSetting(key)) {
           settings[key] = this.rebuildWorkImageRenameRule(settings[key])
         } else if (this.needCheckAndRebuildSaveToSetting(key)) {
@@ -130,15 +130,23 @@ class SettingStorage extends EventEmitter {
     return ['illustrationRename', 'mangaRename', 'ugoiraRename'].indexOf(key) > -1;
   }
 
+  needCheckPageNumAndRebuild(key) {
+    return ['illustrationRename', 'mangaRename'].indexOf(key) > -1;
+  }
+
   /**
    *
    * @param {string} rule
    */
-  rebuildWorkRenameRule(rule) {
+  rebuildWorkRenameRule(rule, key) {
     rule = FormatName.replaceIllegalChars(rule, ['%', '/']).replace(/^\//g, '').replace(/\/$/g, '');
 
     if (rule.length === 0 || rule.indexOf('%') < 0) {
       rule = '%id%';
+    }
+
+    if (this.needCheckPageNumAndRebuild(key) && rule.indexOf('%page_num%') < 0) {
+      rule += `p%page_num%`;
     }
 
     return rule;

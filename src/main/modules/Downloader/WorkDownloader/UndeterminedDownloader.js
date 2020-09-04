@@ -1,11 +1,15 @@
-import Request from '@/modules/Request';
-import SettingStorage from '@/modules/SettingStorage';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
 import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownloader';
-import UrlBuilder from '@/../utils/UrlBuilder';
-import DateFormatter from '@/../utils/DateFormatter';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import {
+  PixivUserProvider,
+  PixivGeneralArtworkProvider,
+  PixivIllustrationProvider,
+  PixivMangaProvider,
+  PixivUgoiraProvider
+} from '@/modules/Downloader/Providers';
 
 /**
  * It's a special downloader is used for get real downloader like illustration/manga/ugoira downloader
@@ -18,215 +22,87 @@ class UndeterminedDownloader extends WorkDownloader {
    */
   constructor() {
     super();
+
+    this.downloadManager = DownloadManager.getManager();
   }
 
   /**
    * @param {Object} param
-   * @param {number|string} param.workId
+   * @param {number|string} param.provider
    * @param {Object} param.options
    * @returns {WorkDownloader}
    */
-  static createDownloader({workId, options}) {
+  static createDownloader({provider, options}) {
     let downloader = new UndeterminedDownloader();
 
-    downloader.id = workId;
+    downloader.provider = provider;
+    downloader.url = downloader.provider.url;
+    downloader.id = downloader.provider.id;
     downloader.options = Object.assign({}, options);
 
     return downloader;
   }
 
-  getUserWorkDownloaders() {
-    this.setStart('Resovling user works');
-
-    return new Promise((resolve, reject) => {
-      let userId = this.id.replace('user-', '');
-
-      let userProfileAll = UrlBuilder.getUserProfileAllUrl(userId);
-
-      this.request = new Request({
-        url: userProfileAll,
-        method: 'GET'
-      });
-
-      this.request.on('response', response => {
-        let body = '';
-
-        response.on('data', data => {
-          body += data;
-        });
-
-        response.on('end', () => {
-          let jsonData = JSON.parse(body.toString());
-
-          if (!jsonData || jsonData.error || !jsonData.body) {
-            let error = Error('cannot resolve user profile');
-
-            this.setError(error);
-
-            reject(error);
-            return;
-          }
-
-          let downloaders = [];//
-
-          /**
-           * It's important to REMOVE isUser property from options, or the cached system will cache the download as
-           * a user works download and causes wired errors
-           */
-          delete this.options.isUser;
-
-          Object.keys(jsonData.body.illusts).forEach(id => {
-            downloaders.push(UndeterminedDownloader.createDownloader({
-              workId: id,
-              options: this.options
-            }));
-          });
-
-          Object.keys(jsonData.body.manga).forEach(id => {
-            downloaders.push(UndeterminedDownloader.createDownloader({
-              workId: id,
-              options: this.options
-            }));
-          });
-
-          resolve(downloaders);
-
-          return;
-        });
-
-        response.on('error', error => {
-          this.setError(error);
-
-          reject(error);
-        });
-
-        response.on('aborted', () => {
-          let error = Error('Request has been interrepted');
-
-          this.setError(error);
-
-          reject(error);
-        });
-      });
-
-      this.request.on('error', error => {
-        this.setError(error);
-
-        reject(error);
-      });
-
-      this.request.on('abort', () => {
-        let error = Error('Request has been interrepted');
-
-        this.setError(error);
-
-        reject(error);
-      });
-
-      this.request.on('end', () => {
-        this.request = null;
-      });
-
-      this.request.end();
-    });
-  }
-
   /**
-   * @returns {Promise<WorkDownloader>}
+   * @override
+   * @returns {void}
    */
-  getRealDownloader() {
-    this.setStart('Resovling downloader');
+  start() {
+    this.setDownloading('resolving downloader');
 
-    return new Promise((resolve, reject) => {
-      let url = UrlBuilder.getWorkInfoUrl(this.id);
-
-      this.request = new Request({
-        url: url,
-        method: 'GET'
-      });
-
-      this.request.on('response', response => {
-        let body = '';
-
-        response.on('data', data => {
-          body += data;
+    if (this.provider instanceof PixivUserProvider) {
+      this.provider.requestAllWorks().then(workIds => {
+        let downloaders = [];
+        workIds.forEach(id => {
+          downloaders.push(UndeterminedDownloader.createDownloader({
+            provider: PixivGeneralArtworkProvider.createProvider({
+              url: this.provider.getArtworkUrl(id),
+              context: {
+                id
+              }
+            }),
+            options: this.options
+          }))
         });
-
-        response.on('end', () => {
-          let jsonData = JSON.parse(body.toString());
-
-          if (!jsonData || jsonData.error || !jsonData.body) {
-            let error = Error('cannot resolve work info');
-
-            this.setError(error);
-
-            reject(error);
-            return;
-          }
-
-          /**
-           * Set work info as context to downloader
-           */
-          let dateFormatter = DateFormatter.getDefault(jsonData.body.createDate);
-
-          let context = Object.assign(jsonData.body, {
-            year: dateFormatter.getYear(),
-            month: dateFormatter.getMonth(),
-            day: dateFormatter.getDay()
-          });
-
-          this.setContext(context);
-
-          if (jsonData.body.illustType === 0) {
-            let illustrationDownloader = IllustrationDownloader.createFromWorkDownloader(this);
-
-            SettingStorage.getSetting('saveIllustrationInSubfolder') ?
-              illustrationDownloader.enableSaveInSubfolder() : illustrationDownloader.disableSaveInSubfolder();
-
-            resolve(illustrationDownloader);
-          } else if (jsonData.body.illustType === 1) {
-            resolve(MangaDownloader.createFromWorkDownloader(this));
-          } else if (jsonData.body.illustType === 2) {
-            let ugoiraDownloader = UgoiraDownloader.createFromWorkDownloader(this);
-
-            SettingStorage.getSetting('saveUgoiraInSubfolder') ?
-              ugoiraDownloader.enableSaveInSubfolder() : ugoiraDownloader.disableSaveInSubfolder();
-
-            resolve(ugoiraDownloader);
-          } else {
-            let error = Error(`unsupported work type '${jsonData.body.illustType}'`);
-
-            this.setError(error);
-
-            reject(error.message);
-          }
-        });
-
-        response.on('error', error => {
-          this.setError(error);
-
-          reject(error);
-        })
-      });
-
-      this.request.on('abort', () => {
-        this.setStop();
-
-        reject();
-      });
-
-      this.request.on('error', error => {
+        this.willRecycle();
+        this.setFinish();
+        this.downloadManager.addDownloaders(downloaders, { replace: this });
+      }).catch(error => {
         this.setError(error);
-
-        reject(error);
       });
+    } else if (this.provider instanceof PixivGeneralArtworkProvider) {
+      this.provider.requestInfo().then(context => {
+        let downloader;
 
-      this.request.on('close', () => {
-        this.request = null;
-      });
+        if (context.illustType === 0) {
+          downloader = IllustrationDownloader.createDownloader({
+            provider: PixivIllustrationProvider.createProvider({ url: this.provider.url, context }),
+            options: this.options
+          })
+        } else if (context.illustType === 1) {
+          downloader = MangaDownloader.createDownloader({
+            provider: PixivMangaProvider.createProvider({ url: this.provider. url,context }),
+            options: this.options
+          });
+        } else if (context.illustType === 2) {
+          downloader = UgoiraDownloader.createDownloader({
+            provider: PixivUgoiraProvider.createProvider({ url: this.provider, context }),
+            options: this.options
+          });
+        } else {
+          this.setError(Error(`unsupported work type '${context.illustType}'`));
+          return;
+        }
 
-      this.request.end();
-    });
+        this.willRecycle();
+        this.setFinish();
+        this.downloadManager.transformWorkDownloader(downloader);
+      }).catch(error => {
+        this.setError(error);
+      })
+    } else {
+      this.setError(Error('Unkown download provider'));
+    }
   }
 
   reset() {

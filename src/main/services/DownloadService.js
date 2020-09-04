@@ -5,6 +5,7 @@ import {
 
 import BaseService from '@/services/BaseService';
 import DownloadCacheManager from '@/modules/DownloadCacheManager';
+import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import NotificationManager from '@/modules/NotificationManager';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
@@ -127,13 +128,16 @@ class DownloadService extends BaseService {
 
     debug.sendStatus('Restoring downloads');
 
-    for (let downloadId in cachedDownloads) {
-      console.log(cachedDownloads[downloadId], downloadId);
-      downloaders.push(UndeterminedDownloader.createDownloader({
-        workId: downloadId,
-        options: cachedDownloads[downloadId].options
-      }));
-    }
+    Object.keys(cachedDownloads).forEach(key => {
+      try {
+        downloaders.push(UndeterminedDownloader.createDownloader({
+          provider: DownloadAdapter.getProvider(cachedDownloads[key].url),
+          options: cachedDownloads[downloadId].options
+        }));
+      } catch (error) {
+        this.downloadCacheManager.removeDownload();
+      }
+    });
 
     debug.sendStatus('Downloads have been restored');
 
@@ -161,72 +165,18 @@ class DownloadService extends BaseService {
   }
 
   createDownloadAction({url, saveTo}) {
-    debug.sendStatus('Try to create download');
-
     try {
-      fs.ensureDirSync(saveTo);
+      let provider = DownloadAdapter.getProvider(url);
+
+      this.downloadManager.createDownloader({
+        provider,
+        options: {
+          saveTo: saveTo
+        }
+      });
     } catch (error) {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `Cannot save files to path ${saveTo}`);
-
-      debug.sendStatus('Cannot create save path');
-
-      return;
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
     }
-
-    let workId = UrlParser.getWorkIdFromUrl(url);
-
-    /**
-     * This is a work url
-     */
-    if (workId) {
-      if (this.downloadManager.getWorkDownloader(workId)) {
-        debug.sendStatus('Duplicated download');
-
-        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
-
-        return;
-      }
-
-      this.downloadManager.createWorkDownloader({
-        workId,
-        options: {
-          saveTo: saveTo
-        }
-      });
-
-      debug.sendStatus('Download created');
-
-      return;
-    }
-
-    let userUrlInfo = UrlParser.getPixivUserUrlInfo(url);
-
-    if (userUrlInfo) {
-      workId = `user-${userUrlInfo.userId}`;
-
-      if (this.downloadManager.getWorkDownloader(workId)) {
-        debug.sendStatus('Duplicated download');
-
-        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
-
-        return;//
-      }
-
-      this.downloadManager.createUserDownloader({
-        workId,
-        options: {
-          saveTo: saveTo
-        }
-      });
-
-      debug.sendStatus('User download created');
-
-      return;
-    }
-
-    WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
-
-    debug.sendStatus('Cannot create download');
   }
 
   deleteDownloadAction({downloadId}) {
