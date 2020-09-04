@@ -1,6 +1,6 @@
 import {
-  PixivUserProvider,
-  PixivGeneralArtworkProvider
+  PixivGeneralArtworkProvider,
+  PixivUserProvider
 } from './Providers';
 
 class DownloadAdapter {
@@ -8,14 +8,14 @@ class DownloadAdapter {
     {
       provider: PixivUserProvider,
       patterns: [
-        /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(?<id>\d+)(?:&.*)?$/,
-        /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?users\/(?:<id>\d+)(?:\?.*)?/
+        /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(?<id>\d+)(?:&.*)?$/i,
+        /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?users\/(?<id>\d+)(?:\?.*)?/i
       ]
     },
     {
       provider: PixivGeneralArtworkProvider,
       patterns: [
-        /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?artworks\/(?<id>\d+)(?:\?.*)?$/
+        /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?artworks\/(?<id>\d+)(?:\?.*)?$/i
       ]
     }
   ];
