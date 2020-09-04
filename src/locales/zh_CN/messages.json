@@ -115,5 +115,7 @@
 
   "_the_path_wills_suffix_to_download_location": "以下路径会后缀在下载路径",
 
-  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "你可以添加 / 来将图片保存到子文件夹，例如："
+  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "你可以添加 / 来将图片保存到子文件夹，例如：",
+
+  "_start_download_while_startup": "启动后自动开始下载"
 }
