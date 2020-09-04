@@ -14,6 +14,10 @@
       <el-switch v-model="scopedSettings.closeToTray"></el-switch>
     </el-form-item>
 
+    <el-form-item :label="$t('_start_download_while_startup')" :label-width="formLabelWidth">
+      <el-switch v-model="scopedSettings.autostartDownload"></el-switch>
+    </el-form-item>
+
     <el-form-item :label="$t('_show_notification')" :label-width="formLabelWidth">
       <el-switch v-model="scopedSettings.showNotification"></el-switch>
     </el-form-item>
@@ -43,6 +47,7 @@ export default {
 
       scopedSettings: {
         closeToTray: false,
+        autostartDownload: true,
         showNotification: true,
         userAgent: '',
         saveTo: '',
