@@ -44,7 +44,9 @@ function defaultSetting() {
 
     saveMangaToLocation: '',
 
-    locale: 'en'
+    locale: 'en',
+
+    autostartDownload: true
   }
 }
 
