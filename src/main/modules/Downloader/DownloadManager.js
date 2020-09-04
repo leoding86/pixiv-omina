@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
-import UrlParser from '@/modules/UrlParser';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import {
   debug
