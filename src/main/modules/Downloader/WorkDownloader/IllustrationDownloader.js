@@ -2,6 +2,7 @@ import FormatName from '@/modules/Utils/FormatName';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
 import SettingStorage from '@/modules/SettingStorage';
 import path from 'path';
+import { PixivIllustrationProvider } from '../Providers';
 
 /**
  * @class
@@ -13,7 +14,10 @@ class IllustrationDownloader extends MangaDownloader {
   constructor() {
     super();
 
-    this.download = null;
+    /**
+     * @type {PixivIllustrationProvider}
+     */
+    this.provider;
 
     this.images = [];
 
@@ -23,16 +27,18 @@ class IllustrationDownloader extends MangaDownloader {
   }
 
   /**
-   * Create a manga downloader from base work downloader
-   * @member
-   * @param {WorkDownloader} workDownloader
-   * @returns {IllustrationDownloader}
+   *
+   * @param {Object} options
+   * @param {PixivMangaProvider} options.provider
+   * @param {Object} options.options
    */
-  static createFromWorkDownloader(workDownloader) {
+  static createDownloader({ provider, options }) {
     let downloader = new IllustrationDownloader();
-    downloader.id = workDownloader.id;
-    downloader.options = workDownloader.options;
-    downloader.context = workDownloader.context;
+    downloader.provider = provider;
+    downloader.url = provider.url;
+    downloader.id = provider.id;
+    downloader.options = options;
+    downloader.context = downloader.provider.context;
 
     return downloader;
   }

@@ -4,6 +4,13 @@ import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
 import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
 import path from 'path';
+import {
+  PixivUserProvider,
+  PixivGeneralArtworkProvider,
+  PixivMangaProvider,
+  PixivIllustrationProvider,
+  PixivUgoiraProvider
+} from './Providers';
 
 /**
  * @class
@@ -26,6 +33,16 @@ class WorkDownloader extends EventEmitter {
      * @type {Download}
      */
     this.download = null;
+
+    /**
+     * @type {string}
+     */
+    this.url = null;
+
+    /**
+     * @type {PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider}
+     */
+    this.provider = null;
 
     /**
      * @type {string}
@@ -98,7 +115,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   get title() {
-    return this.id;
+    return this.url;
   }
 
   /**
@@ -116,11 +133,11 @@ class WorkDownloader extends EventEmitter {
 
   /**
    * @param {Object} param
-   * @param {number|string} param.workId
+   * @param {Object} param.provider
    * @param {Object} param.options
    * @returns {WorkDownloader}
    */
-  static createDownloader({workId, options}) {
+  static createDownloader({provider, options}) {
     throw Error('Abstract method, not implemented');
   }
 
@@ -294,6 +311,7 @@ class WorkDownloader extends EventEmitter {
 
     this.setStopping();
 
+    this.provider && this.provider.request && this.provider.request.abort();
     this.download && this.download.abort();
     this.request && this.request.abort();
 

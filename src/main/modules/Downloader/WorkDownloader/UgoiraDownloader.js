@@ -1,8 +1,6 @@
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
-import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
-import UrlBuilder from '@/../utils/UrlBuilder';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import WorkDownloaderUnstoppableError from '../WorkDownloaderUnstoppableError';
 import Zip from 'jszip';
@@ -11,6 +9,7 @@ import { debug } from '@/global';
 import { fork } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
+import { PixivUgoiraProvider } from '../Providers';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -26,6 +25,11 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.meta = null;
 
+    /**
+     * @type {PixivUgoiraProvider}
+     */
+    this.provider;
+
     this.type = 2;
 
     this.workers = [];
@@ -38,21 +42,25 @@ class UgoiraDownloader extends WorkDownloader {
   get title() {
     if (this.context) {
       return this.context.title
+    } else if (this.title) {
+      return this.title;
+    } else {
+      return this.id;
     }
-    return super.title;
   }
 
   /**
-   * Create ugoira downloader from base work downloader
-   * @member
-   * @param {WorkDownloader} workDownloader
-   * @returns {UgoiraDownloader}
+   *
+   * @param {Object} options
+   * @param {PixivUgoiraProvider} options.provider
    */
-  static createFromWorkDownloader(workDownloader) {
+  static createDownloader({ provider, options }) {
     let downloader = new UgoiraDownloader();
-    downloader.id = workDownloader.id;
-    downloader.options = workDownloader.options;
-    downloader.context = workDownloader.context;
+    downloader.provider = provider;
+    downloader.url = provider.url;
+    downloader.id = provider.id;
+    downloader.options = options;
+    downloader.context = downloader.provider.context;
 
     return downloader;
   }
@@ -84,64 +92,6 @@ class UgoiraDownloader extends WorkDownloader {
    */
   getImageSaveFolder() {
     return path.join(this.options.saveTo, this.getRelativeSaveFolder())
-  }
-
-  fetchMeta() {
-    return new Promise((resolve, reject) => {
-      const url = UrlBuilder.getUgoiraMetaUrl(this.id);
-
-      this.request = new Request({
-        url: url,
-        method: 'GET'
-      });
-
-      this.request.on('error', error => {
-        reject(error);
-      });
-
-      this.request.on('abort', () => {
-        reject(Error('Request ugoira meta has been aborted'));
-      });
-
-      this.request.on('response', response => {
-        if (response.statusCode !== 200) {
-          reject(Error(response.statusCode));
-          return;
-        }
-
-        let body = '';
-
-        response.on('error', error => {
-          reject(error);
-        });
-
-        response.on('data', data => {
-          body += data;
-        });
-
-        response.on('end', () => {
-          let jsonData = JSON.parse(body.toString());
-
-          if (jsonData &&
-            jsonData.body &&
-            jsonData.body.originalSrc &&
-            Array.isArray(jsonData.body.frames) &&
-            jsonData.body.frames.length > 0
-          ) {
-            resolve(jsonData.body);
-            return;
-          }
-
-          reject(Error('Cannot resolve ugoira meta'));
-        });
-
-        response.on('aborted', () => {
-          reject(Error('Resolve ugoira meta has been aborted'));
-        });
-      });
-
-      this.request.end();
-    });
   }
 
   generateGif(file) {
@@ -279,7 +229,7 @@ class UgoiraDownloader extends WorkDownloader {
     if (!this.meta) {
       this.setDownloading('Fetch ugoira meta for downloading');
 
-      this.fetchMeta().then(meta => {
+      this.provider.requestMeta().then(meta => {
         this.meta = meta;
 
         this.downloadZip();
@@ -328,6 +278,7 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.setStopping();
 
+    this.provider.request && this.provider.request.abort();
     this.download && this.download.abort();
     this.request && this.request.abort();
 

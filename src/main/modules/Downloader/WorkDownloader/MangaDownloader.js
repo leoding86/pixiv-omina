@@ -1,10 +1,9 @@
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
-import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
-import UrlBuilder from '@/../utils/UrlBuilder';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import path from 'path';
+import { PixivMangaProvider } from '../Providers';
 
 /**
  * @class
@@ -12,6 +11,11 @@ import path from 'path';
 class MangaDownloader extends WorkDownloader {
   constructor() {
     super();
+
+    /**
+     * @type {PixivMangaProvider}
+     */
+    this.provider;
 
     this.images = [];
 
@@ -27,75 +31,28 @@ class MangaDownloader extends WorkDownloader {
   get title() {
     if (this.context) {
       return this.context.title
+    } else if (this.title) {
+      return this.title;
+    } else {
+      return this.id;
     }
-    return super.title;
   }
 
   /**
-   * Create a manga downloader from base work downloader
-   * @member
-   * @param {WorkDownloader} workDownloader
-   * @returns {MangaDownloader}
+   *
+   * @param {Object} options
+   * @param {PixivMangaProvider} options.provider
+   * @param {Object} options.options
    */
-  static createFromWorkDownloader(workDownloader) {
+  static createDownloader({ provider, options }) {
     let downloader = new MangaDownloader();
-    downloader.id = workDownloader.id;
-    downloader.options = workDownloader.options;
-    downloader.context = workDownloader.context;
+    downloader.provider = provider;
+    downloader.url = provider.url;
+    downloader.id = provider.id;
+    downloader.options = options;
+    downloader.context = downloader.provider.context;
 
     return downloader;
-  }
-
-  /**
-   * Fetch images that need to be downloaded
-   * @returns {Promise.<Array>}
-   */
-  fetchImages() {
-    return new Promise((resolve, reject) => {
-      let url = UrlBuilder.getWorkPagesUrl(this.id);
-
-      this.request = new Request({
-        url: url,
-        method: 'GET'
-      });
-
-      this.request.on('error', error => {
-        reject(error);
-      });
-
-      this.request.on('response', response => {
-        let body = '';
-
-        response.on('error', error => {
-          reject(error);
-        });
-
-        response.on('data', data => {
-          body += data;
-        });
-
-        response.on('end', () => {
-          let jsonData = JSON.parse(body.toString());
-
-          if (jsonData && Array.isArray(jsonData.body) && jsonData.body.length > 0) {
-            resolve(jsonData.body);
-            return;
-          }
-
-          reject(Error('Cannot resolve manga images'));
-        });//
-
-        response.on('aborted', () => {
-          reject(Error('Resolve manga images has been aborted'));
-        });
-      });
-
-      this.request.on('close', () => {
-        this.request = null;
-      });
-
-      this.request.end();
-    });
   }
 
   /**
@@ -194,7 +151,7 @@ class MangaDownloader extends WorkDownloader {
     if (this.images.length === 0) {
       this.setDownloading('Fetch images that need to be downloaded');
 
-      this.fetchImages().then(images => {
+      this.provider.requestPages().then(images => {
         this.images = images;
 
         this.downloadImages();

@@ -1,9 +1,11 @@
 import EventEmitter from 'events';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import UrlParser from '@/modules/UrlParser';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import {
   debug
 } from '@/global';
+import fs from 'fs-extra';
 import { shell } from 'electron';
 
 /**
@@ -51,18 +53,22 @@ class DownloadManager extends EventEmitter {
 
   /**
    * @param {WorkDownloader} downloader
-   * @returns {this}
+   * @returns {void}
    */
   addWorkDownloader(downloader) {
-    if (!this.getWorkDownloader(downloader.id)) {
-      this.workDownloaderPool.set(downloader.id, downloader);
+    this.workDownloaderPool.set(downloader.id, downloader);
+    this.emit('add', downloader);
+    this.startWorkDownloader({ downloadId: downloader.id });
+  }
 
-      this.emit('add', downloader);
-
-      this.startWorkDownloader({downloadId: downloader.id});
-    }
-
-    return this;
+  /**
+   * @param {WorkDownloader} downloader
+   * @returns {void}
+   */
+  transformWorkDownloader(downloader) {
+    this.workDownloaderPool.set(downloader.id, downloader);
+    this.emit('update', downloader);
+    this.startWorkDownloader({ downloadId: downloader.id });
   }
 
   /**
@@ -71,22 +77,53 @@ class DownloadManager extends EventEmitter {
    * @param {Object} [options]
    * @param {Boolean} [options.mute=false]
    * @param {Boolean} [options.autoStart=true]
+   * @param {WorkDownloader} [options.replace=null]
    * @returns {void}
    */
   addDownloaders(downloaders, options) {
-    const { mute, autoStart } = Object.assign({mute: false, autoStart: true}, options);//
+    const { mute, autoStart, replace } = Object.assign({mute: false, autoStart: true, replace: null}, options);
 
     let addedDownloaders = [];
+    let addedDownloadersMap = new Map();
 
     downloaders.forEach(downloader => {
       if (!this.getWorkDownloader(downloader.id)) {
-        this.workDownloaderPool.set(downloader.id, downloader);
-
-        addedDownloaders.push(downloader);
-
         this.attachListenersToDownloader(downloader);
+        addedDownloadersMap.set(downloader.id, downloader);
+        addedDownloaders.push(downloader);
       }
     });
+
+    if (replace && this.getWorkDownloader(replace.id)) {
+      let beforeReplaceDownloadersMap = new Map();
+      let afterReplaceDownloadersMap = new Map();
+      let found = false;
+
+      this.workDownloaderPool.forEach((downloader, id) => {
+        if (id !== replace.id) {
+          if (found) {
+            afterReplaceDownloadersMap.set(id, downloader);
+          } else {
+            beforeReplaceDownloadersMap.set(id, downloader);
+          }
+        } else {
+          this.emit('delete', id);
+          this.workDownloaderPool.delete(id);
+          found = true;
+        }
+      });
+
+      this.workDownloaderPool = new Map([
+        ...beforeReplaceDownloadersMap,
+        ...addedDownloadersMap,
+        ...afterReplaceDownloadersMap
+      ]);
+    } else {
+      this.workDownloaderPool = new Map([
+        ...this.workDownloaderPool,
+        ...addedDownloadersMap
+      ]);
+    }
 
     if (!mute) this.emit('add-batch', addedDownloaders);
 
@@ -243,21 +280,23 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
-   * Create a downloader
-   * @param {Object} args
-   * @param {string|number} args.workId
-   * @param {Object} args.options
-   * @returns {DownloadManager}
+   *
+   * @param {Object} options
+   * @param {Object} options.provider
+   * @param {Object} options.options
    */
-  createWorkDownloader({workId, options}) {
-    let undeterminedDownloader = UndeterminedDownloader.createDownloader({ workId, options });
+  createDownloader({provider, options}) {
+    debug.sendStatus('try to create a download');
 
-    this.addWorkDownloader(undeterminedDownloader);
-  }
+    try {
+      fs.ensureDirSync(options.saveTo);
+    } catch (error) {
+      debug.sendStatus('cannot create save dir(s)');
+      Promise.reject(error);
+      return;
+    }
 
-  createUserDownloader({workId, options}) {
-    options.isUser = true;
-    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ workId, options }));
+    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ provider, options }));
   }
 
   /**
@@ -277,32 +316,9 @@ class DownloadManager extends EventEmitter {
       this.attachListenersToDownloader(workDownloader);
 
       if (!this.reachMaxDownloading()) {
-        if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
-          if (workDownloader.isUser()) {
-            workDownloader.getUserWorkDownloaders().then(downloaders => {
-              this.addDownloaders(downloaders);
-
-              this.deleteWorkDownloader({
-                downloadId: workDownloader.id
-              });
-            });
-          } else {
-            workDownloader.getRealDownloader().then(downloader => {
-              workDownloader = null;
-
-              this.workDownloaderPool.set(downloader.id, downloader);
-
-              this.startWorkDownloader({downloadId: downloader.id});
-            }).catch(error => {
-              throw error;
-            });
-          }
-        } else {
-          workDownloader.start();
-        }
+        workDownloader.start();
       } else {
         workDownloader.setPending();
-
         this.emit('update', workDownloader);
       }
     }

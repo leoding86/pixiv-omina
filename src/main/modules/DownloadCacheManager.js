@@ -61,6 +61,7 @@ class DownloadCacheManager {
   cacheDownload(download) {
     if (download.id && this.cachedDownloads[download.id] === undefined) {
       this.cachedDownloads[download.id] = {
+        url: download.url,
         options: download.options
       };
 
@@ -76,6 +77,7 @@ class DownloadCacheManager {
     downloads.forEach(download => {
       if (download.id && this.cachedDownloads[download.id] === undefined) {
         this.cachedDownloads[download.id] = {
+          url: download.url,
           options: download.options
         };
       }
