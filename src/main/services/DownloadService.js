@@ -4,17 +4,16 @@ import {
 } from 'electron';
 
 import BaseService from '@/services/BaseService';
-import DownloadCacheManager from '@/modules/DownloadCacheManager';
 import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
+import DownloadCacheManager from '@/modules/DownloadCacheManager';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import NotificationManager from '@/modules/NotificationManager';
+import SettingStorage from '@/modules/SettingStorage';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
-import UrlParser from '@/modules/UrlParser';
 import WindowManager from '@/modules/WindowManager';
 import {
   debug
 } from '@/global';
-import fs from 'fs-extra';
 import path from 'path';
 
 class DownloadService extends BaseService {
@@ -36,6 +35,8 @@ class DownloadService extends BaseService {
     this.mainWindow = WindowManager.getWindow('app');
 
     this.downloadManager = DownloadManager.getManager();
+
+    this.settingStorage = SettingStorage.getDefault();
 
     this.notificationManager = NotificationManager.getDefault();
 
@@ -122,32 +123,40 @@ class DownloadService extends BaseService {
     return DownloadService.channel + `:${name}`;
   }
 
+  /**
+   * test method
+   */
+  restoreDownloadsAction() {
+    this.restoreDownloads();
+  }
+
   restoreDownloads() {
     const cachedDownloads = this.downloadCacheManager.getCachedDownloads();
-    let downloaders = [];
+    let downloaders = [], count = 0;
 
     debug.sendStatus('Restoring downloads');
 
     Object.keys(cachedDownloads).forEach(key => {
       try {
+        count++;
         downloaders.push(UndeterminedDownloader.createDownloader({
           provider: DownloadAdapter.getProvider(cachedDownloads[key].url),
-          options: cachedDownloads[downloadId].options
+          options: cachedDownloads[key].options
         }));
       } catch (error) {
         this.downloadCacheManager.removeDownload();
       }
     });
 
-    debug.sendStatus('Downloads have been restored');
-
     /**
      * do not start downloads automatically after downloads are restored
      */
     this.downloadManager.addDownloaders(downloaders, {
-      mute: true,
-      autoStart: false
+      mute: false,
+      autoStart: !!this.settingStorage.getSetting('autostartDownload')
     });
+
+    debug.sendStatus('Downloads have been restored. Count: ' + count);
   }
 
   fetchAllDownloadsAction() {
