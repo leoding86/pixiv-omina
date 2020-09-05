@@ -121,5 +121,9 @@
 
   "_start_download_while_startup": "启动后自动开始下载",
 
-  "_format_pixiv_comic": "重命名pixiv comic"
+  "_format_pixiv_comic": "重命名pixiv comic",
+
+  "_works_on_pixiv_main_site_rename_settings": "Pixiv主站作品重命名设置",
+
+  "_works_on_pixiv_comic_rename_setting": "Pixiv Comic站点作品重命名设置"
 }

@@ -55,15 +55,15 @@
 
   "_save_ugoira_in_subfolder": "Save ugoira in subfolder",
 
-  "_format_ugoira": "Format ugoira",
+  "_format_ugoira": "Rename ugoira",
 
-  "_format_manga": "Format manga",
+  "_format_manga": "Rename manga",
 
   "_format_manga_image": "Format manga image",
 
   "_save_illust_in_subfolder": "Save illust in subfolder",
 
-  "_format_illust": "Format illust",
+  "_format_illust": "Rename illust",
 
   "_format_illust_image": "Format illust image",
 
@@ -121,5 +121,9 @@
 
   "_start_download_while_startup": "Start download while startup",
 
-  "_format_pixiv_comic": "Format pixiv comic"
+  "_format_pixiv_comic": "Rename comic",
+
+  "_works_on_pixiv_main_site_rename_settings": "Works on Pixiv main site rename settings",
+
+  "_works_on_pixiv_comic_rename_setting": "Works on Pixiv Comic rename setting"
 }
