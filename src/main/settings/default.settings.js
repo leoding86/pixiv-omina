@@ -4,10 +4,10 @@ function defaultSetting() {
   return {
     saveTo: app.getPath('downloads'),
 
-    illustrationRename: '%id%_%title%',
+    illustrationRename: '%id%_%title%/p%page_num%',
     illustrationImageRename: '%id%_p%page_num%',
 
-    mangaRename: '%id%_%title%',
+    mangaRename: '%id%_%title%/p%page_num%',
     mangaImageRename: '%id%_p%page_num%',
 
     ugoiraRename: '%id%_%title%',
