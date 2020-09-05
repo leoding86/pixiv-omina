@@ -20,6 +20,11 @@
       <span slot="label">{{ $t('_format_illust') }}</span>
       <el-input v-model="scopedSettings.illustrationRename"></el-input>
     </el-form-item>
+
+    <el-form-item :label-width="formLabelWidth">
+      <span slot="label">{{ $t('_format_pixiv_comic') }}</span>
+      <el-input v-model="scopedSettings.pixivComicWorkRename"></el-input>
+    </el-form-item>
   </el-form>
 </template>
 
@@ -29,13 +34,14 @@ import { ipcRenderer } from "electron";
 export default {
   data() {
     return {
-      formLabelWidth: "160px",
+      formLabelWidth: "120px",
 
       scopedSettings: {
         saveIllustrationInSubfolder: true,
         ugoiraRename: '',
         mangaRename: '',
-        illustrationRename: ''
+        illustrationRename: '',
+        pixivComicWorkRename: ''
       },
 
       settingsRule: {

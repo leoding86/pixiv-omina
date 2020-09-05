@@ -5,7 +5,7 @@
     :title="$t('_settings')"
     :show-close="false"
     :close-on-click-modal="false"
-    :width="'480px'"
+    :width="'640px'"
     :visible.sync="show"
   >
     <el-tabs
@@ -39,6 +39,13 @@
       </el-tab-pane>
 
       <el-tab-pane
+        :label="$t('_help')"
+        name="help"
+      >
+        <app-help></app-help>
+      </el-tab-pane>
+
+      <el-tab-pane
         :label="$t('_about')"
         name="about"
       >
@@ -49,11 +56,6 @@
       slot="footer"
       class="dialog-footer"
     >
-      <el-button
-        style="float:left;"
-        size="mini"
-        @click="showHelp"
-      >{{ $t('_help') }}</el-button>
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
@@ -72,6 +74,7 @@ import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
 import RenameSettings from './RenameSettings';
+import Help from '../Help';
 import About from '../About';
 
 export default {
@@ -79,6 +82,7 @@ export default {
     'general-settings': GeneralSettings,
     'proxy-settings': ProxySettings,
     'rename-settings': RenameSettings,
+    'app-help': Help,
     'app-about': About
   },
 
@@ -128,22 +132,6 @@ export default {
           }
         });
       }
-    },
-
-    showHelp() {
-      const h = this.$createElement;
-
-      this.$msgbox({
-        title: this.$t('_help'),
-        message: h('div', null, [
-          h('p', null, this.$t('_valid_rename_placeholders') + ': '),
-          h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%, %year%, %month%, %day%'),
-          h('p', null, this.$t('_you_can_add_forward_slashs_to_save_images_in_subfolder_eg') + '%user_id%/%title%')
-        ]),
-        showConfirmButton: false
-      }).catch(() => {
-        //ignore it
-      });
     }
   }
 }

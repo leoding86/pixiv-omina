@@ -13,7 +13,10 @@
           @click.stop.native="downloadClickHandler(item, $event)"
           :key=item.id
         >
-          <div :class="getDownloadTypeClassname(item.type)">{{ getDownloadType(item.type) }}</div>
+          <div
+            class="download-list-item__title-type"
+            :class="getDownloadTypeClassname(item.type)"
+          >{{ getDownloadType(item.type) }}</div>
 
           <div class="download-list-item__mask"
             v-if="item.frozing"></div>
@@ -140,6 +143,8 @@ export default {
           classname += '--manga';
         } else if (type == 2) {
           classname += '--ugoira'
+        } else if (type == 20) {
+          classname += '--pixiv-comic'
         }
       }
 
@@ -154,6 +159,8 @@ export default {
           return 'manga';
         } else if (type == 2) {
           return 'ugoira';
+        } else if (type == 20) {
+          return 'pixiv comic'
         }
       }
 
@@ -303,6 +310,10 @@ export default {
   @extend .download-list-item__title-type;
 
   background: rgb(146, 215, 218);
+}
+
+.download-list-item__title-type--pixiv-comic {
+  background: rgb(0, 135, 255);
 }
 
 .download-list-item__actions {
