@@ -119,7 +119,7 @@ class FormatName {
     }
 
     if (!renameFormat) {
-      filename = fallback + '';
+      filename = FormatName.replaceIllegalChars(fallback) + '';
     } else {
       var matches = renameFormat.match(/%[a-z_]+%/ig);
       var name = renameFormat;
@@ -127,7 +127,7 @@ class FormatName {
       if (matches && matches.length > 0) {
         matches.forEach(function (match) {
           var key = match.slice(1, -1);
-          var val = getContextMetaValue(context, key);
+          var val = FormatName.replaceIllegalChars(getContextMetaValue(context, key));
 
           if (val !== undefined) {
             name = name.replace(match, val);
