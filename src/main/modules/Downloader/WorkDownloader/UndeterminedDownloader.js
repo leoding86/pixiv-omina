@@ -3,12 +3,15 @@ import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/Illustra
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
 import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownloader';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import PixivComicEpisodeDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/EpisodeDownloader';
 import {
   PixivUserProvider,
   PixivGeneralArtworkProvider,
   PixivIllustrationProvider,
   PixivMangaProvider,
-  PixivUgoiraProvider
+  PixivUgoiraProvider,
+  PixivComicEpisodeProvider,
+  PixivComicWorkProvider
 } from '@/modules/Downloader/Providers';
 
 /**
@@ -81,12 +84,12 @@ class UndeterminedDownloader extends WorkDownloader {
           })
         } else if (context.illustType === 1) {
           downloader = MangaDownloader.createDownloader({
-            provider: PixivMangaProvider.createProvider({ url: this.provider. url,context }),
+            provider: PixivMangaProvider.createProvider({ url: this.provider.url, context }),
             options: this.options
           });
         } else if (context.illustType === 2) {
           downloader = UgoiraDownloader.createDownloader({
-            provider: PixivUgoiraProvider.createProvider({ url: this.provider, context }),
+            provider: PixivUgoiraProvider.createProvider({ url: this.provider.url, context }),
             options: this.options
           });
         } else {
@@ -96,6 +99,28 @@ class UndeterminedDownloader extends WorkDownloader {
 
         this.setFinish();
         this.downloadManager.transformWorkDownloader(downloader);
+      }).catch(error => {
+        this.setError(error);
+      })
+    } else if (this.provider instanceof PixivComicEpisodeProvider) {
+      this.setFinish();
+      this.downloadManager.transformWorkDownloader(PixivComicEpisodeDownloader.createDownloader({
+        provider: this.provider,
+        options: this.options
+      }));
+    } else if (this.provider instanceof PixivComicWorkProvider) {
+      this.provider.requestContext().then(context => {
+        let downloaders = [];
+
+        context.episodeIds.forEach(id => {
+          downloaders.push(PixivComicEpisodeDownloader.createDownloader({
+            provider: PixivComicEpisodeProvider.createProvider({context: { id: id, userName: context.userName } }),
+            options: this.options
+          }));
+        });
+
+        this.setFinish();
+        this.downloadManager.addDownloaders(downloaders, { replace: this });
       }).catch(error => {
         this.setError(error);
       })

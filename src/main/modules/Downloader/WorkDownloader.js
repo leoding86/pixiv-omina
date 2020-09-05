@@ -9,7 +9,8 @@ import {
   PixivGeneralArtworkProvider,
   PixivMangaProvider,
   PixivIllustrationProvider,
-  PixivUgoiraProvider
+  PixivUgoiraProvider,
+  PixivComicEpisodProvider
 } from './Providers';
 
 /**
@@ -40,7 +41,7 @@ class WorkDownloader extends EventEmitter {
     this.url = null;
 
     /**
-     * @type {PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider}
+     * @type {PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider|PixivComicEpisodProvider}
      */
     this.provider = null;
 
@@ -249,6 +250,7 @@ class WorkDownloader extends EventEmitter {
    * @param {Error} error
    */
   setError(error) {
+    console.error(error);
     this.statusMessage = error.message;
     this.state = WorkDownloader.state.error;
 
