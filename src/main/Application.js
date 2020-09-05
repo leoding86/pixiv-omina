@@ -7,6 +7,7 @@ import ServiceContainer from '@/ServiceContainer';
 import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
 import path from 'path';
+import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
 
 class Application {
   constructor() {
@@ -46,24 +47,20 @@ class Application {
       {
         urls: [
           '*://*.pixiv.net/*',
-          '*://*.pximg.net/*'
+          '*://*.pximg.net/*',
+          '*://img-comic.pximg.net/*',
+          '*://comic.pixiv.net/*'
         ]
       },
       (detail, cb) => {
-        let { requestHeaders } = detail;
+        let { requestHeaders } = detail,
+            requestHeadersOverrider = RequestHeadersOverrider.getDefault();
 
-        requestHeaders = Object.assign(
-          {},
-          requestHeaders,
-          {
-            'user-agent': SettingStorage.getSetting('userAgent'),
-            referer: 'https://www.pixiv.net/'
-          }
-        );
+        requestHeaders = requestHeadersOverrider.getRequestHeaders(detail.url, requestHeaders);
 
         cb({ requestHeaders });
       }
-    )
+    );
   }
 
   /**
