@@ -57,7 +57,7 @@ class FormatName {
         },
         title: {
           key: 'illustTitle',
-          possibleKeys: ['illustTitle', 'novelTitle']
+          possibleKeys: ['illustTitle', 'novelTitle', 'title']
         },
         user_name: {
           key: 'userName',
@@ -82,6 +82,22 @@ class FormatName {
         day: {
           key: 'day',
           possibleKeys: ['day']
+        },
+        number_title: {
+          key: 'numberTitle',
+          possibleKeys: ['numberTitle']
+        },
+        sub_title: {
+          key: 'subTitle',
+          possibleKeys: ['subTitle']
+        },
+        work_id: {
+          key: 'workId',
+          possibleKeys: ['workId']
+        },
+        work_title: {
+          key: 'workTitle',
+          possibleKeys: ['workTitle']
         }
       };
 
