@@ -35,6 +35,8 @@ class FormatName {
    * @param {Array} skipChars
    */
   static replaceIllegalChars(str, skipChars) {
+    str += '';
+
     FormatName.getIllegalChars().forEach(char => {
       if (skipChars && skipChars.indexOf(char) > -1) return;
 
