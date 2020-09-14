@@ -1,7 +1,7 @@
 {
   "name": "pixiv-omina",
   "productName": "Pixiv Omina",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "license": "MPL-2.0",
   "homepage": "https://github.com/leoding86/pixiv-omina",
   "checkUpdateUrl": "https://raw.githubusercontent.com/leoding86/pixiv-omina/master/package.json",
@@ -21,7 +21,9 @@
     "gif-encoder": "^0.7.2",
     "jimp": "^0.8.5",
     "jszip": "^3.2.2",
+    "md5.js": "^1.3.5",
     "mime-types": "^2.1.25",
+    "moment": "^2.28.0",
     "source-map-support": "^0.5.12",
     "vue": "^2.6.10",
     "vue-i18n": "^8.15.3",
