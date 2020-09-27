@@ -45,13 +45,6 @@ class EpisodeDownloader extends WorkDownloader {
   }
 
   /**
-   * @returns {string}
-   */
-  get externalUrl() {
-    return EpisodeProvider.getEpisodeUrl(this.context.id);
-  }
-
-  /**
    * @returns {String}
    */
   getImageSaveName() {
