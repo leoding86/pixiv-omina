@@ -23,7 +23,7 @@
           <div class="download-list-item__body">
             <div class="download-list-item__title-actions">
               <div class="download-list-item__title">
-                <p><a target="_blank" :href="`https://www.pixiv.net/artworks/${item.id}`">{{ item.title }} <i class="el-icon-link"></i></a></p>
+                <p><a target="_blank" :href="item.externalUrl">{{ item.title }} <i class="el-icon-link"></i></a></p>
               </div>
               <div class="download-list-item__actions">
                 <el-button-group>

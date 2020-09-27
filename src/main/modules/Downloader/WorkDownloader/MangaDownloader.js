@@ -39,6 +39,13 @@ class MangaDownloader extends WorkDownloader {
   }
 
   /**
+   * @returns {string}
+   */
+  get externalUrl() {
+    return `https://www.pixiv.net/artworks/${this.context.id}`;
+  }
+
+  /**
    *
    * @param {Object} options
    * @param {PixivMangaProvider} options.provider

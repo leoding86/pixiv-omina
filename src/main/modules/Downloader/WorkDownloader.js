@@ -119,6 +119,10 @@ class WorkDownloader extends EventEmitter {
     return this.url;
   }
 
+  get externalUrl() {
+    return this.url;
+  }
+
   /**
    * @enum {string}
    */
@@ -333,6 +337,7 @@ class WorkDownloader extends EventEmitter {
     let data = {
       id: this.id,
       title: this.title,
+      externalUrl: this.externalUrl,
       state: this.state,
       speed: this.speed,
       progress: this.progress,
