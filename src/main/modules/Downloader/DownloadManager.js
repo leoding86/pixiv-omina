@@ -75,12 +75,12 @@ class DownloadManager extends EventEmitter {
    * @param {Array.<WorkDownloader>} downloaders
    * @param {Object} [options]
    * @param {Boolean} [options.mute=false]
-   * @param {Boolean} [options.autoStart=true]
+   * @param {Boolean} [options.autoStart=false]
    * @param {WorkDownloader} [options.replace=null]
    * @returns {void}
    */
   addDownloaders(downloaders, options) {
-    const { mute, autoStart, replace } = Object.assign({mute: false, autoStart: true, replace: null}, options);
+    const { mute, autoStart, replace } = Object.assign({mute: false, autoStart: false, replace: null}, options);
 
     let addedDownloaders = [];
     let addedDownloadersMap = new Map();

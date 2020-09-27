@@ -141,6 +141,17 @@ export default {
           action: 'fetchAllDownloads'
         });
       }
+    },
+
+    logined(value) {
+      if (!!value && !!this.settings.autostartDownload) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
+        });
+      }
     }
   },
 
@@ -202,6 +213,18 @@ export default {
 
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
       this.addDownloads(downloads);
+    });
+
+    ipcRenderer.on('download-service:restore', (event) => {
+      // Try to start restored downloads
+      if (this.logined && !!this.settings.autostartDownload) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
+        });
+      }
     });
   },
 

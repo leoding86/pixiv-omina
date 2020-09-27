@@ -102,6 +102,8 @@ class DownloadService extends BaseService {
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
 
     this.restoreDownloads();
+
+    this.mainWindow.webContents.send(this.responseChannel('restore'));
   }
 
   /**
@@ -152,8 +154,7 @@ class DownloadService extends BaseService {
      * do not start downloads automatically after downloads are restored
      */
     this.downloadManager.addDownloaders(downloaders, {
-      mute: false,
-      autoStart: !!this.settingStorage.getSetting('autostartDownload')
+      mute: false
     });
 
     debug.sendStatus('Downloads have been restored. Count: ' + count);
