@@ -88,6 +88,10 @@ class SettingStorage extends EventEmitter {
     return this.settings;
   }
 
+  getDefaultSettings() {
+    return this.defaultSettings;
+  }
+
   setSettings(settings) {
     for (let key in settings) {
       if (this.settings[key] !== undefined) {

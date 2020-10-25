@@ -76,6 +76,16 @@ class SettingService extends BaseService {
 
     WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), changedSettings);
   }
+
+  /**
+   * Reset settings action
+   * @returns {void}
+   */
+  resetSettingsAction() {
+    let defaultSettings = this.settingStorage.getDefaultSettings();
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), defaultSettings);
+  }
 }
 
 export default SettingService;

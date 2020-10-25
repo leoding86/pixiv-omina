@@ -61,6 +61,10 @@
         size="mini"
       >{{ $t('_close') }}</el-button>
       <el-button
+        @click="resetSettings"
+        size="mini"
+      >{{ $t('_reset') }}</el-button>
+      <el-button
         type="primary"
         @click="saveSettings"
         size="mini"
@@ -119,6 +123,15 @@ export default {
       });
 
       this.settingsChanged = !!this.diffSettings(this.changedSettings);
+    },
+
+    resetSettings() {
+      if (window.confirm(this.$t('_reset_settings_confirmation'))) {
+        console.log('reset settings button is clicked');
+        ipcRenderer.send('setting-service', {
+          action: 'resetSettings'
+        });
+      }
     },
 
     saveSettings() {
