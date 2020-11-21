@@ -206,7 +206,7 @@ class Application {
     Request.setGlobalOptions({
       session: this.partitionManager.getSession('main'),
       headers: {
-        'user-agent': SettingStorage.getSettings('userAgent'),
+        'user-agent': SettingStorage.getSetting('userAgent'),
         'referer': 'https://www.pixiv.net/'
       }
     });
