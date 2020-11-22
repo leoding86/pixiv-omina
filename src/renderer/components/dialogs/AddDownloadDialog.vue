@@ -10,31 +10,89 @@
     v-loading="checking"
     element-loading-text="Checking user login status..."
   >
-    <el-form
-      ref="addDownloadForm"
-      size="mini"
-      :model="download"
-      :rules="addDownloadRule"
+    <el-tabs
+      v-model="currentTab"
     >
-      <el-form-item
-        label="URL"
-        :label-width="formLabelWidth"
+      <el-tab-pane
+        :label="$t('_url')"
+        name="url"
       >
-        <el-input
-          ref="urlInput"
-          v-model="download.url"
-        ></el-input>
-      </el-form-item>
+        <el-form
+          ref="addUrlDownload"
+          size="mini"
+          :model="download"
+          :rules="addDownloadRule"
+        >
+          <el-form-item
+            label="URL"
+            :label-width="formLabelWidth"
+          >
+            <el-input
+              ref="urlInput"
+              v-model="download.url"
+            ></el-input>
+          </el-form-item>
 
-      <el-form-item
-        :label="$t('_save_to')"
-        :label-width="formLabelWidth"
+          <el-form-item
+            :label="$t('_save_to')"
+            :label-width="formLabelWidth"
+          >
+            <directory-selector
+              v-model="download.saveTo"
+            ></directory-selector>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+
+      <el-tab-pane
+        :label="$t('_bookmark')"
+        name="bookmark"
       >
-        <directory-selector
-          v-model="download.saveTo"
-        ></directory-selector>
-      </el-form-item>
-    </el-form>
+        <el-form
+          :model="bookmarkForm"
+          ref="addBmDownload"
+          size="mini"
+        >
+          <el-form-item
+            :label="$t('_mode')"
+            :label-width="formLabelWidth"
+          >
+            <el-select
+              v-model="bookmarkForm.mode"
+            >
+              <el-option
+                value="all"
+                :label="$t('_all')"
+              ></el-option>
+              <el-option
+                value="pages"
+                :label="$t('_pages')"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item
+            v-if="bookmarkForm.mode === 'pages'"
+            :label="$t('_pages')"
+            :label-width="formLabelWidth"
+          >
+            <el-input
+              v-model="bookmarkForm.pages"
+              placeholder="'1' or '1-3' or '1-3,5-10'"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item
+            :label="$t('_save_to')"
+            :label-width="formLabelWidth"
+          >
+            <directory-selector
+              v-model="bookmarkForm.saveTo"
+            ></directory-selector>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+    </el-tabs>
     <span
       slot="footer"
       class="dialog-footer"
@@ -75,6 +133,14 @@ export default {
     return {
       formLabelWidth: '80px',
 
+      currentTab: 'url',
+
+      bookmarkForm: {
+        mode: 'all',
+        pages: '',
+        saveTo: ''
+      },
+
       download: {
         url: '',
         saveTo: ''
@@ -97,7 +163,7 @@ export default {
       this.download.url = text;
     }
 
-    this.download.saveTo = this.settings.saveTo;
+    this.download.saveTo = this.bookmarkForm.saveTo = this.settings.saveTo;
   },
 
   mounted() {
@@ -107,30 +173,126 @@ export default {
   },
 
   methods: {
-    addDownload() {
-      this.$refs['addDownloadForm'].validate((valid) => {
-        if (valid) {
-          /**
-           * Check user login status
-           */
-          this.checking = true;
+    isPageInRange(page, limit) {
+      return page > 0 && page <= limit;
+    },
 
-          User.checkLogin().then(() => {
-            this.$emit('update:show', false);
+    /**
+     * @param {string} pages
+     * @param {number} totalPages
+     * @returns {string[]}
+     */
+    parseBookmarkPages(pages, totalPages) {
+      let p = [];
 
-            ipcRenderer.send('download-service', {
-              action: 'createDownload',
-              args: this.download
-            });
-          }).catch(() => {
-            this.$message(this.$t('_you_need_login_first'));
-            this.$emit('user:logout');
-          }).finally(() => {
-            this.checking = false;
-          });
+      if (pages.indexOf(',')) {
+        pages = pages.split(',');
+      } else {
+        pages = [pages];
+      }
+
+      pages.forEach(setting => {
+        if (/^\d+$/.setting) {
+          this.isPageInRange(setting, totalPages) && p.indexOf(setting) < 0 && p.push(setting);
         } else {
-          return false;
+          let matches = setting.match(/^(\d+)\-(\d+)$/);
+
+          if (matches) {
+            let diff = matches[2] - matches[1];
+
+            if (diff === 0) {
+              this.isPageInRange(matches[1], totalPages) && p.indexOf(matches[1]) < 0 && p.push(matches[1]);
+            } else {
+              let start;
+
+              if (diff > 0) {
+                start = matches[1];
+                end = matches[2];
+              } else if (diff < 0) {
+                start = matches[2];
+                end = matches[1];
+              }
+
+              while (start < end) {
+                this.isPageInRange(start, totalPages) && p.indexOf(start) < 0 && p.push(start);
+                start++;
+              }
+            }
+          }
         }
+      });
+
+      return p;
+    },
+
+    addDownload() {
+      this.checking = true;
+
+      User.checkLogin().then(() => {
+        if (this.currentTab === 'url') {
+          this.$refs['addUrlDownload'].validate(valid => {
+            if (valid) {
+              this.$emit('update:show', false);
+
+              ipcRenderer.send('download-service', {
+                action: 'createDownload',
+                args: this.download
+              });
+            }
+          });
+
+          this.checking = false;
+        } else if (this.currentTab === 'bookmark') {
+          this.$refs['addBmDownload'].validate(valid => {
+            if (valid) {
+              this.$emit('update:show', false);
+
+              ipcRenderer.once('user-service:bookmark-info', (event, args) => {
+                let totalPages = args.pages,
+                    pages = [];
+
+                // Parse pages setting
+                if (this.bookmarkForm.mode === 'pages') {
+                  pages = this.parseBookmarkPages(this.bookmarkForm.pages, totalPages);
+                } else {
+                  pages = [];
+
+                  while (args.pages > 0) {
+                    pages.push(args.pages);
+                    args.pages--;
+                  }
+                }
+
+                ipcRenderer.send('download-service', {
+                  action: 'createBmDownload',
+                  args: {
+                    rest: 'show',
+                    pages,
+                    saveTo: this.bookmarkForm.saveTo,
+                  }
+                });
+
+                this.checking = false;
+              });
+
+              ipcRenderer.once('user-service:bookmark-info-error', (event, args) => {
+                this.checking = false;
+                alert('Cannot get bookmark infomation');
+              });
+
+              ipcRenderer.send('user-service', {
+                action: 'getBookmarkInfo',
+                args: {
+                  rest: 'show'
+                }
+              });
+            }
+          });
+        }
+      }).catch(() => {
+        this.$message(this.$t('_you_need_login_first'));
+        this.$emit('user:logout');
+        this.checking = false;
       });
     }
   }
@@ -138,9 +300,4 @@ export default {
 </script>
 
 <style lang="scss">
-.add-download-dialog {
-  .el-dialog__body {
-    padding: 10px 20px;
-  }
-}
 </style>

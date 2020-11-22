@@ -24,6 +24,7 @@
     "md5": "^2.3.0",
     "mime-types": "^2.1.25",
     "moment": "^2.28.0",
+    "node-html-parser": "^2.0.0",
     "source-map-support": "^0.5.12",
     "vue": "^2.6.10",
     "vue-i18n": "^8.15.3",

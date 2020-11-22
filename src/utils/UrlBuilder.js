@@ -50,6 +50,10 @@ class UrlBuilder {
   static getUserProfileAllUrl(id) {
     return `https://www.pixiv.net/ajax/user/${id}/profile/all`;
   }
+
+  static getBookmarkUrl({ rest }) {
+    return `https://www.pixiv.net/bookmark.php?rest=${rest}&type=illust_all`;
+  }
 }
 
 export default UrlBuilder;

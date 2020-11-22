@@ -9,6 +9,7 @@ import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
 import ServiceContainer from '@/ServiceContainer';
+import { parse } from 'node-html-parser';
 
 /**
  * @class
@@ -112,6 +113,50 @@ class UserService extends BaseService {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('not-login'));
 
       debug.sendStatus('Logouted');
+    });
+  }
+
+  /**
+   * @returns {Promise}
+   */
+  getBookmarkInfoAction({ rest = 'show' }) {
+    return new Promise((resolve, reject) => {
+      let url = UrlBuilder.getBookmarkUrl({ rest });
+
+      let request = new Request({
+        url: url
+      });
+
+      request.on('response', response => {
+        let body = '';
+
+        response.on('data', data => {
+          body += data;
+        });
+
+        response.on('error', () => {
+          WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info-error'));
+          reject('response error');
+        });
+
+        response.on('end', () => {
+          const doc = parse(body);
+          let $pageList = doc.querySelector('.page-list'),
+              $pages = $pageList.querySelectorAll('li'),
+              len = ($pages && $pages.length > 0) ? $pages.length : 1,
+              data = { pages: len };
+
+          WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info'), data);
+          resolve(data);
+        });
+      });
+
+      request.on('error', error => {
+        WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info-error'));
+        reject(error.message);
+      });
+
+      request.end();
     });
   }
 
