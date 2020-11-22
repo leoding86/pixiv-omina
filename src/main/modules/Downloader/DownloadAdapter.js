@@ -36,24 +36,25 @@ class DownloadAdapter {
 
   /**
    *
-   * @param {string} url
-   * @returns {PixivUserProvider|PixivGeneralArtworkProvider}
+   * @param {string} src
+   * @returns {PixivUserProvider|PixivGeneralArtworkProvider|PixivBookmarkProvider}
    * @throws {Error}
    */
-  static getProvider(url) {
+  static getProvider(src) {
     for (let i = 0, l = DownloadAdapter.matchMaps.length; i < l; i++) {
-      for (let j = 0, n = DownloadAdapter.matchMaps[i].patterns.length; j < n; j++) {
-        let matches = url.match(DownloadAdapter.matchMaps[i].patterns[j]);
+      let match = DownloadAdapter.matchMaps[i];
+      for (let j = 0; j < match.patterns.length; j++) {
+        let matches = src.match(match.patterns[j]);
         if (!!matches) {
-          return DownloadAdapter.matchMaps[i].provider.createProvider({
-            url,
-            context: matches['groups']
+          return match.provider.createProvider({
+            src,
+            context: matches['groups'],
           });
         }
       }
     }
 
-    throw Error(`cannot get provider via url ${url}`);
+    throw Error(`cannot get provider via ${src}`);
   }
 }
 
