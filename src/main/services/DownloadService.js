@@ -9,6 +9,7 @@ import DownloadCacheManager from '@/modules/DownloadCacheManager';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import NotificationManager from '@/modules/NotificationManager';
 import SettingStorage from '@/modules/SettingStorage';
+import { PixivBookmarkProvider } from '@/modules/Downloader/Providers';
 import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 import WindowManager from '@/modules/WindowManager';
 import {
@@ -183,6 +184,25 @@ class DownloadService extends BaseService {
         options: {
           saveTo: saveTo
         }
+      });
+    } catch (error) {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
+    }
+  }
+
+  /**
+   *
+   * @param {*} param0
+   */
+  createBmDownloadAction({pages, saveTo}) {
+    try {
+      pages.forEach(page => {
+        this.downloadManager.createDownloader({
+          provider: PixivBookmarkProvider.createProvider({ page }),
+          options: {
+            saveTo
+          }
+        });
       });
     } catch (error) {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
