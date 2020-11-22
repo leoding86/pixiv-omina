@@ -5,6 +5,7 @@ import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownload
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import PixivComicEpisodeDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/EpisodeDownloader';
 import {
+  PixivBookmarkProvider,
   PixivUserProvider,
   PixivGeneralArtworkProvider,
   PixivIllustrationProvider,
@@ -54,6 +55,26 @@ class UndeterminedDownloader extends WorkDownloader {
     this.setDownloading('resolving downloader');
 
     if (this.provider instanceof PixivUserProvider) {
+      this.provider.requestAllWorks().then(workIds => {
+        let downloaders = [];
+        workIds.forEach(id => {
+          downloaders.push(UndeterminedDownloader.createDownloader({
+            provider: PixivGeneralArtworkProvider.createProvider({
+              url: this.provider.getArtworkUrl(id),
+              context: {
+                id
+              }
+            }),
+            options: this.options
+          }))
+        });
+
+        this.setFinish();
+        this.downloadManager.addDownloaders(downloaders, { replace: this });
+      }).catch(error => {
+        this.setError(error);
+      });
+    } else if (this.provider instanceof PixivBookmarkProvider) {
       this.provider.requestAllWorks().then(workIds => {
         let downloaders = [];
         workIds.forEach(id => {
