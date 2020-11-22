@@ -1,3 +1,4 @@
+import PixivBookmarkProvider from './Pixiv/BookmarkProvider';
 import PixivUserProvider from './Pixiv/UserProvider';
 import PixivGeneralArtworkProvider from './Pixiv/GeneralArtworkProvider';
 import PixivMangaProvider from './Pixiv/MangaProvider';
@@ -7,6 +8,7 @@ import PixivComicEpisodeProvider from './PixivComic/EpisodeProvider';
 import PixivComicWorkProvider from './PixivComic/WorkProvider';
 
 export {
+  PixivBookmarkProvider,
   PixivUserProvider,
   PixivGeneralArtworkProvider,
   PixivMangaProvider,
