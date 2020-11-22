@@ -5,6 +5,7 @@ import WindowManager from '@/modules/WindowManager';
 import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
 import path from 'path';
 import {
+  PixivBookmarkProvider,
   PixivUserProvider,
   PixivGeneralArtworkProvider,
   PixivMangaProvider,
@@ -41,7 +42,7 @@ class WorkDownloader extends EventEmitter {
     this.url = null;
 
     /**
-     * @type {PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider|PixivComicEpisodProvider}
+     * @type {PixivBookmarkProvider|PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider|PixivComicEpisodProvider}
      */
     this.provider = null;
 
