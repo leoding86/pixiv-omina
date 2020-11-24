@@ -192,13 +192,16 @@ class DownloadService extends BaseService {
 
   /**
    *
-   * @param {*} param0
+   * @param {Object} options
+   * @param {Array} options.pages
+   * @param {String} options.rest
+   * @param {String} options.saveTo
    */
-  createBmDownloadAction({pages, saveTo}) {
+  createBmDownloadAction({pages, rest, saveTo}) {
     try {
       pages.forEach(page => {
         this.downloadManager.createDownloader({
-          provider: PixivBookmarkProvider.createProvider({ page }),
+          provider: PixivBookmarkProvider.createProvider({ page, rest }),
           options: {
             saveTo
           }
