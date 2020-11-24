@@ -85,7 +85,7 @@
       <app-download-list
         class="app-download-list"
         v-else
-        :downloads=downloads
+        :downloads=filteredDownloads
         @start="startDownloadHandler"
         @stop="stopDownloadHandler"
         @delete="deleteDownloadHandler"
@@ -127,6 +127,24 @@ export default {
   computed: {
     filter() {
       return this.downloadFilter;
+    },
+
+    filteredDownloads() {
+      let downloads = [];
+
+      this.downloads.forEach(download => {
+        if (this.filter !== 'all') {
+          if (this.filter === 'finished' && download.state === 'finish') {
+            downloads.push(download);
+          } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
+            downloads.push(download);
+          }
+        } else {
+          downloads.push(download);
+        }
+      });
+
+      return downloads;
     }
   },
 
@@ -526,7 +544,6 @@ export default {
 
     filterDownloads(type) {
       this.downloadFilter = type;
-      this.$root.$emit('download-list:filter', this.downloadFilter);
     },
 
     /**
@@ -534,7 +551,7 @@ export default {
      */
     keydownHandler(event) {
       if (event.ctrlKey && event.keyCode === 65) {
-        this.downloads.forEach(download => {
+        this.filteredDownloads.forEach(download => {
           this.selectDownload(download);
         });
       }

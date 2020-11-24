@@ -2,7 +2,7 @@
   <div class="download-list">
     <div class="download-list-item__content">
       <recycle-scroller
-        :items="filteredDownloads"
+        :items="downloads"
         :item-size="120"
         page-mode
         key-field="id"
@@ -98,38 +98,6 @@ export default {
       type: Array,
       default: [],
     }
-  },
-
-  data() {
-    return {
-      filter: 'all'
-    }
-  },
-
-  computed: {
-    filteredDownloads() {
-      let downloads = [];
-
-      this.downloads.forEach(download => {
-        if (this.filter !== 'all') {
-          if (this.filter === 'finished' && download.state === 'finish') {
-            downloads.push(download);
-          } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
-            downloads.push(download);
-          }
-        } else {
-          downloads.push(download);
-        }
-      });
-
-      return downloads;
-    }
-  },
-
-  beforeMount() {
-    this.$root.$on('download-list:filter', filter => {
-      this.filter = filter;
-    });
   },
 
   methods: {
