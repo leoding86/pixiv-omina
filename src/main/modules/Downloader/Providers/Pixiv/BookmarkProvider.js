@@ -19,6 +19,7 @@ class BookmarkProvider extends BaseProviderV2 {
 
     this.rest = rest;
     this.page = page;
+    this.url = this.getBookmarkUrl(); // used for display as download title
   }
 
   /**
@@ -44,7 +45,7 @@ class BookmarkProvider extends BaseProviderV2 {
    * @returns {string}
    */
   getBookmarkUrl() {
-    return `https://www.pixiv.net/bookmark.php?rest=${this.type}&type=illust_all` + (this.page > 2 ? `&p=${this.page}` : '');
+    return `https://www.pixiv.net/bookmark.php?rest=${this.rest}&type=illust_all` + (this.page > 2 ? `&p=${this.page}` : '');
   }
 
   getArtworkUrl(id) {
