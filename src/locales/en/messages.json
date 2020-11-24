@@ -135,5 +135,11 @@
 
   "_pages": "Pages",
 
-  "_mode": "Mode"
+  "_mode": "Mode",
+
+  "_bookmark_type": "Type",
+
+  "_public": "Public",
+
+  "_private": "Private"
 }

@@ -135,5 +135,11 @@
 
   "_pages": "分页",
 
-  "_mode": "模式"
+  "_mode": "模式",
+
+  "_bookmark_type": "收藏类型",
+
+  "_public": "公开",
+
+  "_private": "私有"
 }
