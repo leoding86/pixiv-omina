@@ -54,6 +54,24 @@
           size="mini"
         >
           <el-form-item
+            :label="$t('_bookmark_type')"
+            :label-width="formLabelWidth"
+          >
+            <el-select
+              v-model="bookmarkForm.rest"
+            >
+              <el-option
+                :label="$t('_public')"
+                value="show"
+              ></el-option>
+              <el-option
+                :label="$t('_private')"
+                value="hide"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item
             :label="$t('_mode')"
             :label-width="formLabelWidth"
           >
@@ -78,7 +96,7 @@
           >
             <el-input
               v-model="bookmarkForm.pages"
-              placeholder="'1' or '1-3' or '1-3,5-10'"
+              placeholder="1 or 1-3 or 1-3,5-10"
             ></el-input>
           </el-form-item>
 
@@ -137,6 +155,7 @@ export default {
 
       bookmarkForm: {
         mode: 'all',
+        rest: 'show',
         pages: '',
         saveTo: ''
       },
@@ -266,7 +285,7 @@ export default {
                 ipcRenderer.send('download-service', {
                   action: 'createBmDownload',
                   args: {
-                    rest: 'show',
+                    rest: this.bookmarkForm.rest,
                     pages,
                     saveTo: this.bookmarkForm.saveTo,
                   }
