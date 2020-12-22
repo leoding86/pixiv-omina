@@ -99,14 +99,14 @@
         :tasks-count="tasks.length"
         @devToolsToggled="devToolsToggledHandler"
         @tasksToggled="tasksToggledHandler"
-        @pauseTask="pauseTaskHandler"
-        @startTask="startTaskHandler"
       ></app-footer>
     </div>
 
     <app-task-list
       v-if="showTasks"
       :tasks="tasks"
+      @pauseTask="pauseTaskHandler"
+      @startTask="startTaskHandler"
     ></app-task-list>
   </div>
 </template>
@@ -605,15 +605,21 @@ export default {
       this.tasks.push(task);
     },
 
-    pauseTaskHandler(task) {
+    pauseTaskHandler(name) {
       ipcRenderer.send('task-service', {
-        action: 'pause'
+        action: 'pauseTask',
+        args: {
+          name
+        }
       });
     },
 
-    startTaskHandler(task) {
+    startTaskHandler(name) {
       ipcRenderer.send('task-service', {
-        action: 'start'
+        action: 'startTask',
+        args: {
+          name
+        }
       });
     }
   }

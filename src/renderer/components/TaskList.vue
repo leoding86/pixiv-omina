@@ -26,13 +26,13 @@
                   v-if="canPause(task.status)"
                   size="mini"
                   icon="el-icon-video-pause"
-                  @click="emitPause('pauseTask', task.name)"
+                  @click="emitTaskPause(task)"
                 ></el-button>
                 <el-button
                   v-if="canStart(task.status)"
                   size="mini"
                   icon="el-icon-video-play"
-                  @click="emitStart('startTask', task.name)"
+                  @click="emitTaskStart(task)"
                 ></el-button>
               </div>
             </div>
@@ -62,6 +62,14 @@ export default {
 
     canStart(status) {
       return status === 0;
+    },
+
+    emitTaskPause(task) {
+      this.$emit('pauseTask', task.name);
+    },
+
+    emitTaskStart(task) {
+      this.$emit('startTask', task.name);
     }
   }
 }
