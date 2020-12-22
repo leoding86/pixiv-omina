@@ -74,15 +74,14 @@ class UgoiraDownloaderGifEncoderWorker {
   }
 
   addFrame() {
-    return new Promise(resolve => {
-      if (this.abortSign) {
-        process.send({
-          status: 'abort'
-        });
-        resolve();
-        return;
-      }
+    if (this.abortSign) {
+      process.send({
+        status: 'abort'
+      });
+      return;
+    }
 
+    return new Promise(resolve => {
       const frame = this.frames[this.frameIndex];
 
       if (!frame) {
@@ -127,8 +126,8 @@ let worker;
 
 process.on('message', data => {
   if (data.action) {
-    if (worker) {
-      worker.abort();
+    if (data.action === 'abort') {
+      worker && worker.abort();
     }
   } else {
     if (worker) {
