@@ -1,12 +1,12 @@
+import TaskManager from '@/modules/TaskManager';
+import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
 import Download from '@/modules/Download';
 import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import WorkDownloaderUnstoppableError from '../WorkDownloaderUnstoppableError';
 import Zip from 'jszip';
-import { app } from 'electron';
 import { debug } from '@/global';
-import { fork } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { PixivUgoiraProvider } from '../Providers';
@@ -31,8 +31,6 @@ class UgoiraDownloader extends WorkDownloader {
     this.provider;
 
     this.type = 2;
-
-    this.workers = [];
   }
 
   /**
@@ -94,64 +92,6 @@ class UgoiraDownloader extends WorkDownloader {
     return path.join(this.options.saveTo, this.getRelativeSaveFolder())
   }
 
-  generateGif(file) {
-    debug.sendStatus(`Generating ${this.id} GIF`);
-
-    this.setDownloading('Generating GIF');
-
-    // let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, FormatName.format(SettingStorage.getSetting('ugoiraRename'), this.context)) + '.gif';
-    let gifSaveFile = this.savedTarget = path.join(this.download.saveTo, this.getImageSaveName()) + '.gif';
-
-    /**
-     * Check if the gif file has been generated
-     */
-    if (fs.existsSync(gifSaveFile)) {
-      this.setFinish(`Gif has been generated, skip`);
-
-      this.progress = 1;
-      return;
-    }
-
-    let workPath = path.join(app.getAppPath(), 'UgoiraDownloaderGifEncoderWorker.js');
-    let worker;
-
-    if (fs.existsSync(workPath)) {
-      worker = fork(workPath);
-    } else {
-      worker = fork(path.join(process.resourcesPath, 'app.asar', 'UgoiraDownloaderGifEncoderWorker.js'));
-    }
-
-    /**
-     * Push the worker to workers pool
-     */
-    this.workers.push(worker);
-
-    worker.on('message', data => {
-      if (this.recycle) {
-        return;
-      }
-
-      if (data.status === 'finish') {
-        worker.kill();
-
-        this.setFinish();
-
-        debug.sendStatus(`Generate GIF ${this.id} complete`);
-      } else if (data.status === 'progress') {
-        this.progress = 0.5 + (data.progress / 2);
-
-        this.setProcessing(`Generating Gif ${this.progress * 100}%`);
-
-        debug.sendStatus(`Generate GIF ${this.id} progress ${data.progress}`);
-      }
-    });
-
-    worker.send({
-      file,
-      saveFile: gifSaveFile
-    });
-  }
-
   packFramesInfo(file) {
     this.setProcessing('Packing frames infomation');
 
@@ -168,7 +108,18 @@ class UgoiraDownloader extends WorkDownloader {
           .on('finish', () => {
             debug.sendStatus(`${this.id} frames information packed`);
 
-            this.generateGif(file);
+            /**
+             * Check if convert ugoira to gif, if not then set downloader complete.
+             */
+            if (SettingStorage.getDefault().getSetting('convertUgoiraToGif')) {
+              TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
+                file: file,
+                saveFile: path.join(this.download.saveTo, this.getImageSaveName()) + '.gif'
+              });
+              this.setFinish('Download complete, GIF generation task has send to task');
+            } else {
+              this.setFinish('Download complete, GIF generate skipped');
+            }
           });
       }).catch(error => {
         this.setError(error);
@@ -244,15 +195,6 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   /**
-   * Kill all workers
-   */
-  killWorkers() {
-    this.workers.forEach(worker => {
-      worker.kill();
-    });
-  }
-
-  /**
    * Check if the downloader can be stopped
    * @override
    */
@@ -281,11 +223,6 @@ class UgoiraDownloader extends WorkDownloader {
     this.provider.request && this.provider.request.abort();
     this.download && this.download.abort();
     this.request && this.request.abort();
-
-    /**
-     * Kill workers
-     */
-    this.killWorkers();
 
     this.setStop();
 
