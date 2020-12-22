@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule" :label-width="formLabelWidth">
+  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :label-width="formLabelWidth">
     <el-form-item
       :label="$t('_convert_ugoira_to_gif')"
       prop="convertUgoiraToGif"
