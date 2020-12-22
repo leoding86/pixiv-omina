@@ -95,8 +95,19 @@
     </div>
 
     <div id="footer">
-      <app-footer @devToolsToggled="devToolsToggledHandler"></app-footer>
+      <app-footer
+        :tasks-count="tasks.length"
+        @devToolsToggled="devToolsToggledHandler"
+        @tasksToggled="tasksToggledHandler"
+        @pauseTask="pauseTaskHandler"
+        @startTask="startTaskHandler"
+      ></app-footer>
     </div>
+
+    <app-task-list
+      v-if="showTasks"
+      :tasks="tasks"
+    ></app-task-list>
   </div>
 </template>
 
@@ -105,6 +116,7 @@ import { ipcRenderer } from "electron";
 import Header from './Header';
 import Footer from './Footer';
 import DownloadList from './DownloadList';
+import TaskList from './TaskList';
 import Test from './Test';
 
 export default {
@@ -112,6 +124,7 @@ export default {
     'app-header': Header,
     'app-footer': Footer,
     'app-download-list': DownloadList,
+    'app-task-list': TaskList,
     'app-test': Test
   },
 
@@ -120,7 +133,9 @@ export default {
       downloads: [],
       downloadFilter: 'all',
       hasSelectedDownload: false,
-      debug: false
+      debug: false,
+      showTasks: false,
+      tasks: []
     }
   },
 
@@ -244,6 +259,14 @@ export default {
         });
       }
     });
+
+    ipcRenderer.on('task-service:paused', (event, task) => {
+      this.updateTask(task);
+    });
+
+    ipcRenderer.on('task-service:progress', (event, task) => {
+      this.updateTask(task);
+    });
   },
 
   mounted() {
@@ -257,6 +280,10 @@ export default {
   methods: {
     devToolsToggledHandler(val) {
       this.debug = val;
+    },
+
+    tasksToggledHandler(val) {
+      this.showTasks = val;
     },
 
     canStartDownload(download) {
@@ -565,6 +592,29 @@ export default {
       } else {
         this.$message(this.$t('_you_are_logined'));
       }
+    },
+
+    updateTask(task) {
+      for (let i = 0; i < this.tasks.length; i++) {
+        if (task.name === this.tasks[i].name) {
+          this.$set(this.tasks, i, Object.assign({}, this.tasks[i], task));
+          return;
+        }
+      }
+
+      this.tasks.push(task);
+    },
+
+    pauseTaskHandler(task) {
+      ipcRenderer.send('task-service', {
+        action: 'pause'
+      });
+    },
+
+    startTaskHandler(task) {
+      ipcRenderer.send('task-service', {
+        action: 'start'
+      });
     }
   }
 };

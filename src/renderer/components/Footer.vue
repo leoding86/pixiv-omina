@@ -1,6 +1,11 @@
 <template>
   <div class="footer-container">
     <div class="footer-left">
+      <div class="footer-btn"
+        @click="toggleTasks"
+      >
+        Tasks({{tasksCount}})
+      </div>
       <div class="footer-status">{{ $t('_status') }}: <span :title="statusMessage">{{ statusMessage }}</span></div>
     </div>
     <div class="footer-right">
@@ -16,9 +21,16 @@ import packageInfo from '@/../../package.json';
 import { ipcRenderer } from 'electron';
 
 export default {
+  props: {
+    tasksCount: {
+      required: true
+    }
+  },
+
   data() {
     return {
       bugsUrl: packageInfo.bugs.url,
+      showTasks: false,
       statusMessage: ''
     }
   },
@@ -39,6 +51,10 @@ export default {
   },
 
   methods: {
+    toggleTasks() {
+      this.$emit('tasksToggled', this.showTasks = !this.showTasks);
+    },
+
     openDevTools() {
       ipcRenderer.send('debug-service', {
         action: 'openDevTools',
