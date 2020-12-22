@@ -5,6 +5,15 @@ import Zip from 'jszip';
 
 class UgoiraDownloaderGifEncoderWorker {
   constructor({ file, saveFile }) {
+    this.init({ file, saveFile });
+  }
+
+  static run({ file, saveFile }) {
+    let worker = new UgoiraDownloaderGifEncoderWorker({ file, saveFile });
+    return worker;
+  }
+
+  init({ file, saveFile }) {
     this.file = file;
 
     this.saveFile = saveFile;
@@ -19,15 +28,15 @@ class UgoiraDownloaderGifEncoderWorker {
 
     this.frameIndex = 0;
 
-    this.gifEncoder;
+    this.gifEncoder = null;
+
+    this.abortSign = false;
+
+    return this;
   }
 
-  static run({ file, saveFile }) {
-    let worker = new UgoiraDownloaderGifEncoderWorker({ file, saveFile });
-
-    worker.prepare().then(() => {
-      worker.encode();
-    });
+  abort() {
+    this.abortSign = true;
   }
 
   createTempFileWriteStream() {
@@ -66,6 +75,14 @@ class UgoiraDownloaderGifEncoderWorker {
 
   addFrame() {
     return new Promise(resolve => {
+      if (this.abortSign) {
+        process.send({
+          status: 'abort'
+        });
+        resolve();
+        return;
+      }
+
       const frame = this.frames[this.frameIndex];
 
       if (!frame) {
@@ -103,9 +120,31 @@ class UgoiraDownloaderGifEncoderWorker {
   }
 }
 
+/**
+ * @var {UgoiraDownloaderGifEncoderWorker}
+ */
+let worker;
+
 process.on('message', data => {
-  UgoiraDownloaderGifEncoderWorker.run({
-    file: data.file,
-    saveFile: data.saveFile
-  });
+  if (data.action) {
+    if (worker) {
+      worker.abort();
+    }
+  } else {
+    if (worker) {
+      worker.init({
+        file: data.file,
+        saveFile: data.saveFile
+      });
+    } else {
+      worker = UgoiraDownloaderGifEncoderWorker.run({
+        file: data.file,
+        saveFile: data.saveFile
+      });
+    }
+
+    worker.prepare().then(() => {
+      worker.encode();
+    });
+  }
 });
