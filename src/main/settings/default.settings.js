@@ -48,7 +48,9 @@ function defaultSetting() {
 
     locale: 'en',
 
-    autostartDownload: true
+    autostartDownload: true,
+
+    convertUgoiraToGif: true
   }
 }
 
