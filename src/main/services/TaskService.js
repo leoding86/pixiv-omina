@@ -60,7 +60,8 @@ class TaskService extends BaseService {
   taskManagerPausedListener(task) {
     this.mainWindow.webContents.send(this.responseChannel('paused'), {
       name: task.getName(),
-      status: task.getStatus()
+      status: task.getStatus(),
+      message: task.getStatusMessage()
     });
   }
 
@@ -72,6 +73,7 @@ class TaskService extends BaseService {
     this.mainWindow.webContents.send(this.responseChannel('progress'), {
       name: task.getName(),
       status: task.getStatus(),
+      message: task.getStatusMessage(),
       progress: task.getProgress()
     });
   }
@@ -101,6 +103,14 @@ class TaskService extends BaseService {
    */
   pauseTaskAction({ name }) {
     this.taskManager.pauseTask(name);
+  }
+
+  /**
+   * Start task
+   * @param {{name: string}} param
+   */
+  startTaskAction({ name }) {
+    this.taskManager.startTask(name);
   }
 }
 
