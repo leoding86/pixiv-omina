@@ -35,6 +35,18 @@ class UgoiraConvertTask extends BaseTask {
   }
 
   /**
+   * @inheritdoc
+   * @returns {String}
+   */
+  getStatusMessage() {
+    if (this.taskSources.length > 0) {
+      return `Left: ${this.taskSources.length} - Current: ${this.taskSources[0].file}`;
+    } else {
+      return `No task`;
+    }
+  }
+
+  /**
    * @returns {Number}
    */
   getProgress() {
@@ -86,7 +98,7 @@ class UgoiraConvertTask extends BaseTask {
    * @returns {void}
    */
   updateProgress(progress) {
-    this.progress = progress / this.taskSources.length;
+    this.progress = progress;
     this.setProcess();
   }
 
@@ -131,7 +143,6 @@ class UgoiraConvertTask extends BaseTask {
       }
 
       this.worker.on('message', data => {
-        console.log(1);
         if (data.status === 'finish') {
           debug.sendStatus(`Generate GIF complete`);
 
@@ -142,6 +153,7 @@ class UgoiraConvertTask extends BaseTask {
 
           this.updateProgress(data.progress);
         } else if (data.status === 'abort') {
+          this.updateProgress(0);
           this.setPause();
         }
       });
