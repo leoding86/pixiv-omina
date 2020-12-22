@@ -98,32 +98,30 @@ class UgoiraDownloader extends WorkDownloader {
     debug.sendStatus(`Packing frames information to ${this.id}`);
 
     fs.readFile(file).then(data => {
-      Zip.loadAsync(data).then(zip => {
-        zip.file('animation.json', JSON.stringify(this.meta.frames));
+      return Zip.loadAsync(data);
+    }).then(zip => {
+      zip.file('animation.json', JSON.stringify(this.meta.frames));
 
-        zip.generateNodeStream({
-          type: 'nodebuffer',
-          streamFiles: true
-        }).pipe(fs.createWriteStream(file))
-          .on('finish', () => {
-            debug.sendStatus(`${this.id} frames information packed`);
+      zip.generateNodeStream({
+        type: 'nodebuffer',
+        streamFiles: true
+      }).pipe(fs.createWriteStream(file))
+        .on('finish', () => {
+          debug.sendStatus(`${this.id} frames information packed`);
 
-            /**
-             * Check if convert ugoira to gif, if not then set downloader complete.
-             */
-            if (SettingStorage.getDefault().getSetting('convertUgoiraToGif')) {
-              TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
-                file: file,
-                saveFile: path.join(this.download.saveTo, this.getImageSaveName()) + '.gif'
-              });
-              this.setFinish('Download complete, GIF generation task has send to task');
-            } else {
-              this.setFinish('Download complete, GIF generate skipped');
-            }
-          });
-      }).catch(error => {
-        this.setError(error);
-      });
+          /**
+           * Check if convert ugoira to gif, if not then set downloader complete.
+           */
+          if (SettingStorage.getDefault().getSetting('convertUgoiraToGif')) {
+            TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
+              file: file,
+              saveFile: path.join(this.download.saveTo, this.getImageSaveName()) + '.gif'
+            });
+            this.setFinish('Download complete, GIF generation task has send to task');
+          } else {
+            this.setFinish('Download complete, GIF generate skipped');
+          }
+        });
     }).catch(error => {
       this.setError(error);
     });
@@ -148,14 +146,13 @@ class UgoiraDownloader extends WorkDownloader {
         this.savedTarget = file;
       }
 
-      this.progress = this.download.progress / 2;
+      this.progress = this.download.progress;
       this.setDownloading();
-
       this.packFramesInfo(this.download.getSavedFile());
     });
 
     this.download.on('dl-progress', () => {
-      this.progress = this.download.progress / 2;
+      this.progress = this.download.progress;
       this.setDownloading();
     });
 
