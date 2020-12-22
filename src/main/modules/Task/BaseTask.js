@@ -41,6 +41,10 @@ class BaseTask extends EventEmitter {
     return this.status;
   }
 
+  getStatusMessage() {
+    return this.statusMessage;
+  }
+
   /**
    * Get task name
    * @abstract
