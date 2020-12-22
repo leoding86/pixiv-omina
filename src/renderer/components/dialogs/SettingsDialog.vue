@@ -30,6 +30,15 @@
       </el-tab-pane>
 
       <el-tab-pane
+        :label="$t('_download')"
+        name="download"
+      >
+        <download-settings
+          @changed="settingsChangedHandler"
+        ></download-settings>
+      </el-tab-pane>
+
+      <el-tab-pane
         :label="$t('_proxy')"
         name="proxy"
       >
@@ -78,6 +87,7 @@ import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
 import RenameSettings from './RenameSettings';
+import DownloadSettings from './DownloadSettings';
 import Help from '../Help';
 import About from '../About';
 
@@ -86,6 +96,7 @@ export default {
     'general-settings': GeneralSettings,
     'proxy-settings': ProxySettings,
     'rename-settings': RenameSettings,
+    'download-settings': DownloadSettings,
     'app-help': Help,
     'app-about': About
   },
