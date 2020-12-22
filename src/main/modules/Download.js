@@ -290,7 +290,12 @@ class Download extends Request {
 
           this.progress = 1;
 
-          this.setFinish();
+          /**
+           * Waiting os REALLY write data to file
+           */
+          setTimeout(() => {
+            this.setFinish();
+          }, 1000);
         });
 
         response.on('error', error => {
