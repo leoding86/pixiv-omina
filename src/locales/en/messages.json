@@ -143,5 +143,13 @@
 
   "_private": "Private",
 
-  "_convert_ugoira_to_gif": "Convert Ugoira to Gif"
+  "_convert_ugoira_to_gif": "Convert Ugoira to Gif",
+
+  "_work_type": "Work Type",
+
+  "_ugoira": "Ugoira",
+
+  "_illustration": "Illustration",
+
+  "_manga": "Manga"
 }

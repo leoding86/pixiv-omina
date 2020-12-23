@@ -143,5 +143,13 @@
 
   "_private": "私有",
 
-  "_convert_ugoira_to_gif": "转化动图到GIF"
+  "_convert_ugoira_to_gif": "转化动图到GIF",
+
+  "_work_type": "作品类型",
+
+  "_ugoira": "动图",
+
+  "_illustration": "插画",
+
+  "_manga": "漫画"
 }
