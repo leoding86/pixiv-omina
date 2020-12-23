@@ -142,13 +142,7 @@ class Application {
    * @returns {Electron.NativeImage}
    */
   getTrayImage() {
-    if (process.platform === 'darwin') {
-      if (!systemPreferences.isDarkMode()) {
-        return nativeImage.createFromPath(this.getStatic('tray-in-light.png'));
-      }
-    } else {
-      return nativeImage.createFromPath(this.getStatic('tray-in-dark.png'));
-    }
+    return nativeImage.createFromPath(this.getStatic('tray.png'));
   }
 
   createMainWindow() {
