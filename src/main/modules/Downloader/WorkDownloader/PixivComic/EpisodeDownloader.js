@@ -45,24 +45,10 @@ class EpisodeDownloader extends WorkDownloader {
   }
 
   /**
-   * @returns {String}
+   * @returns {this}
    */
-  getImageSaveName() {
-    return FormatName.format(SettingStorage.getSetting('pixivComicWorkRename').split('/').pop(), this.context);
-  }
-
-  /**
-   * @override
-   * @returns {String}
-   */
-  getImageSaveFolder() {
-    let parts = SettingStorage.getSetting('pixivComicWorkRename').split('/');
-
-    if (parts.length > 1) {
-      parts.pop();
-    }
-
-    return path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+  makeSaveOption() {
+    return this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('pixivComicWorkRename'));
   }
 
   downloadImages() {
@@ -73,13 +59,15 @@ class EpisodeDownloader extends WorkDownloader {
      */
     this.context.pageNum = this.pageIndex;
 
+    this.makeSaveOption();
+
     let downloadOptions = Object.assign(
       {},
       this.options,
       {
         url: url,
-        saveTo: this.getImageSaveFolder(),
-        saveName: this.getImageSaveName()
+        saveTo: this.saveFolder,
+        saveName: this.saveFilename
       }
     );
 

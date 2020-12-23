@@ -13,6 +13,7 @@ import {
   PixivUgoiraProvider,
   PixivComicEpisodProvider
 } from './Providers';
+import FormatName from '../Utils/FormatName';
 
 /**
  * @class
@@ -104,8 +105,19 @@ class WorkDownloader extends EventEmitter {
 
     /**
      * If mute is true, the intance will not fire any events
+     * @property {Boolean}
      */
     this.mute = false;
+
+    /**
+     * @property {String}
+     */
+    this.saveFolder = null;
+
+    /**
+     * @property {String}
+     */
+    this.saveFilename = null;
   }
 
   get speed() {
@@ -332,6 +344,25 @@ class WorkDownloader extends EventEmitter {
 
   delete() {
     throw 'Not implemeneted';
+  }
+
+  /**
+   * Make saveFolder and saveFilename from rename template
+   * @param {String} template
+   * @returns {this}
+   */
+  makeSaveOptionFromRenameTemplate(template) {
+    let parts = template.split('/');
+
+    this.saveFilename = FormatName.format(parts.pop(), this.context);
+
+    if (parts.length > 0) {
+      this.saveFolder = path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+    } else {
+      this.saveFolder = this.options.saveTo;
+    }
+
+    return this;
   }
 
   toJSON() {

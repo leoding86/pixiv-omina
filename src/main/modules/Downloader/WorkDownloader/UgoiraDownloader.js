@@ -64,24 +64,10 @@ class UgoiraDownloader extends WorkDownloader {
   }
 
   /**
-   * @returns {String}
+   * @returns {this}
    */
-  getImageSaveName() {
-    return FormatName.format(SettingStorage.getSetting('ugoiraRename').split('/').pop(), this.context);
-  }
-
-  /**
-   * @override
-   * @returns {String}
-   */
-  getRelativeSaveFolder() {
-    let parts = SettingStorage.getSetting('ugoiraRename').split('/');
-
-    if (parts.length > 1) {
-      parts.pop();
-    }
-
-    return path.join(FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+  makeSaveOption() {
+    return this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('ugoiraRename'));
   }
 
   /**
@@ -130,12 +116,14 @@ class UgoiraDownloader extends WorkDownloader {
   downloadZip() {
     const url = this.meta.originalSrc;
 
+    this.makeSaveOption();
+
     let downloadOptions = Object.assign({},
       this.options,
       {
         url: url,
-        saveTo: this.getImageSaveFolder(),
-        saveName: this.getImageSaveName()
+        saveTo: this.saveFolder,
+        saveName: this.saveFilename
       }
     );
 

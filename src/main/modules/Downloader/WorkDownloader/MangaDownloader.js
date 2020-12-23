@@ -56,24 +56,10 @@ class MangaDownloader extends WorkDownloader {
   }
 
   /**
-   * @returns {String}
+   * @returns {this}
    */
-  getImageSaveName() {
-    return FormatName.format(SettingStorage.getSetting('mangaRename').split('/').pop(), this.context);
-  }
-
-  /**
-   * @override
-   * @returns {String}
-   */
-  getImageSaveFolder() {
-    let parts = SettingStorage.getSetting('mangaRename').split('/');
-
-    if (parts.length > 1) {
-      parts.pop();
-    }
-
-    return path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+  makeSaveOption() {
+    return this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('mangaRename'));
   }
 
   /**
@@ -87,13 +73,15 @@ class MangaDownloader extends WorkDownloader {
      */
     this.context.pageNum = this.imageIndex;
 
+    this.makeSaveOption();
+
     let downloadOptions = Object.assign(
       {},
       this.options,
       {
         url: url,
-        saveTo: this.getImageSaveFolder(),
-        saveName: this.getImageSaveName()
+        saveTo: this.saveFolder,
+        saveName: this.saveFilename
       }
     );
 

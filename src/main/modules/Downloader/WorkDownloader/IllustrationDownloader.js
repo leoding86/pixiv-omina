@@ -44,24 +44,10 @@ class IllustrationDownloader extends MangaDownloader {
   }
 
   /**
-   * @returns {String}
+   * @returns {this}
    */
-  getImageSaveName() {
-    return FormatName.format(SettingStorage.getSetting('illustrationRename').split('/').pop(), this.context);
-  }
-
-  /**
-   * @override
-   * @returns {String}
-   */
-  getImageSaveFolder() {
-    let parts = SettingStorage.getSetting('illustrationRename').split('/');
-
-    if (parts.length > 1) {
-      parts.pop();
-    }
-
-    return path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+  makeSaveOption() {
+    return this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('illustrationRename'));
   }
 }
 
