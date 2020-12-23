@@ -13,15 +13,11 @@ Pixiv Omina 是由 [Electron](https://electronjs.org/) 驱动。
 
 # Platforms💻
 
-Test on Window 10(1903) and macOS 10.14 in VM (I don't have a mac).
-
-If you are a Linux user, I think you have the abilities to build by your own.
+Test on Window 10(1903). In theory, it can run on Mac and Linux if you can compile it.
 
 # 平台💻
 
-在 Windows 10(1903) 和 虚拟机上的 macOS 10.14 测试过（我没有苹果电脑）。
-
-如果你是一位 Linux 用户，我想你有能力自己编译程序。
+在 Windows 10(1903) 测试。理论上可以在Mac和Linux上运行，如果你会编译的话。
 
 # Features✨
 
@@ -32,7 +28,7 @@ If you are a Linux user, I think you have the abilities to build by your own.
 * Restore downloads after application restart
 * Skip downloaded works, so it can download works incrementally
 * Click-to-Download (You need install [Pixiv Toolkit](https://github.com/leoding86/webextension-pixiv-toolkit) in your browser)
-* Check new version automatically (No auto-update, I think auto-update is evil sometimes)
+* Check new version automatically (No auto-update, I think auto-update could be annoying sometimes)
 * Close to tray (You need to enable this feature at setting page)
 * Support http/socks proxy (If you use socks proxy you need input proxy url with schemel)
 
@@ -45,7 +41,7 @@ If you are a Linux user, I think you have the abilities to build by your own.
 * 重启程序后自动恢复下载
 * 能够跳过已下载好的作品（通过保存文件的名称），从而实现增量下载
 * 一键下载 (你需要在你的浏览器中安装 [Pixiv Toolkit](https://github.com/leoding86/webextension-pixiv-toolkit)）
-* 自动检查更新（不会自动更新，因为有时候自动更新可以很邪恶）
+* 自动检查更新（不会自动更新，因为有时候自动更新会很恼人）
 * 关闭程序到状态栏（需要在设置中开启）
 * 支持http以及socks代理设置（如果使用socks代理需要输入完整的代理地址，包括协议）
 
