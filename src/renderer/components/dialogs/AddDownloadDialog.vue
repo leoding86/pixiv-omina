@@ -22,10 +22,10 @@
           size="mini"
           :model="download"
           :rules="addDownloadRule"
+          :label-width="formLabelWidth"
         >
           <el-form-item
             label="URL"
-            :label-width="formLabelWidth"
           >
             <el-input
               ref="urlInput"
@@ -34,8 +34,22 @@
           </el-form-item>
 
           <el-form-item
+            v-if="isUser"
+            :label="$t('_work_type')"
+          >
+            <el-checkbox
+              v-model="download.ugoiraType"
+            >{{ $t('_ugoira') }}</el-checkbox>
+            <el-checkbox
+              v-model="download.illustrationType"
+            >{{ $t('_illustration') }}</el-checkbox>
+            <el-checkbox
+              v-model="download.mangaType"
+            >{{ $t('_manga') }}</el-checkbox>
+          </el-form-item>
+
+          <el-form-item
             :label="$t('_save_to')"
-            :label-width="formLabelWidth"
           >
             <directory-selector
               v-model="download.saveTo"
@@ -162,7 +176,10 @@ export default {
 
       download: {
         url: '',
-        saveTo: ''
+        saveTo: '',
+        ugoiraType: true,
+        illustrationType: true,
+        mangaType: true
       },
 
       addDownloadRule: {
@@ -173,6 +190,32 @@ export default {
 
       checking: false
     };
+  },
+
+  computed: {
+    isUser() {
+      for (let i = 0, l = this.pixivUserUrlPatterns.length; i < l; i++) {
+        let matches = this.download.url.match(this.pixivUserUrlPatterns[i]);
+
+        if (matches) {
+          Object.assign(this.download, {
+            ugoiraType: true,
+            illustrationType: true,
+            mangaType: true
+          });
+          return true;
+        }
+      }
+
+      return false;
+    }
+  },
+
+  created() {
+    this.pixivUserUrlPatterns = [
+      /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(\d+)(&.*)?$/,
+      /^https:\/\/www\.pixiv\.net\/(?:[a-z]+\/)?users\/(\d+)/
+    ];
   },
 
   beforeMount() {
