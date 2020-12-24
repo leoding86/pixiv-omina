@@ -101,7 +101,7 @@ class UgoiraDownloader extends WorkDownloader {
           if (SettingStorage.getDefault().getSetting('convertUgoiraToGif')) {
             TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
               file: file,
-              saveFile: path.join(this.download.saveTo, this.getImageSaveName()) + '.gif'
+              saveFile: path.join(this.saveFolder, this.saveFilename) + '.gif'
             });
             this.setFinish('Download complete, GIF generation task has send to task');
           } else {
