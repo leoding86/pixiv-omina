@@ -92,28 +92,37 @@ class UgoiraDownloaderGifEncoderWorker {
       this.zipObj.file(frame.file).async('nodebuffer').then(buffer => {
         return Jimp.read(buffer);
       }).then(image => {
-        if (!this.gifEncoder) {
-          this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
-          this.gifEncoder.setQuality(1);
-
-          this.gifEncoder.on('frame#stop', () => {
-            process.send({
-              status: 'progress',
-              progress: Math.floor(this.frameIndex / this.frames.length * 100) / 100
+        try {
+          if (!this.gifEncoder) {
+            this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height, {
+              highWaterMark: 5 * 1024 * 1024
             });
+            this.gifEncoder.setQuality(1);
+
+            this.gifEncoder.on('frame#stop', () => {
+              process.send({
+                status: 'progress',
+                progress: Math.floor(this.frameIndex / this.frames.length * 100) / 100
+              });
+            });
+
+            this.gifEncoder.setRepeat(0);
+            this.gifEncoder.pipe(this.createTempFileWriteStream());
+            this.gifEncoder.writeHeader();
+          }
+
+          this.gifEncoder.setDelay(frame.delay);
+          this.gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
+
+          this.frameIndex++;
+
+          resolve(this.addFrame(this.frameIndex));
+        } catch (e) {
+          process.send({
+            status: 'error',
+            message: e.message
           });
-
-          this.gifEncoder.setRepeat(0);
-          this.gifEncoder.pipe(this.createTempFileWriteStream());
-          this.gifEncoder.writeHeader();
         }
-
-        this.gifEncoder.setDelay(frame.delay);
-        this.gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
-
-        this.frameIndex++;
-
-        resolve(this.addFrame(this.frameIndex));
       });
     });
   }

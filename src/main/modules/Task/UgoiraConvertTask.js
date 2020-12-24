@@ -24,7 +24,6 @@ class UgoiraConvertTask extends BaseTask {
      */
     this.taskSources = [];
     this.worker;
-    this.progress = 0;
   }
 
   /**
@@ -40,17 +39,17 @@ class UgoiraConvertTask extends BaseTask {
    */
   getStatusMessage() {
     if (this.taskSources.length > 0) {
-      return `Left: ${this.taskSources.length} - Current: ${this.taskSources[0].file}`;
+      return `Current: ${this.taskSources[0].file}`;
     } else {
       return `No task`;
     }
   }
 
   /**
-   * @returns {Number}
+   * @override
    */
-  getProgress() {
-    return this.progress;
+  getJobsLeft() {
+    return this.taskSources.length;
   }
 
   /**
@@ -143,7 +142,11 @@ class UgoiraConvertTask extends BaseTask {
       }
 
       this.worker.on('message', data => {
-        if (data.status === 'finish') {
+        if (data.status === 'error') {
+          debug.sendStatus(data.message);
+          this.updateProgress(0);
+          this.generateNext();
+        } else if (data.status === 'finish') {
           debug.sendStatus(`Generate GIF complete`);
 
           this.updateProgress(1);
