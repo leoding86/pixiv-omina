@@ -17,7 +17,7 @@
                   :show-text="false"></el-progress>
               </div>
               <div class="task-list__item-message">
-                {{ task.message }}
+               {{ $t('_jobs') }}: {{ task.jobsLeft }} | {{ task.statusMessage }}
               </div>
             </div>
             <div class="task-list__item-footer">

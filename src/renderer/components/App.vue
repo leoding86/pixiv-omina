@@ -96,7 +96,7 @@
 
     <div id="footer">
       <app-footer
-        :tasks-count="tasks.length"
+        :jobs-count="jobsCount"
         @devToolsToggled="devToolsToggledHandler"
         @tasksToggled="tasksToggledHandler"
       ></app-footer>
@@ -160,6 +160,16 @@ export default {
       });
 
       return downloads;
+    },
+
+    jobsCount() {
+      let count = 0;
+
+      this.tasks.forEach(task => {
+        count += task.jobsLeft;
+      });
+
+      return count;
     }
   },
 

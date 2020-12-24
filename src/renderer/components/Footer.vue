@@ -4,7 +4,7 @@
       <div class="footer-btn"
         @click="toggleTasks"
       >
-        Tasks({{tasksCount}})
+        {{ $t('_jobs') }}({{jobsCount}})
       </div>
       <div class="footer-status">{{ $t('_status') }}: <span :title="statusMessage">{{ statusMessage }}</span></div>
     </div>
@@ -22,7 +22,7 @@ import { ipcRenderer } from 'electron';
 
 export default {
   props: {
-    tasksCount: {
+    jobsCount: {
       required: true
     }
   },
