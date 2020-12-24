@@ -25,10 +25,22 @@ class UrlMatcher {
   /**
    *
    * @param {String} url avaliable urls has: https://www.pixiv.net/member_illust.php?id=123456
-   *                                         https://www.pixiv.net/member.php?id=123456
+   * <br>                                    https://www.pixiv.net/member.php?id=123456
+   * <br>                                    https://www.pixiv.net/users/6875333
    */
   static isPixivUser(url) {
-    return /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(\d+)(&.*)?$/.test(url);
+    let patterns = [
+      /^https:\/\/www\.pixiv\.net\/(?:[a-z]+\/)?users\/(\d+)/,
+      /^https?:\/{2}www\.pixiv\.net\/member(?:_illust)?\.php\?id=(\d+)(&.*)?$/
+    ];
+
+    for (let i = 0; i < patterns.length; i++) {
+      if (patterns[i].test(url)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static isPixivComicEpisode(url) {
