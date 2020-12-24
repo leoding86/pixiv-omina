@@ -70,12 +70,7 @@ class TaskService extends BaseService {
    * @param {BaseTask} task Relative task instance
    */
   taskManagerProgressListener(task) {
-    this.mainWindow.webContents.send(this.responseChannel('progress'), {
-      name: task.getName(),
-      status: task.getStatus(),
-      message: task.getStatusMessage(),
-      progress: task.getProgress()
-    });
+    this.mainWindow.webContents.send(this.responseChannel('progress'), task.toJson());
   }
 
   /**
