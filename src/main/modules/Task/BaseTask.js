@@ -31,6 +31,7 @@ class BaseTask extends EventEmitter {
     this.progress = 0;
     this.status = BaseTask.IDLE_STATUS;
     this.statusMessage = '';
+    this.jobsLeft = 0;
   }
 
   /**
@@ -41,8 +42,20 @@ class BaseTask extends EventEmitter {
     return this.status;
   }
 
+  /**
+   * Get task status message
+   * @returns {String}
+   */
   getStatusMessage() {
     return this.statusMessage;
+  }
+
+  /**
+   * Get the number of jobs left in current task
+   * @returns {Number}
+   */
+  getJobsLeft() {
+    return this.jobsLeft;
   }
 
   /**
@@ -56,11 +69,10 @@ class BaseTask extends EventEmitter {
 
   /**
    * Get the progress of the task
-   * @abstract
-   * @throws
+   * @returns {Number}
    */
   getProgress() {
-    throw new Error(`Method "getProgress" is not implemented`);
+    return this.progress;
   }
 
   /**
@@ -158,6 +170,20 @@ class BaseTask extends EventEmitter {
     this.status = BaseTask.IDLE_STATUS;
     this.statusMessage = message;
     this.emit('progress', this);
+  }
+
+  /**
+   * Output task infomations
+   * @returns {{name: String, progress: Number, status: Number, statusMessage: String, jobsLeft: Number}}
+   */
+  toJson() {
+    return {
+      name: this.getName(),
+      progress: this.getProgress(),
+      status: this.getStatus(),
+      statusMessage: this.getStatusMessage(),
+      jobsLeft: this.getJobsLeft()
+    };
   }
 }
 
