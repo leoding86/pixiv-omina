@@ -339,6 +339,7 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Delete download using given download id, then try restart downloads
    * @param {Object} param
    * @param {number|string} param.downloadId//
    */
@@ -356,6 +357,8 @@ class DownloadManager extends EventEmitter {
     }
 
     this.emit('delete', downloadId);
+
+    this.downloadNext();
   }
 
   /**
