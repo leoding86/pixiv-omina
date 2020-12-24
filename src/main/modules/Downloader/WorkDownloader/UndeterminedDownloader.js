@@ -1,3 +1,4 @@
+import { debug } from '@/global';
 import DownloadManager from '@/modules/Downloader/DownloadManager';
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
@@ -16,9 +17,18 @@ import {
 } from '@/modules/Downloader/Providers';
 
 /**
- * It's a special downloader is used for get real downloader like illustration/manga/ugoira downloader
- * @class
+ * @typedef {Object} UndetermindDownloaderOptions
+ * @property {String} saveTo
+ * @property {Object} acceptTypes
+ * @property {Boolean} [acceptTypes.ugoira=true]
+ * @property {Boolean} [acceptTypes.illustration=true]
+ * @property {Boolean} [acceptTypes.manga=true]
  */
+
+ /**
+  * It's a special downloader is used for get real downloader like illustration/manga/ugoira downloader
+  * @class
+  */
 class UndeterminedDownloader extends WorkDownloader {
 
   /**
@@ -27,13 +37,18 @@ class UndeterminedDownloader extends WorkDownloader {
   constructor() {
     super();
 
+    /**
+     * @type {UndetermindDownloaderOptions}
+     */
+    this.options;
+
     this.downloadManager = DownloadManager.getManager();
   }
 
   /**
    * @param {Object} param
    * @param {number|string} param.provider
-   * @param {Object} param.options
+   * @param {UndetermindDownloaderOptions} param.options
    * @returns {WorkDownloader}
    */
   static createDownloader({provider, options}) {
@@ -42,7 +57,13 @@ class UndeterminedDownloader extends WorkDownloader {
     downloader.provider = provider;
     downloader.url = downloader.provider.url;
     downloader.id = downloader.provider.id;
-    downloader.options = Object.assign({}, options);
+    downloader.options = Object.assign({
+      acceptTypes: {
+        ugoira: true,
+        illustration: true,
+        manga: true
+      }
+    }, options);
 
     return downloader;
   }
@@ -99,20 +120,38 @@ class UndeterminedDownloader extends WorkDownloader {
         let downloader;
 
         if (context.illustType === 0) {
-          downloader = IllustrationDownloader.createDownloader({
-            provider: PixivIllustrationProvider.createProvider({ url: this.provider.url, context }),
-            options: this.options
-          })
+          if (this.options.acceptTypes.illustration) {
+            downloader = IllustrationDownloader.createDownloader({
+              provider: PixivIllustrationProvider.createProvider({ url: this.provider.url, context }),
+              options: this.options
+            })
+          } else {
+            debug.sendStatus(`Download is deleted because it isn't accepted type which is illustration type`);
+            this.downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            return;
+          }
         } else if (context.illustType === 1) {
-          downloader = MangaDownloader.createDownloader({
-            provider: PixivMangaProvider.createProvider({ url: this.provider.url, context }),
-            options: this.options
-          });
+          if (this.options.acceptTypes.manga) {
+            downloader = MangaDownloader.createDownloader({
+              provider: PixivMangaProvider.createProvider({ url: this.provider.url, context }),
+              options: this.options
+            });
+          } else {
+            debug.sendStatus(`Download is deleted because it isn't accepted type which is manga type`);
+            this.downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            return;
+          }
         } else if (context.illustType === 2) {
-          downloader = UgoiraDownloader.createDownloader({
-            provider: PixivUgoiraProvider.createProvider({ url: this.provider.url, context }),
-            options: this.options
-          });
+          if (this.options.acceptTypes.ugoira) {
+            downloader = UgoiraDownloader.createDownloader({
+              provider: PixivUgoiraProvider.createProvider({ url: this.provider.url, context }),
+              options: this.options
+            });
+          } else {
+            debug.sendStatus(`Download is deleted because it isn't accepted type which is ugoira type`);
+            this.downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            return;
+          }
         } else {
           this.setError(Error(`unsupported work type '${context.illustType}'`));
           return;

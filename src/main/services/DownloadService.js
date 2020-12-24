@@ -175,14 +175,19 @@ class DownloadService extends BaseService {
     debug.sendStatus('All downloads are fetched');
   }
 
-  createDownloadAction({url, saveTo}) {
+  createDownloadAction({url, saveTo, types}) {
     try {
       let provider = DownloadAdapter.getProvider(url);
 
+      /**
+       * The option `acceptTypes` will pass to UndetermindDownloader for determining
+       * if the download need to be created.
+       */
       this.downloadManager.createDownloader({
         provider,
         options: {
-          saveTo: saveTo
+          saveTo: saveTo,
+          acceptTypes: types
         }
       });
     } catch (error) {
