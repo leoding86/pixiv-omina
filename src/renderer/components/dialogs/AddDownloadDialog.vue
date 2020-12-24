@@ -38,13 +38,13 @@
             :label="$t('_work_type')"
           >
             <el-checkbox
-              v-model="download.ugoiraType"
+              v-model="download.types.ugoira"
             >{{ $t('_ugoira') }}</el-checkbox>
             <el-checkbox
-              v-model="download.illustrationType"
+              v-model="download.types.illustration"
             >{{ $t('_illustration') }}</el-checkbox>
             <el-checkbox
-              v-model="download.mangaType"
+              v-model="download.types.manga"
             >{{ $t('_manga') }}</el-checkbox>
           </el-form-item>
 
@@ -177,9 +177,11 @@ export default {
       download: {
         url: '',
         saveTo: '',
-        ugoiraType: true,
-        illustrationType: true,
-        mangaType: true
+        types: {
+          ugoira: true,
+          illustration: true,
+          mangaType: true
+        }
       },
 
       addDownloadRule: {
@@ -199,9 +201,11 @@ export default {
 
         if (matches) {
           Object.assign(this.download, {
-            ugoiraType: true,
-            illustrationType: true,
-            mangaType: true
+            types: {
+              ugoira: true,
+              illustration: true,
+              manga: true
+            }
           });
           return true;
         }
