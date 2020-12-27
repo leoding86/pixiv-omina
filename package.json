@@ -9,6 +9,7 @@
     "url": "https://github.com/leoding86/pixiv-omina/issues"
   },
   "scripts": {
+    "postinstall": "install-app-deps",
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
     "dist": "yarn compile && electron-builder",
@@ -26,6 +27,7 @@
     "moment": "^2.28.0",
     "node-html-parser": "^2.0.0",
     "source-map-support": "^0.5.12",
+    "sqlite3": "^5.0.0",
     "vue": "^2.6.10",
     "vue-i18n": "^8.15.3",
     "vue-virtual-scroller": "^1.0.0-rc.2"
