@@ -66,24 +66,24 @@ class UgoiraConvertTask extends BaseTask {
     }
 
     this.taskSources.push(payload);
+    this.updateProgress();
     return this;
   }
 
   start() {
-    if (this.status === UgoiraConvertTask.IDLE_STATUS && this.taskSources.length > 0) {
+    if ((this.status === UgoiraConvertTask.IDLE_STATUS || this.status === UgoiraConvertTask.PAUSE_STATUS) && this.taskSources.length > 0) {
       this.setStart();
       this.generateGif(this.taskSources[0]);
     }
   }
 
   pause() {
+    this.setPause();
+
     if (this.worker) {
-      this.setPausing();
       this.worker.send({
         action: 'abort'
       });
-    } else {
-      this.setPause();
     }
   }
 
@@ -97,8 +97,7 @@ class UgoiraConvertTask extends BaseTask {
    * @returns {void}
    */
   updateProgress(progress) {
-    this.progress = progress;
-    this.setProcess();
+    this.setProgress(progress);
   }
 
   generateNext() {
@@ -109,7 +108,13 @@ class UgoiraConvertTask extends BaseTask {
     this.taskSources.splice(0, 1);
 
     if (this.taskSources.length > 0) {
-      this.generateGif(this.taskSources[0]);
+      /**
+       * If the task is paused, the task status will be pausing or pause. Then the task shouldn't start
+       * next job
+       */
+      if (this.getStatus() === UgoiraConvertTask.PROCESS_STATUS) {
+        this.generateGif(this.taskSources[0]);
+      }
     } else {
       this.setFinish();
     }

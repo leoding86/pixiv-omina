@@ -84,8 +84,12 @@ class TaskManager extends EventEmitter {
    * @returns {void}
    */
   addTaskPayload(name, payload) {
-    this.getTask(name).addPayload(payload)
-      .start();
+    let task = this.getTask(name);
+    task.addPayload(payload);
+
+    if (task.isIdle()) {
+      task.start();
+    }
   }
 
   /**

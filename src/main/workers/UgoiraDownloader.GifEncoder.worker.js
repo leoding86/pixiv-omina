@@ -74,14 +74,13 @@ class UgoiraDownloaderGifEncoderWorker {
   }
 
   addFrame() {
-    if (this.abortSign) {
-      process.send({
-        status: 'abort'
-      });
-      return;
-    }
+    return new Promise((resolve, reject) => {
+      if (this.abortSign) {
+        this.abortSign = false;
+        reject(Error('aborted'));
+        return;
+      }
 
-    return new Promise(resolve => {
       const frame = this.frames[this.frameIndex];
 
       if (!frame) {
@@ -153,6 +152,17 @@ process.on('message', data => {
 
     worker.prepare().then(() => {
       worker.encode();
+    }).catch(error => {
+      if (error.message === 'aborted') {
+        process.send({
+          status: 'abort'
+        });
+      } else {
+        process.send({
+          status: 'error',
+          message: error.message
+        });
+      }
     });
   }
 });

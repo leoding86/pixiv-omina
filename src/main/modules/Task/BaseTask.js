@@ -24,6 +24,12 @@ class BaseTask extends EventEmitter {
   static PAUSING_STATUS = 2;
 
   /**
+   * Task pause status
+   * @var {Number}
+   */
+  static PAUSE_STATUS = 3;
+
+  /**
    * @constructor
    */
   constructor() {
@@ -67,6 +73,11 @@ class BaseTask extends EventEmitter {
     throw new Error(`Method "getName" is not implemented`);
   }
 
+  setProgress(progress) {
+    progress && (this.progress = progress);
+    this.emit('progress', this);
+  }
+
   /**
    * Get the progress of the task
    * @returns {Number}
@@ -81,6 +92,13 @@ class BaseTask extends EventEmitter {
    */
   addPayload() {
     throw new Error('Method "addPayload" is not implemented');
+  }
+
+  /**
+   *
+   */
+  isIdle() {
+    return this.getStatus() === BaseTask.IDLE_STATUS;
   }
 
   /**
@@ -146,7 +164,7 @@ class BaseTask extends EventEmitter {
    * @returns {void}
    */
   setPause(message = 'PAUSE') {
-    this.status = BaseTask.IDLE_STATUS;
+    this.status = BaseTask.PAUSE_STATUS;
     this.statusMessage = message;
     this.emit('paused', this);
   }

@@ -61,7 +61,7 @@ export default {
     },
 
     canStart(status) {
-      return status === 0;
+      return status === 0 || status === 3;
     },
 
     emitTaskPause(task) {
