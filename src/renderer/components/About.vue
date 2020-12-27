@@ -1,7 +1,7 @@
 <template>
   <div class="app-about">
     <div class="app-about-row">
-      <p class="app-about-icon"><img src="@/../../build/icon.png"><span>{{packageInfo.productName}}</span></p>
+      <p class="app-about-icon"><img :src="require('@/../../build/icon.png').default"><span>{{packageInfo.productName}}</span></p>
     </div>
     <div class="app-about-row">
       <div class="app-version-info">
