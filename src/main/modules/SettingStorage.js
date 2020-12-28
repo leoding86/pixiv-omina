@@ -15,33 +15,22 @@ class SettingStorage extends EventEmitter {
    */
   static instance;
 
-  static getSettingsFile()
-  {
-    return path.join(app.getPath('userData'), 'config', 'settings.config');
-  }
+  /**
+   * @var {Number}
+   */
+  static MULTIPLE_USER_MODE = 1;
 
-  static initSettings() {
-    let settingsFile = SettingStorage.getSettingsFile();
-
-    fs.ensureFileSync(settingsFile);
-
-    try {
-      return fs.readJsonSync(settingsFile);
-    } catch (error) {
-      fs.writeJsonSync(settingsFile, defaultSettings);
-    }
-
-    return fs.readJsonSync(settingsFile);
-  }
+  /**
+   * @var {Number}
+   */
+  static SINGLE_USER_MODE = 2;
 
   /**
    * @returns {SettingStorage}
    */
   static getStorage() {
-    let settings = SettingStorage.initSettings();
-
     if (!SettingStorage.instance) {
-      SettingStorage.instance = new SettingStorage(settings);
+      SettingStorage.instance = new SettingStorage();
     }
 
     return SettingStorage.instance;
@@ -56,17 +45,17 @@ class SettingStorage extends EventEmitter {
   }
 
   static getSettings() {
-    return SettingStorage.instance.getSettings();
+    return SettingStorage.getDefault().getSettings();
   }
 
   static getSetting(key) {
-    return SettingStorage.instance.getSetting(key);
+    return SettingStorage.getDefault().getSetting(key);
   }
 
   /**
    * @constructor
    */
-  constructor(settings) {
+  constructor() {
     super();
 
     /**
@@ -77,7 +66,88 @@ class SettingStorage extends EventEmitter {
     /**
      * @property {Object} settings
      */
-    this.settings = Object.assign({}, this.defaultSettings, settings || {});
+    this.settings;
+
+    /**
+     * Initial settings
+     */
+    this.initialSettings();
+
+    this.on('change', (settings, oldSettings) => {
+      Object.keys(settings).forEach(key => {
+        let settingChangeHandler = `${key}SettingChangeHandler`;
+
+        if (typeof this[settingChangeHandler] === 'function') {
+          this[settingChangeHandler].call(this, settings[key], oldSettings[key]);
+        }
+      });
+    });
+  }
+
+  getSettingsFile(mode = 1) {
+    let settingFilename = 'settings.config';
+
+    if (mode === SettingStorage.MULTIPLE_USER_MODE) {
+      return path.join(app.getPath('userData'), 'config', settingFilename);
+    } else {
+      return path.join(app.getAppPath(), 'config', settingFilename);
+    }
+  }
+
+  /**
+   *
+   * @param {String} file Setting file path
+   * @returns {Object|null}
+   */
+  loadSettings(file) {
+    if (fs.existsSync(file)) {
+      try {
+        return fs.readJSONSync(file);
+      } catch (e) {
+        // do nothing
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Inital settings. First try to get settings from user data folder, then if
+   * the running mode is matched specified setting, if not, then try to load settings
+   * from installation folder and do the something like loading settings from user
+   * data folder. If no settings matched, then create a new settings file in user
+   * data folder with default settings.
+   * @returns {void}
+   */
+  initialSettings() {
+    /**
+     * Try to load settings from user's folder
+     */
+    let settings = this.loadSettings(
+      this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE)
+    );
+
+    if (settings && settings.singleUserMode === false) {
+      this.settings = settings;
+      return;
+    }
+
+    /**
+     * Try to load settings from installation folder
+     */
+    settings = this.loadSettings(
+      this.getSettingsFile(SettingStorage.SINGLE_USER_MODE)
+    );
+
+    if (settings && settings.singleUserMode === true) {
+      this.settings = settings;
+      return;
+    }
+
+    /**
+     * Inital settings from default settings
+     */
+    fs.writeJsonSync(this.getSettingsFile(), defaultSettings);
   }
 
   getSetting(key) {
@@ -93,6 +163,8 @@ class SettingStorage extends EventEmitter {
   }
 
   setSettings(settings) {
+    let oldSettings = {};
+
     for (let key in settings) {
       if (this.settings[key] !== undefined) {
         if (this.needCheckAndRebuildWorkRenameRuleSetting(key)) {
@@ -104,6 +176,8 @@ class SettingStorage extends EventEmitter {
         } else if (this.needCheckAndRebuildSaveWorkToRelative(key)) {
           settings[key] = this.rebuildSaveWorkToRelative(settings[key]);
         }
+
+        oldSettings[key] = this.settings[key];
       } else {
         delete settings[key];
       }
@@ -111,9 +185,9 @@ class SettingStorage extends EventEmitter {
 
     Object.assign(this.settings, settings);
 
-    fs.writeJsonSync(SettingStorage.getSettingsFile(), this.settings);
+    fs.writeJsonSync(this.getSettingsFile(), this.settings);
 
-    this.emit('change', settings);
+    this.emit('change', settings, oldSettings);
 
     return settings;
   }
@@ -189,6 +263,30 @@ class SettingStorage extends EventEmitter {
       return saveTo;
     } catch (error) {
       return this.defaultSettings.saveTo;
+    }
+  }
+
+  /**
+   *
+   * @param {Boolean} newSetting
+   * @param {Boolean} oldSetting
+   * @returns {void}
+   */
+  singleUserModeSettingChangeHandler(newSetting, oldSetting) {
+    let src, dest;
+console.log(app.getAppPath());
+    if (newSetting && !oldSetting) {
+      src = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
+      dest = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
+    } else if (!newSetting && oldSetting) {
+      src = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
+      dest = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
+    }
+
+    if (src && dest) {
+      fs.copySync(src, dest, {
+        overwrite: true
+      });
     }
   }
 }
