@@ -50,7 +50,9 @@ function defaultSetting() {
 
     autostartDownload: true,
 
-    convertUgoiraToGif: true
+    convertUgoiraToGif: true,
+
+    singleUserMode: false
   }
 }
 
