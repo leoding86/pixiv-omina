@@ -16,7 +16,11 @@ import {
   debug
 } from '@/global';
 import path from 'path';
+import GetPath from '@/modules/Utils/GetPath';
 
+/**
+ * @property {Boolean} downloadsRestored
+ */
 class DownloadService extends BaseService {
   /**
    * @property
@@ -33,6 +37,8 @@ class DownloadService extends BaseService {
   constructor() {
     super();
 
+    this.downloadsRestored = false;
+
     this.mainWindow = WindowManager.getWindow('app');
 
     this.downloadManager = DownloadManager.getManager();
@@ -45,7 +51,21 @@ class DownloadService extends BaseService {
      * @type {DownloadCacheManager}
      */
     this.downloadCacheManager = DownloadCacheManager.getManager({
-      cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
+      cacheFile: SettingStorage.getSetting('singleUserMode') === false ?
+        path.join(GetPath.userData(), 'cached_downloads.json') :
+        path.join(GetPath.installation(), 'cached_downloads.json')
+    });
+
+    /**
+     * Listen settings change. If setting singleUserMode has been changed, the download cached file should
+     * be moved to new location.
+     */
+    this.settingStorage.on('change', (newSettings, oldSettings) => {
+      if (newSettings.singleUserMode === true) {
+        this.downloadCacheManager.moveCacheFile(path.join(GetPath.installation(), 'cached_downloads.json'));
+      } else if (newSettings.singleUserMode === false) {
+        this.downloadCacheManager.moveCacheFile(path.join(GetPath.userData(), 'cached_downloads.json'));
+      }
     });
 
     this.downloadManager.on('add', downloader => {
@@ -102,9 +122,9 @@ class DownloadService extends BaseService {
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
 
-    this.restoreDownloads();
+    // this.restoreDownloads();
 
-    this.mainWindow.webContents.send(this.responseChannel('restore'));
+    // this.mainWindow.webContents.send(this.responseChannel('restore'));
   }
 
   /**
@@ -129,23 +149,43 @@ class DownloadService extends BaseService {
   /**
    * test method
    */
-  restoreDownloadsAction() {
-    this.restoreDownloads();
+  restoreDownloadsAction({ saveTo }) {
+    this.restoreDownloads({ saveTo });
   }
 
-  restoreDownloads() {
+  restoreDownloads({ saveTo }) {
+    /**
+     * Check if the downloads has been restored
+     */
+    if (this.downloadsRestored) {
+      return;
+    }
+
+    /**
+     * Mark downloads has been restored
+     */
+    this.downloadsRestored = true;
+
     const cachedDownloads = this.downloadCacheManager.getCachedDownloads();
+
     let downloaders = [], count = 0;
 
     debug.sendStatus('Restoring downloads');
 
     Object.keys(cachedDownloads).forEach(key => {
       try {
-        count++;
+        let options = cachedDownloads[key].options;
+
+        if (saveTo) {
+          options.saveTo = saveTo;
+        }
+
         downloaders.push(UndeterminedDownloader.createDownloader({
           provider: DownloadAdapter.getProvider(cachedDownloads[key].url),
-          options: cachedDownloads[key].options
+          options
         }));
+
+        count++;
       } catch (error) {
         this.downloadCacheManager.removeDownload();
       }
@@ -157,6 +197,8 @@ class DownloadService extends BaseService {
     this.downloadManager.addDownloaders(downloaders, {
       mute: false
     });
+
+    this.mainWindow.webContents.send(this.responseChannel('download-service:restore'));
 
     debug.sendStatus('Downloads have been restored. Count: ' + count);
   }
@@ -181,7 +223,7 @@ class DownloadService extends BaseService {
 
       /**
        * The option `acceptTypes` will pass to UndetermindDownloader for determining
-       * if the download need to be created.
+       * whether the download need to be created.
        */
       this.downloadManager.createDownloader({
         provider,
@@ -269,6 +311,24 @@ class DownloadService extends BaseService {
     debug.sendStatus('Open download folder')
 
     this.downloadManager.openFolder({downloadId});
+  }
+
+  /**
+   * @returns {void}
+   */
+  hasCachedDownloadsAction() {
+    if (this.downloadsRestored) {
+      return;
+    }
+
+    WindowManager.getWindow('app').webContents.send(
+      this.responseChannel('cached-downloads-result'),
+      Object.keys(this.downloadCacheManager.getCachedDownloads()).length > 0
+    )
+  }
+
+  clearCachedDownloadsAction() {
+    this.downloadCacheManager.clearDownloads();
   }
 }
 

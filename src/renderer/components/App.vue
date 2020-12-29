@@ -108,6 +108,8 @@
       @pauseTask="pauseTaskHandler"
       @startTask="startTaskHandler"
     ></app-task-list>
+
+    <app-restore-downloads-dialog :show.sync="showRestoreDownloadsDialog"></app-restore-downloads-dialog>
   </div>
 </template>
 
@@ -117,6 +119,7 @@ import Header from './Header';
 import Footer from './Footer';
 import DownloadList from './DownloadList';
 import TaskList from './TaskList';
+import RestoreDownloadsDialog from './dialogs/RestoreDownloadsDialog';
 import Test from './Test';
 
 export default {
@@ -125,6 +128,7 @@ export default {
     'app-footer': Footer,
     'app-download-list': DownloadList,
     'app-task-list': TaskList,
+    'app-restore-downloads-dialog': RestoreDownloadsDialog,
     'app-test': Test
   },
 
@@ -135,7 +139,8 @@ export default {
       hasSelectedDownload: false,
       debug: false,
       showTasks: false,
-      tasks: []
+      tasks: [],
+      showRestoreDownloadsDialog: false
     }
   },
 
@@ -270,12 +275,22 @@ export default {
       }
     });
 
+    ipcRenderer.on('download-service:cached-downloads-result', (event, result) => {
+      if (result) {
+        this.showRestoreDownloadsDialog = true;
+      }
+    });
+
     ipcRenderer.on('task-service:paused', (event, task) => {
       this.updateTask(task);
     });
 
     ipcRenderer.on('task-service:progress', (event, task) => {
       this.updateTask(task);
+    });
+
+    ipcRenderer.send('download-service', {
+      action: 'hasCachedDownloads'
     });
   },
 
