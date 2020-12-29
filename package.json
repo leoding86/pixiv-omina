@@ -10,7 +10,7 @@
   },
   "scripts": {
     "postinstall": "install-app-deps",
-    "dev": "electron-webpack dev",
+    "dev": "electron-webpack dev --dev",
     "compile": "electron-webpack",
     "dist": "yarn compile && electron-builder",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
