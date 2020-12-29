@@ -4,6 +4,7 @@ import { app } from 'electron';
 import defaultSettings from '@/settings/default.settings';
 import fs from 'fs-extra';
 import path from 'path';
+import GetPath from '@/modules/Utils/GetPath';
 
 /**
  * @class
@@ -88,9 +89,9 @@ class SettingStorage extends EventEmitter {
     let settingFilename = 'settings.config';
 
     if (mode === SettingStorage.MULTIPLE_USER_MODE) {
-      return path.join(app.getPath('userData'), 'config', settingFilename);
+      return path.join(GetPath.userData(), 'config', settingFilename);
     } else {
-      return path.join(app.getAppPath(), 'config', settingFilename);
+      return path.join(GetPath.installation(), 'config', settingFilename);
     }
   }
 
@@ -148,6 +149,8 @@ class SettingStorage extends EventEmitter {
      * Inital settings from default settings
      */
     fs.writeJsonSync(this.getSettingsFile(), defaultSettings);
+
+    this.settings = defaultSettings;
   }
 
   getSetting(key) {
@@ -156,6 +159,18 @@ class SettingStorage extends EventEmitter {
 
   getSettings() {
     return this.settings;
+  }
+
+  /**
+   * Get current user mode
+   * @returns {Number}
+   */
+  getUserMode() {
+    if (this.getSetting('singleUserMode')) {
+      return SettingStorage.SINGLE_USER_MODE;
+    } else {
+      return SettingStorage.MULTIPLE_USER_MODE;
+    }
   }
 
   getDefaultSettings() {
@@ -185,7 +200,7 @@ class SettingStorage extends EventEmitter {
 
     Object.assign(this.settings, settings);
 
-    fs.writeJsonSync(this.getSettingsFile(), this.settings);
+    fs.writeJsonSync(this.getSettingsFile(this.getUserMode()), this.settings);
 
     this.emit('change', settings, oldSettings);
 
@@ -273,20 +288,16 @@ class SettingStorage extends EventEmitter {
    * @returns {void}
    */
   singleUserModeSettingChangeHandler(newSetting, oldSetting) {
-    let src, dest;
-console.log(app.getAppPath());
-    if (newSetting && !oldSetting) {
-      src = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
-      dest = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
-    } else if (!newSetting && oldSetting) {
-      src = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
-      dest = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
+    let old;
+
+    if (newSetting) {
+      old = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
+    } else if (!newSetting) {
+      old = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
     }
 
-    if (src && dest) {
-      fs.copySync(src, dest, {
-        overwrite: true
-      });
+    if (old && fs.existsSync(old)) {
+      fs.removeSync(old);
     }
   }
 }
