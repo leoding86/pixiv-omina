@@ -153,5 +153,23 @@
 
   "_manga": "漫画",
 
-  "_jobs": "任务"
+  "_jobs": "任务",
+
+  "_unfinished_downloads_found": "找到未完成的任务",
+
+  "_clear_path": "清除路径",
+
+  "_restore": "还原",
+
+  "_don_t_change": "未更改",
+
+  "_restore_downloads": "还原下载",
+
+  "_single_user_mode": "单用户模式",
+
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "启用时，保存配置以及其他数据到安装文件夹",
+
+  "_clear_and_close": "清除并关闭",
+
+  "_clear_cached_downloads_and_close": "清除所有缓存下载并关闭"
 }

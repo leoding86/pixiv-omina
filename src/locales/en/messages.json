@@ -119,7 +119,7 @@
 
   "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "You can add forward slash to save images in subfolder. eg",
 
-  "_start_download_while_startup": "Start download while startup",
+  "_start_download_while_startup": "Start download on startup",
 
   "_format_pixiv_comic": "Rename comic",
 
@@ -153,5 +153,23 @@
 
   "_manga": "Manga",
 
-  "_jobs": "Jobs"
+  "_jobs": "Jobs",
+
+  "_unfinished_downloads_found": "Unfinished download found",
+
+  "_clear_path": "Clear save path",
+
+  "_restore": "Restore",
+
+  "_don_t_change": "Don't change",
+
+  "_restore_downloads": "Restore downloads",
+
+  "_single_user_mode": "Single User Mode",
+
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "Save settings and other data in installation folder if it's enabled",
+
+  "_clear_and_close": "Clear and close",
+
+  "_clear_cached_downloads_and_close": "Clear cached downloads and close"
 }
