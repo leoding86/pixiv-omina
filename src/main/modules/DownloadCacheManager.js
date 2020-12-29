@@ -114,6 +114,21 @@ class DownloadCacheManager {
       this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
     }
   }
+
+  /**
+   * Move cache file to destination
+   * @param {String} dest
+   * @returns {void}
+   */
+  moveCacheFile(dest) {
+    if (dest !== this.cacheFile && fs.existsSync(this.cacheFile)) {
+      fs.moveSync(this.cacheFile, dest, {
+        overwrite: true
+      });
+
+      this.cacheFile = dest;
+    }
+  }
 }
 
 export default DownloadCacheManager;
