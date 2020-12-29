@@ -116,6 +116,14 @@ class DownloadCacheManager {
   }
 
   /**
+   * Clear all cached downloads
+   * @returns {void}
+   */
+  clearDownloads() {
+    fs.writeFileSync(this.cacheFile, '');
+  }
+
+  /**
    * Move cache file to destination
    * @param {String} dest
    * @returns {void}
