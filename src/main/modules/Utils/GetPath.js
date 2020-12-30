@@ -9,6 +9,6 @@ export default {
 
   installation() {
     return isDev ? path.join(app.getAppPath(), '..', 'fake_installation') :
-                   app.getAppPath();
+                   path.join(app.getAppPath(), '../..');
   }
 }

@@ -96,7 +96,7 @@ class WindowManager {
       this.cacheWindowBounds(name);
     });
 
-    window.on('close', () => {
+    window.on('closed', () => {
       this.removeWindow(name);
     });
 
@@ -180,7 +180,9 @@ class WindowManager {
     this.setWindowResizeTimeout(name, () => {
       let cache = fs.readJSONSync(this.cacheFile);
       try {
-        let window = this.getWindow(name);
+        let window = this.getWindow(name),
+            isMaximized = window.isMaximized(),
+            bounds = window.getBounds();
 
         if (window) {
           if (!cache[name]) {
@@ -188,8 +190,8 @@ class WindowManager {
           }
 
           cache[name] = {
-            isMaximized: window.isMaximized(),
-            bounds: window.getBounds()
+            isMaximized,
+            bounds
           }
 
           fs.writeJSONSync(this.cacheFile, cache);

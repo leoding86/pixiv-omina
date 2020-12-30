@@ -200,7 +200,10 @@ class SettingStorage extends EventEmitter {
 
     Object.assign(this.settings, settings);
 
-    fs.writeJsonSync(this.getSettingsFile(this.getUserMode()), this.settings);
+    let configFile = this.getSettingsFile(this.getUserMode());
+
+    fs.createFileSync(configFile);
+    fs.writeJsonSync(configFile, this.settings);
 
     this.emit('change', settings, oldSettings);
 
