@@ -65,8 +65,6 @@
     </div>
 
     <div id="container">
-      <app-test v-if="debug"></app-test>
-
       <div id="app-container-mask"
         v-if="inited && !logined">
         <div class="app-container-mask__body">
@@ -121,7 +119,6 @@ import Footer from './Footer';
 import DownloadList from './DownloadList';
 import TaskList from './TaskList';
 import RestoreDownloadsDialog from './dialogs/RestoreDownloadsDialog';
-import Test from './Test';
 
 export default {
   components: {
@@ -129,8 +126,7 @@ export default {
     'app-footer': Footer,
     'app-download-list': DownloadList,
     'app-task-list': TaskList,
-    'app-restore-downloads-dialog': RestoreDownloadsDialog,
-    'app-test': Test
+    'app-restore-downloads-dialog': RestoreDownloadsDialog
   },
 
   data() {
