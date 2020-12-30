@@ -1,15 +1,27 @@
 export default {
   computed: {
-    logined() {
-      return this.$root.$data.appLogined;
+    logined: {
+      set(val) {
+        this.$root.appLogined = val;
+      },
+
+      get() {
+        return this.$root.appLogined;
+      }
     },
 
-    inited() {
-      return this.$root.$data.appInited;
+    inited: {
+      set(val) {
+        this.$root.appInited = val;
+      },
+
+      get() {
+        return this.$root.appInited;
+      }
     },
 
     settings() {
-      return this.$root.$data.appSettings;
+      return this.$root.appSettings;
     }
   },
 
