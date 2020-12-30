@@ -28,7 +28,7 @@
     <el-form-item :label="$t('_single_user_mode')">
       <el-switch v-model="scopedSettings.singleUserMode"></el-switch>
       <el-tooltip effect="dark" placement="top"
-        :content="$t('_save_settings_and_other_data_in_installtion_folder_if_it_s_enabled')"
+        :content="$t('_save_settings_and_other_data_in_installation_folder_if_it_s_enabled')"
       >
         <i class="el-icon-info"></i>
       </el-tooltip>

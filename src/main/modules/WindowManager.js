@@ -96,6 +96,10 @@ class WindowManager {
       this.cacheWindowBounds(name);
     });
 
+    window.on('close', () => {
+      this.removeWindow(name);
+    });
+
     if (isDevelopment) {
       url = `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?target=${name}`
       window.webContents.openDevTools()
@@ -121,6 +125,14 @@ class WindowManager {
   appendWindow(name, window) {
     this.windows[name] = window;
     this.windowResizeTimeouts[name] = null;
+  }
+
+  /**
+   *
+   * @param {string} name
+   */
+  removeWindow(name) {
+    this.windows[name] = null;
   }
 
   /**
@@ -167,18 +179,24 @@ class WindowManager {
 
     this.setWindowResizeTimeout(name, () => {
       let cache = fs.readJSONSync(this.cacheFile);
-      let window = this.getWindow(name);
+      try {
+        let window = this.getWindow(name);
 
-      if (!cache[name]) {
-        cache[name] = {};
+        if (window) {
+          if (!cache[name]) {
+            cache[name] = {};
+          }
+
+          cache[name] = {
+            isMaximized: window.isMaximized(),
+            bounds: window.getBounds()
+          }
+
+          fs.writeJSONSync(this.cacheFile, cache);
+        }
+      } catch (e) {
+        // do nothing
       }
-
-      cache[name] = {
-        isMaximized: window.isMaximized(),
-        bounds: window.getBounds()
-      }
-
-      fs.writeJSONSync(this.cacheFile, cache);
     }, 1500);
   }
 

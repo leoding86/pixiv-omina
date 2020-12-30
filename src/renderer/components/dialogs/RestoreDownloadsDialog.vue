@@ -7,9 +7,7 @@
     :width="'400px'"
     :visible.sync="show"
   >
-    <el-tabs
-      v-model="currentTab"
-    >
+    <el-tabs>
       <el-tab-pane
         :label="$t('_restore_downloads')"
       >
