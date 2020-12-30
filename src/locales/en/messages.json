@@ -171,5 +171,9 @@
 
   "_clear_and_close": "Clear and close",
 
-  "_clear_cached_downloads_and_close": "Clear cached downloads and close"
+  "_clear_cached_downloads_and_close": "Clear cached downloads and close",
+
+  "_try_again": "Login failed. Please try again",
+
+  "_network_error": "Request error. Your network may not be able to connect Pixiv."
 }

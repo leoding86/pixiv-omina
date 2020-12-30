@@ -171,5 +171,9 @@
 
   "_clear_and_close": "清除并关闭",
 
-  "_clear_cached_downloads_and_close": "清除所有缓存下载并关闭"
+  "_clear_cached_downloads_and_close": "清除所有缓存下载并关闭",
+
+  "_try_again": "登录失败，请重试",
+
+  "_network_error": "请求错误，你的网络可能无法访问Pixiv"
 }
