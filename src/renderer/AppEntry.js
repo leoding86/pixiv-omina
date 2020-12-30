@@ -4,7 +4,6 @@ import './styles/app.scss';
 import App from './components/App';
 import BaseMixin from './mixins/BaseMixin';
 import ElementUI from 'element-ui';
-import User from './modules/User';
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
 import { ipcRenderer } from 'electron';
@@ -38,7 +37,8 @@ class MainEntry {
           appInited: false,
           appLogined: false,
           appSettings: {},
-          appPlatform: null
+          appPlatform: null,
+          appLoginError: null
         }
       },
 
@@ -63,12 +63,12 @@ class MainEntry {
           this.appSettings = settings;
 
           i18n.locale = this.appSettings.locale;
-
-          this.checkUserLogin();
         });
 
-        ipcRenderer.on('user-service:check-login', () => {
-          this.checkUserLogin();
+        ipcRenderer.on('user-service:check-login', (event, logined, error) => {
+          this.appInited = true;
+          this.appLogined = logined;
+          this.appLoginError = error;
         });
 
         ipcRenderer.send('setting-service', {
@@ -79,6 +79,8 @@ class MainEntry {
         ipcRenderer.send('update-service', {
           action: 'checkUpdate'
         });
+
+        this.checkUserLogin();
       },
 
       methods: {
@@ -96,10 +98,8 @@ class MainEntry {
         },
 
         checkUserLogin() {
-          User.checkLogin().then(() => {
-            this.appInited = this.appLogined = true;
-          }).catch(() => {
-            this.appInited = !(this.appLogined = false);
+          ipcRenderer.send('user-service', {
+            action: 'checkUserLogin'
           });
         }
       }

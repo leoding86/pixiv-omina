@@ -71,7 +71,7 @@ class UserService extends BaseService {
     });
 
     loginWindow.on('closed', event => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
+      this.checkUserLoginAction();
     });
   }
 
@@ -89,7 +89,7 @@ class UserService extends BaseService {
     });
 
     request.once('close', () => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
+      this.checkUserLoginAction();
     });
 
     request.end();//
@@ -98,21 +98,21 @@ class UserService extends BaseService {
   /**
    * Check login state then response renderer
    */
-  checkUserLoginedAction() {
+  checkUserLoginAction() {
     debug.sendStatus('Checking login status');
 
-    this.checkUserLogined().then(() => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('logined'));
+    this.checkUserLogin().then(() => {
+      WindowManager.getWindow('app').webContents.send(
+        this.responseChannel('check-login'), true
+      );
 
       debug.sendStatus('Logined');
     }).catch(error => {
-      if (error && error.message) {
-        // console.log(error.message);
-      }
+      WindowManager.getWindow('app').webContents.send(
+        this.responseChannel('check-login'), false, error && error.name
+      );
 
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('not-login'));
-
-      debug.sendStatus('Logouted');
+      debug.sendStatus('Not login');
     });
   }
 
@@ -163,7 +163,7 @@ class UserService extends BaseService {
   /**
    * @returns {Promise}
    */
-  checkUserLogined() {
+  checkUserLogin() {
     return new Promise((resolve, reject) => {
       let url = UrlBuilder.getAccountUnreadCountUrl();
 
@@ -178,8 +178,11 @@ class UserService extends BaseService {
           body += data;
         });
 
-        response.on('error', () => {
-          reject('response error');
+        response.on('error',error => {
+          reject({
+            name: 'ResponseError',
+            message: error.message
+          });
         });
 
         response.on('end', () => {
@@ -191,12 +194,17 @@ class UserService extends BaseService {
             return;
           }
 
-          reject('cannot resolve response');
+          reject({
+            name: 'InvalidResponseError'
+          });
         });
       });
 
       request.on('error', error => {
-        reject(error.message);
+        reject({
+          name: 'RequestError',
+          message: error.message
+        });
       });
 
       request.end();

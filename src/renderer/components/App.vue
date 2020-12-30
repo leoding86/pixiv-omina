@@ -74,6 +74,7 @@
             type="primary"
             @click="userLogin"
           >{{ $t('_login_pixiv') }}</el-button>
+          <p class="login-error" v-if="loginError">{{ loginError }}</p>
         </div>
       </div>
 
@@ -140,11 +141,25 @@ export default {
       debug: false,
       showTasks: false,
       tasks: [],
-      showRestoreDownloadsDialog: false
+      showRestoreDownloadsDialog: false,
+      networkCannotReach: false
     }
   },
 
   computed: {
+    loginError() {
+      switch (this.$root.appLoginError) {
+        case 'InvalidResponseError':
+        case 'InvalidResponseError':
+        case 'ResponseError':
+          return this.$t('_try_again');
+        case 'RequestError':
+          return this.$t('_network_error');
+        default:
+          return;
+      }
+    },
+
     filter() {
       return this.downloadFilter;
     },
@@ -611,6 +626,8 @@ export default {
 
     userLogin() {
       if (!this.logined) {
+        this.inited = false;
+
         ipcRenderer.send("user-service", {
           action: 'userLogin'
         });
@@ -708,6 +725,12 @@ export default {
   margin: 20px 0;
   color: #dedede;
   text-shadow: 0 -1px 0 #6d6d6d;
+}
+
+.login-error {
+  padding: 10px 0;
+  font-size: 12px;
+  color: gray;
 }
 
 #test {
