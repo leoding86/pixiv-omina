@@ -175,5 +175,8 @@
 
   "_try_again": "登录失败，请重试",
 
-  "_network_error": "请求错误，你的网络可能无法访问Pixiv"
+  "_network_error": "请求错误，你的网络可能无法访问Pixiv",
+
+  "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
+    "你目录写入权限以将数据保存到安装目录，重新安装软件到有写入权限的目录或以管理员运行应用可能可以解决问题"
 }
