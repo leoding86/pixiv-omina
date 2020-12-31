@@ -61,9 +61,9 @@ class DownloadService extends BaseService {
      * be moved to new location.
      */
     this.settingStorage.on('change', (newSettings, oldSettings) => {
-      if (newSettings.singleUserMode === true) {
+      if (newSettings.singleUserMode && !oldSettings.singleUserMode) {
         this.downloadCacheManager.moveCacheFile(path.join(GetPath.installation(), 'cached_downloads.json'));
-      } else if (newSettings.singleUserMode === false) {
+      } else if (!newSettings.singleUserMode && oldSettings.singleUserMode) {
         this.downloadCacheManager.moveCacheFile(path.join(GetPath.userData(), 'cached_downloads.json'));
       }
     });
@@ -220,6 +220,13 @@ class DownloadService extends BaseService {
   createDownloadAction({url, saveTo, types}) {
     try {
       let provider = DownloadAdapter.getProvider(url);
+      let options = {
+        saveTo
+      };
+
+      if (types) {
+        options.acceptTypes = types;
+      }
 
       /**
        * The option `acceptTypes` will pass to UndetermindDownloader for determining
@@ -227,10 +234,7 @@ class DownloadService extends BaseService {
        */
       this.downloadManager.createDownloader({
         provider,
-        options: {
-          saveTo: saveTo,
-          acceptTypes: types
-        }
+        options
       });
     } catch (error) {
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
