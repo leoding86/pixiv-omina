@@ -202,6 +202,9 @@ class SettingStorage extends EventEmitter {
 
     let configFile = this.getSettingsFile(this.getUserMode());
 
+    /**
+     * If the application don't have write permission for saving data in installation directory and a error will be raised.
+     */
     fs.createFileSync(configFile);
     fs.writeJsonSync(configFile, this.settings);
 
@@ -293,9 +296,9 @@ class SettingStorage extends EventEmitter {
   singleUserModeSettingChangeHandler(newSetting, oldSetting) {
     let old;
 
-    if (newSetting) {
+    if (newSetting && !oldSetting) {
       old = this.getSettingsFile(SettingStorage.MULTIPLE_USER_MODE);
-    } else if (!newSetting) {
+    } else if (!newSetting && oldSetting) {
       old = this.getSettingsFile(SettingStorage.SINGLE_USER_MODE);
     }
 

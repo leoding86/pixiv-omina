@@ -119,6 +119,12 @@ export default {
   beforeMount() {
     this.changedSettings = {};
     this.scopedSettings = Object.assign({}, this.settings);
+
+    ipcRenderer.on('setting-service:permission-error', this.permissionErrorHandler);
+  },
+
+  beforeDestroy() {
+    ipcRenderer.removeListener('setting-service:permission-error', this.permissionErrorHandler);
   },
 
   watch: {
@@ -156,6 +162,10 @@ export default {
           }
         });
       }
+    },
+
+    permissionErrorHandler() {
+      alert(this.$t('_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it'));
     }
   }
 }
