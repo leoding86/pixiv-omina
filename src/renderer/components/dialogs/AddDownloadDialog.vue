@@ -180,7 +180,7 @@ export default {
         types: {
           ugoira: true,
           illustration: true,
-          mangaType: true
+          manga: true
         }
       },
 
