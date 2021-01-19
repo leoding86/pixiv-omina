@@ -39,12 +39,15 @@
           >
             <el-checkbox
               v-model="download.types.ugoira"
+              @change="storeDownloadType()"
             >{{ $t('_ugoira') }}</el-checkbox>
             <el-checkbox
               v-model="download.types.illustration"
+              @change="storeDownloadType()"
             >{{ $t('_illustration') }}</el-checkbox>
             <el-checkbox
               v-model="download.types.manga"
+              @change="storeDownloadType()"
             >{{ $t('_manga') }}</el-checkbox>
           </el-form-item>
 
@@ -147,6 +150,7 @@ import { ipcRenderer, clipboard } from 'electron';
 import DirectorySelector from '../DirectorySelector';
 import UrlMatcher from '@/../utils/UrlMatcher';
 import User from '@/../renderer/modules/User';
+import StorageService from '@/../renderer/modules/StorageService';
 
 export default {
   components: {
@@ -233,8 +237,20 @@ export default {
   },
 
   mounted() {
-    setImmediate(() => {
+    this.$nextTick(() => {
       this.$refs.urlInput.focus();
+
+      this.downloadTypes = StorageService.getDefault().getOffset('download_types');
+
+      if (Array.isArray(this.downloadTypes) && this.downloadTypes.length > 0) {
+        let initalDownloadTypes = {};
+
+        Object.keys(this.download.types).forEach(type => {
+          initalDownloadTypes[type] = this.downloadTypes.indexOf(type) > -1;
+        });
+
+        this.$set(this.download, 'types', initalDownloadTypes);
+      }
     });
   },
 
@@ -360,6 +376,24 @@ export default {
         this.$emit('user:logout');
         this.checking = false;
       });
+    },
+
+    storeDownloadType(value) {
+      Object.keys(this.download.types).forEach(type => {
+        if (this.download.types[type]) {
+          if (this.downloadTypes.indexOf(type) < 0) {
+            this.downloadTypes.push(type);
+          }
+        } else {
+          let index = this.downloadTypes.indexOf(type);
+
+          if (index > -1) {
+            this.downloadTypes.splice(index, 1);
+          }
+        }
+      });
+
+      StorageService.getDefault().setOffset('download_types', this.downloadTypes);
     }
   }
 }
