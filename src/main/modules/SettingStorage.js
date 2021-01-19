@@ -146,6 +146,11 @@ class SettingStorage extends EventEmitter {
     }
 
     /**
+     * Make sure the setting file is exists
+     */
+    fs.ensureFileSync(this.getSettingsFile());
+
+    /**
      * Inital settings from default settings
      */
     fs.writeJsonSync(this.getSettingsFile(), defaultSettings);
