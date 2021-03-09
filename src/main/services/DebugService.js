@@ -3,6 +3,10 @@ import {
 } from 'electron';
 import BaseService from './BaseService';
 import WindowManager from '@/modules/WindowManager';
+import fs from 'fs-extra';
+import path from 'path';
+import GetPath from '@/modules/Utils/GetPath';
+import moment from 'moment';
 
 class DebugService extends BaseService {
   /**
@@ -19,6 +23,14 @@ class DebugService extends BaseService {
 
   constructor() {
     super();
+
+    this.logFile = path.join(GetPath.userData(), 'app.log');
+    fs.ensureFileSync(this.logFile);
+
+    /**
+     * Clear logs of previous runs
+     */
+    fs.writeFile(this.logFile, '');
 
     ipcMain.on(DebugService.channel, this.channelIncomeHandler.bind(this));
   }
@@ -67,8 +79,11 @@ class DebugService extends BaseService {
     }
   }
 
-  sendStatus(message) {
-    console.log(message);
+  sendStatus(message, log = false) {
+    if (log) {
+      this.log(message);
+    }
+
     WindowManager.getWindow('app').webContents.send(
       this.responseChannel('status'),
       {
@@ -81,6 +96,26 @@ class DebugService extends BaseService {
     this.sendDataToWindow(this.responseChannel('notice'), {
       notice: message
     });
+  }
+
+  log(message) {
+    let log = '';
+
+    if (typeof message === 'object') {
+      log = (() => {
+        let row = [];
+
+        Object.keys(message).forEach(key => {
+          row.push(`${key} -> ${message[key]}`);
+        });
+
+        return row.join(' | ');
+      })();
+    } else {
+      log = message;
+    }
+
+    fs.appendFileSync(this.logFile, '[' + moment().format('YYYY-MM-DD HH:mm:ss') + ']' + log + "\r\n");
   }
 }
 
