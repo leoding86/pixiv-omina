@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import FormatName from '@/modules/Utils/FormatName';
 import { app } from 'electron';
+import { debug } from '@/global';
 import defaultSettings from '@/settings/default.settings';
 import fs from 'fs-extra';
 import path from 'path';
@@ -74,6 +75,8 @@ class SettingStorage extends EventEmitter {
      */
     this.initialSettings();
 
+    debug.log('settings loaded -> ' + JSON.stringify(this.getSettings()));
+
     this.on('change', (settings, oldSettings) => {
       Object.keys(settings).forEach(key => {
         let settingChangeHandler = `${key}SettingChangeHandler`;
@@ -129,7 +132,7 @@ class SettingStorage extends EventEmitter {
     );
 
     if (settings && settings.singleUserMode === false) {
-      this.settings = settings;
+      this.settings = Object.assign(defaultSettings, settings);
       return;
     }
 
@@ -141,7 +144,7 @@ class SettingStorage extends EventEmitter {
     );
 
     if (settings && settings.singleUserMode === true) {
-      this.settings = settings;
+      this.settings = Object.assign(defaultSettings, settings);
       return;
     }
 
@@ -214,6 +217,8 @@ class SettingStorage extends EventEmitter {
     fs.writeJsonSync(configFile, this.settings);
 
     this.emit('change', settings, oldSettings);
+
+    debug.log('settings saved -> ' + JSON.stringify(settings));
 
     return settings;
   }

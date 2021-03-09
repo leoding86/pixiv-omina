@@ -35,35 +35,35 @@ class Request extends net.ClientRequest {
     });
 
     this.on('response', response => {
-      debug.sendStatus(`Response: Get response from ${this.options.url}`);
+      debug.sendStatus(`Response: Get response from ${this.options.url}`, true);
 
       response.on('data', () => {
         debug.sendStatus(`Response: Receiving data from ${this.options.url}`);
       });
 
       response.on('aborted', () => {
-        debug.sendStatus(`Response: Aborted from ${this.options.url}`);
+        debug.sendStatus(`Response: Aborted from ${this.options.url}`, true);
       });
 
       response.on('error', error => {
-        debug.sendStatus(`Response: Error (${error.message}) occured while receiving data from ${this.options.url}`);
+        debug.sendStatus(`Response: Error (${error.message}) occured while receiving data from ${this.options.url}`, true);
       });
 
       response.on('end', () => {
-        debug.sendStatus(`Response: All data received from ${this.options.url}`);
+        debug.sendStatus(`Response: All data received from ${this.options.url}`, true);
       });
     });
 
     this.on('close', () => {
-      debug.sendStatus(`Request: ${this.options.url} closed`);
+      debug.sendStatus(`Request: ${this.options.url} closed`, true);
     });
 
     this.on('error', error => {
-      debug.sendStatus(`Request: ${this.options.url} error (${error.message})`);
+      debug.sendStatus(`Request: ${this.options.url} error (${error.message})`, true);
     });
 
     this.on('finish', () => {
-      debug.sendStatus(`Request: ${this.options.url} all data sended`);
+      debug.sendStatus(`Request: ${this.options.url} all data sended`, true);
     });
   }
 
