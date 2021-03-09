@@ -2,6 +2,8 @@ import {
   PixivGeneralArtworkProvider,
   PixivUserProvider,
   PixivComicEpisodeProvider,
+  PixivNovelProvider,
+  PixivNovelSeriesProvider,
   PixivComicWorkProvider
 } from './Providers';
 
@@ -18,6 +20,18 @@ class DownloadAdapter {
       provider: PixivGeneralArtworkProvider,
       patterns: [
         /^https?:\/{2}www\.pixiv\.net\/(?:[a-z]+\/)?artworks\/(?<id>\d+)(?:\?.*)?$/i
+      ]
+    },
+    {
+      provider: PixivNovelProvider,
+      patterns: [
+        /^https?:\/\/www\.pixiv\.net\/novel\/show\.php\?id=(?<id>\d+)/i
+      ]
+    },
+    {
+      provider: PixivNovelSeriesProvider,
+      patterns: [
+        /^https?:\/\/www\.pixiv\.net\/novel\/series\/(?<id>\d+)/i
       ]
     },
     {

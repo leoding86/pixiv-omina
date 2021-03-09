@@ -3,6 +3,7 @@ import DownloadManager from '@/modules/Downloader/DownloadManager';
 import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/IllustrationDownloader';
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader';
 import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/UgoiraDownloader';
+import PixivNovelDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/NovelDownloader';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import PixivComicEpisodeDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/EpisodeDownloader';
 import {
@@ -13,7 +14,8 @@ import {
   PixivMangaProvider,
   PixivUgoiraProvider,
   PixivComicEpisodeProvider,
-  PixivComicWorkProvider
+  PixivComicWorkProvider,
+  PixivNovelProvider
 } from '@/modules/Downloader/Providers';
 
 /**
@@ -114,6 +116,13 @@ class UndeterminedDownloader extends WorkDownloader {
         this.downloadManager.addDownloaders(downloaders, { replace: this });
       }).catch(error => {
         this.setError(error);
+      });
+    } else if (this.provider instanceof PixivNovelProvider) {
+      this.provider.requestNovel().then(context => {
+        this.downloadManager.transformWorkDownloader(PixivNovelDownloader.createDownloader({
+          provider: this.provider,
+          options: this.options
+        }));
       });
     } else if (this.provider instanceof PixivGeneralArtworkProvider) {
       this.provider.requestInfo().then(context => {
