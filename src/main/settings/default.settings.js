@@ -12,6 +12,8 @@ function defaultSetting() {
 
     ugoiraRename: '%id%_%title%',
 
+    novelRename: '%id%_%title%',
+
     pixivComicWorkRename: '%user_name%/%work_id%_%work_title%/%number_title%%sub_title%/p%page_num%',
 
     overwriteMode: 'skip',

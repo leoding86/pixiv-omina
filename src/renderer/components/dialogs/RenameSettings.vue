@@ -1,5 +1,7 @@
 <template>
-  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule">
+  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule"
+    :label-width="formLabelWidth"
+  >
     <el-divider
       content-position="left"
     >Works on Pixiv main site rename settings</el-divider>
@@ -23,6 +25,11 @@
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_illust') }}</span>
       <el-input v-model="scopedSettings.illustrationRename"></el-input>
+    </el-form-item>
+
+    <el-form-item>
+      <span slot="label">{{ $t('_format_novel') }}</span>
+      <el-input v-model="scopedSettings.novelRename"></el-input>
     </el-form-item>
 
     <el-divider
@@ -49,6 +56,7 @@ export default {
         ugoiraRename: '',
         mangaRename: '',
         illustrationRename: '',
+        novelRename: '',
         pixivComicWorkRename: ''
       },
 
