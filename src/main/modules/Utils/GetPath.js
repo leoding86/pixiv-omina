@@ -1,6 +1,6 @@
 import path from 'path';
 import { app } from 'electron';
-import { isDev } from '@/global';
+import { isDev } from '@/env';
 
 export default {
   userData() {
