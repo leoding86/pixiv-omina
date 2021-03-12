@@ -8,7 +8,6 @@ import {
 import formatUrl from 'url';
 import fs from 'fs-extra';
 import mime from 'mime-types';
-import { start } from 'repl';
 
 /**
  * Notice that the dl-progress event is not triggered every time, review codes for detail.
@@ -262,13 +261,10 @@ class Download extends Request {
           duration = nowTime - startTime;
 
           if (duration >= this.speedSensitivity) {
-            this.speed = Math.floor(speedChunkDataLength / duration * 1000);
+            this.speed = Math.floor(speedChunkDataLength * 1000 / duration);
             this.progress = (totalSize ? Math.floor(completeSize / totalSize * 100) : 0) / 100;
 
             this.setProgress();
-
-            startTime = nowTime;
-            speedChunkDataLength = 0;
           } else {
             speedChunkDataLength += data.length;
           }
@@ -281,8 +277,6 @@ class Download extends Request {
           downloadTemporaryWriteStream.close();
 
           this.renameTemporaryFileToSaveFile(path.join(this.saveTo, this.saveName));
-
-          this.speed = 0;
 
           this.endTime = Date.now();
 

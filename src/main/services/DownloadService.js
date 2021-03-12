@@ -19,6 +19,7 @@ import path from 'path';
 import GetPath from '@/modules/Utils/GetPath';
 
 /**
+ * @property {Number} updateSensitivity
  * @property {Boolean} downloadsRestored
  */
 class DownloadService extends BaseService {
@@ -36,6 +37,8 @@ class DownloadService extends BaseService {
 
   constructor() {
     super();
+
+    this.updateSensitivity = 500;
 
     this.downloadsRestored = false;
 
@@ -106,11 +109,16 @@ class DownloadService extends BaseService {
 
     this.downloadManager.on('update', downloader => {
       if (this.downloadManager.getWorkDownloader(downloader.id)) {
-        this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+        let nowTime = Date.now();
+        if (this.startTime === null || (nowTime - this.startTime) >= this.updateSensitivity) {
+          this.startTime = nowTime;
+          this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+        }
       }
     });
 
     this.downloadManager.on('finish', downloader => {
+      this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
       this.downloadCacheManager.removeDownload(downloader.id);
     });
 
@@ -121,6 +129,8 @@ class DownloadService extends BaseService {
     });
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
+
+    this.startTime = null;
 
     // this.restoreDownloads();
 

@@ -138,7 +138,7 @@ export default {
     getSpeedUnit(speed) {
       if (speed < 1000) {
         return Math.round(speed / 8) + ' B/s';
-      } else if (speed < 1000000) {
+      } else if (speed < 50000000) {
         return Math.round(speed / 1000 / 8) + ' KB/s';
       } else {
         return Math.round(speed / 1000 / 1000 / 8) + ' MB/s'
