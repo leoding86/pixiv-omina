@@ -326,7 +326,7 @@ class DownloadManager extends EventEmitter {
   /**
    * Once stop a download, try to start next avaliable download
    * @param {Object} param
-   * @param {number|string} param.downloadId//
+   * @param {number|string} param.downloadId
    */
   stopWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
