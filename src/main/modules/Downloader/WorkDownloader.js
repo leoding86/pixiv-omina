@@ -118,6 +118,12 @@ class WorkDownloader extends EventEmitter {
      * @property {String}
      */
     this.saveFilename = null;
+
+    /**
+     * The plugin id
+     * @property {String}
+     */
+    this.pluginId = null;
   }
 
   get speed() {
@@ -267,7 +273,6 @@ class WorkDownloader extends EventEmitter {
    * @param {Error} error
    */
   setError(error) {
-    console.error(error);
     this.statusMessage = error.message;
     this.state = WorkDownloader.state.error;
 
@@ -371,13 +376,17 @@ class WorkDownloader extends EventEmitter {
       title: this.title,
       externalUrl: this.externalUrl,
       state: this.state,
-      speed: this.speed,
-      progress: this.progress,
+      speed: this.speed || (this.download ? this.download.speed : 0),
+      progress: this.progress || (this.download ? this.download.progress : 0),
       statusMessage: this.statusMessage,
       type: this.type
     };
 
     return data;
+  }
+
+  emit(event, ...args) {
+    super.emit(event, ...args);
   }
 }
 
