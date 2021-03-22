@@ -61,7 +61,7 @@ class DownloadAdapter {
         let matches = src.match(match.patterns[j]);
         if (!!matches) {
           return match.provider.createProvider({
-            src,
+            url: src,
             context: matches['groups'],
           });
         }
@@ -69,6 +69,20 @@ class DownloadAdapter {
     }
 
     throw Error(`cannot get provider via ${src}`);
+  }
+
+  /**
+   * Extend match mapper
+   *
+   * @param {Object} arguments
+   * @param {BaseProvider} arguments.provider
+   * @param {String[]} arguments.patterns
+   */
+  static extendMap({ provider, patterns }) {
+    DownloadAdapter.matchMaps.push({
+      provider,
+      patterns
+    });
   }
 }
 
