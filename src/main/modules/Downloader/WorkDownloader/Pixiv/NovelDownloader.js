@@ -1,10 +1,8 @@
-import Download from '@/modules/Download';
-import FormatName from '@/modules/Utils/FormatName';
-import SettingStorage from '@/modules/SettingStorage';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import path from 'path';
 import fs from 'fs-extra';
-import { PixivNovelProvider as NovelProvider } from '@/modules/Downloader/Providers';
+import SettingStorage from '@/modules/SettingStorage';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import NovelProvider from '@/modules/Downloader/Providers/Pixiv/NovelProvider';
 
 /**
  * @class
@@ -24,7 +22,11 @@ class NovelDownloader extends WorkDownloader {
      */
     this.provider = null;
 
-    this.type = 4;
+    this.type = 'Pixiv Novel';
+  }
+
+  get title() {
+    return this.context.title;
   }
 
   /**
