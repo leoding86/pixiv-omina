@@ -74,9 +74,10 @@ class WindowManager {
    *
    * @param {string} name
    * @param {Electron.BrowserWindowConstructorOptions} args
+   * @param {Object} queries
    * @returns {Electron.BrowserWindow}
    */
-  createWindow(name, args, loadUrlArgs = {}) {
+  createWindow(name, args, loadUrlArgs = {}, queries = {}) {
     if (WindowManager.globalPartition) {
       args.webPreferences.partition = WindowManager.globalPartition;
     }
@@ -110,6 +111,10 @@ class WindowManager {
         protocol: 'file',
         slashes: true
       }) + `?target=${name}`
+    }
+
+    if (queries.loginUrl && typeof queries.loginUrl === 'string') {
+      url += '&login_url=' + encodeURIComponent(queries.loginUrl);
     }
 
     window.loadURL(url, loadUrlArgs)
