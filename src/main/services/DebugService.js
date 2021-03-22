@@ -101,7 +101,9 @@ class DebugService extends BaseService {
   log(message) {
     let log = '';
 
-    if (typeof message === 'object') {
+    if (message instanceof Error) {
+      log = message.stack;
+    } else if (typeof message === 'object') {
       log = (() => {
         let row = [];
 
