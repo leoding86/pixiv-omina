@@ -178,5 +178,21 @@
   "_network_error": "请求错误，你的网络可能无法访问Pixiv",
 
   "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
-    "你目录写入权限以将数据保存到安装目录，重新安装软件到有写入权限的目录或以管理员运行应用可能可以解决问题"
+    "你目录写入权限以将数据保存到安装目录，重新安装软件到有写入权限的目录或以管理员运行应用可能可以解决问题",
+
+  "_format_novel": "重命名小说",
+
+  "_pending": "等待中",
+
+  "_processing": "处理中",
+
+  "_error": "错误",
+
+  "_finish": "完成",
+
+  "_stopping": "停止中",
+
+  "_stop": "停止",
+
+  "_plugins": "插件"
 }

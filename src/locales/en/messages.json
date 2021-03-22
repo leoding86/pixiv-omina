@@ -178,5 +178,21 @@
   "_network_error": "Request error. Your network may not be able to connect Pixiv.",
 
   "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
-    "You don't have write permission for saving data in installation directory. Install application in directory that you have write permission or run application with administrator privilege might fix it"
+    "You don't have write permission for saving data in installation directory. Install application in directory that you have write permission or run application with administrator privilege might fix it",
+
+  "_format_novel": "Rename novel",
+
+  "_pending": "Pending",
+
+  "_processing": "Processing",
+
+  "_error": "Error",
+
+  "_finish": "Finish",
+
+  "_stopping": "Stopping",
+
+  "_stop": "Stop",
+
+  "_plugins": "Plugins"
 }
