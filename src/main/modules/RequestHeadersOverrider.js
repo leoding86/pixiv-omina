@@ -91,7 +91,8 @@ class RequestHeadersOverrider {
         if (matches) {
           overrideRequestHeaders = this.maps[i].requestHeaders.call(null, {
             url,
-            context: matches['groups']
+            context: matches['groups'],
+            requestHeaders
           });
 
           breakout = true;
@@ -107,6 +108,34 @@ class RequestHeadersOverrider {
     return overrideRequestHeaders ?
       Object.assign({}, requestHeaders, overrideRequestHeaders) :
       requestHeaders;
+  }
+
+  extendMap(overrider) {
+    if (overrider.id) {
+      let oldOverrider = null;
+
+      for (let i = 0; i < this.maps.length; i++) {
+        if (this.maps[i].id && this.maps[i].id === overrider.id) {
+          oldOverrider = this.maps[i];
+          break;
+        }
+      }
+
+      if (oldOverrider) {
+        Object.assign(oldOverrider, overrider);
+      } else {
+        this.maps.push(overrider);
+      }
+    }
+  }
+
+  deleteOverrider(id) {
+    for (let i = 0; i < this.maps.length; i++) {
+      if (this.maps[i].id && this.maps[i].id === id) {
+        this.maps.splice(i, 1);
+        break;
+      }
+    }
   }
 }
 
