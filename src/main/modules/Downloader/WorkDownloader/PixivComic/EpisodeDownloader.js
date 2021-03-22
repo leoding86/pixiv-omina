@@ -128,7 +128,6 @@ class EpisodeDownloader extends WorkDownloader {
 
         this.downloadImages();
       }).catch(error => {
-        console.error(error);
         this.setError(error);
       });
     } else {
