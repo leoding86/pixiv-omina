@@ -274,8 +274,10 @@ export default {
       }
 
       pages.forEach(setting => {
-        if (/^\d+$/.setting) {
-          this.isPageInRange(setting, totalPages) && p.indexOf(setting) < 0 && p.push(setting);
+        setting = setting.trim();
+
+        if (/^\d+$/.test(setting)) {
+          p.push(setting);
         } else {
           let matches = setting.match(/^(\d+)\-(\d+)$/);
 
@@ -283,7 +285,7 @@ export default {
             let diff = matches[2] - matches[1];
 
             if (diff === 0) {
-              this.isPageInRange(matches[1], totalPages) && p.indexOf(matches[1]) < 0 && p.push(matches[1]);
+              p.push(matches[1]);
             } else {
               let start;
 
@@ -296,7 +298,7 @@ export default {
               }
 
               while (start < end) {
-                this.isPageInRange(start, totalPages) && p.indexOf(start) < 0 && p.push(start);
+                p.push(start);
                 start++;
               }
             }
@@ -304,7 +306,9 @@ export default {
         }
       });
 
-      return p;
+      return p.filter((_p, index) => {
+        return this.isPageInRange(_p, totalPages) && p.indexOf(_p) === index
+      });
     },
 
     addDownload() {
@@ -345,14 +349,18 @@ export default {
                   }
                 }
 
-                ipcRenderer.send('download-service', {
-                  action: 'createBmDownload',
-                  args: {
-                    rest: this.bookmarkForm.rest,
-                    pages,
-                    saveTo: this.bookmarkForm.saveTo,
-                  }
-                });
+                if (pages.length > 0) {
+                  ipcRenderer.send('download-service', {
+                    action: 'createBmDownload',
+                    args: {
+                      rest: this.bookmarkForm.rest,
+                      pages,
+                      saveTo: this.bookmarkForm.saveTo,
+                    }
+                  });
+                } else {
+                  alert(this.$t('_cannot_add_bookmarks'));
+                }
 
                 this.checking = false;
               });
