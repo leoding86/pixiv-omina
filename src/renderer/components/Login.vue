@@ -4,7 +4,7 @@
       <p><a href="javascript:void(0)" @click="closeWindow">Close this window after you logined</a></p>
     </div>
     <div class="webview">
-      <webview src="https://accounts.pixiv.net/login"
+      <webview :src="loginUrl"
         partition="persist:main"
       >
         Loading login page
@@ -17,6 +17,14 @@
 import { ipcRenderer } from 'electron';
 
 export default {
+  computed: {
+    loginUrl() {
+      return !this.$root.loginUrl
+             ? 'https://accounts.pixiv.net/login'
+             : this.$root.loginUrl;
+    }
+  },
+
   methods: {
     closeWindow() {
       ipcRenderer.send('user-service', {
