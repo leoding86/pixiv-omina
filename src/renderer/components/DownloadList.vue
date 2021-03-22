@@ -73,7 +73,7 @@
           </div>
           <div class="download-list-item__footer">
             <div class="download-list-item__status">
-              <p>{{ item.statusMessage }}<span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
+              <p>{{ getDownloadStatus(item) }}<span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
             </div>
           </div>
         </el-card>
@@ -110,9 +110,11 @@ export default {
         } else if (type == 1) {
           classname += '--manga';
         } else if (type == 2) {
-          classname += '--ugoira'
+          classname += '--ugoira';
         } else if (type == 20) {
-          classname += '--pixiv-comic'
+          classname += '--pixiv-comic';
+        } else {
+          classname += '--other';
         }
       }
 
@@ -128,7 +130,11 @@ export default {
         } else if (type == 2) {
           return 'ugoira';
         } else if (type == 20) {
-          return 'pixiv comic'
+          return 'pixiv comic';
+        } else if (typeof type === 'string') {
+          return type;
+        } else {
+          return 'Other';
         }
       }
 
@@ -138,11 +144,18 @@ export default {
     getSpeedUnit(speed) {
       if (speed < 1000) {
         return Math.round(speed / 8) + ' B/s';
-      } else if (speed < 50000000) {
-        return Math.round(speed / 1000 / 8) + ' KB/s';
+      } else if (speed < 11000000) {
+        let readableSpeed = Math.round(speed * 100 / 1000 / 8) + '';
+        return readableSpeed.substr(0, readableSpeed.length - 2) + '.' + readableSpeed.substr(-2) + ' KB/s';
       } else {
-        return Math.round(speed / 1000 / 1000 / 8) + ' MB/s'
+        let readableSpeed = Math.round(speed * 100 / 1000 / 1000 / 8) + '';
+        return readableSpeed.substr(0, readableSpeed.length - 2) + '.' + readableSpeed.substr(-2) + ' MB/s';
       }
+    },
+
+    getDownloadStatus(download) {
+      return this.$t(`_${download.state}`)
+             + (download.state === 'error' ? `: ${download.statusMessage}` : '');
     },
 
     clickStopHandler(download) {
