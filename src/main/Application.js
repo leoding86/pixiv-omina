@@ -9,6 +9,8 @@ import WindowManager from '@/modules/WindowManager';
 import PluginManager from '@/modules/PluginManager';
 import path from 'path';
 import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
+import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
+import { debug } from '@/global';
 
 class Application {
   constructor() {
@@ -50,12 +52,7 @@ class Application {
   overrideRequestHeaders() {//
     this.partitionManager.getSession('main').webRequest.onBeforeSendHeaders(
       {
-        urls: [
-          '*://*.pixiv.net/*',
-          '*://*.pximg.net/*',
-          '*://img-comic.pximg.net/*',
-          '*://comic.pixiv.net/*'
-        ]
+        urls: ['*://*/*']
       },
       (detail, cb) => {
         let { requestHeaders } = detail,
@@ -75,21 +72,19 @@ class Application {
   overrideReceviedHeaders() {
     this.partitionManager.getSession('main').webRequest.onHeadersReceived(
       {
-        urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
+        urls: ['*://*/*']
       },
       (detail, cb) => {
-        if (detail.responseHeaders['x-frame-options'] || detail.responseHeaders['X-Frame-Options']) {
-          delete detail.responseHeaders['x-frame-options'];
-          delete detail.responseHeaders['X-Frame-Options'];
-        }
+        let { responseHeaders } = detail,
+            responseHeadersOverrider = ResponseHeadersOverrider.getDefault();
+
+        responseHeaders = responseHeadersOverrider.getResponseHeaders(detail.url, responseHeaders);
 
         // console.log(`RESPONSE BY URL: ${detail.url}`)
         // console.log('RESPONSE HEADERS');
         // console.table(detail.responseHeaders);
 
-        cb({
-          responseHeaders: detail.responseHeaders
-        });
+        cb({ responseHeaders });
       }
     );
   }
@@ -103,7 +98,9 @@ class Application {
         proxyRules: settings['proxyService'] + ':' + settings['proxyServicePort'],
         proxyBypassRules: ''
       }).then(() => {
-        //ignore
+        debug.log(`Proxy has been set ${settings['proxyService']}:${settings['proxyServicePort']}`);
+      }).catch(error => {
+        debug.log(error);
       });
 
       if (settings['enableProxyAuth']) {
@@ -118,7 +115,9 @@ class Application {
         proxyRules: 'direct://',
         proxyBypassRules: ''
       }).then(() => {
-        // ignore
+        debug.log(`Proxy has been removed`);
+      }).catch(error => {
+        debug.log(error);
       });
 
       Request.removeGlobalOptions(['proxyUsername', 'proxyPassword']);
@@ -252,16 +251,15 @@ class Application {
     }
 
     /**
+     * Create plugin manager and boot all plugins
+     */
+    this.pluginManager = PluginManager.getDefault(this);
+
+    /**
      * After window has been created, then create services. Some services depend on main window,
      * Because services are designed for communicating with the windows
      */
     this.serviceContainer = ServiceContainer.getContainer();
-
-    /**
-     * Create plugin manager and boot all plugins
-     */
-    this.pluginManager = PluginManager.getDefault(this);
-    console.log();
   }
 
   onActivate() {
@@ -317,8 +315,6 @@ class Application {
       url: incomingUrl,
       saveTo: SettingStorage.getSetting('saveTo')
     });
-
-    console.log(data);
   }
 
   onWindowAllClosed() {
