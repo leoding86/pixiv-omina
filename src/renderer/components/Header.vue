@@ -11,6 +11,14 @@
       <slot></slot>
     </div>
     <div class="header__right">
+      <div class="plugins-button">
+        <el-button
+          icon="el-icon-box"
+          size="small"
+          @click="showPluginsDialog = true"
+        ></el-button>
+      </div>
+
       <div class="settings-button">
         <i v-if="hasNewVersion"
           class="el-icon-top settings-button__update-icon"
@@ -34,6 +42,13 @@
       :settings="settings"
       :show.sync="showSettingsDialog"
     ></settings-dialog>
+
+    <plugins-dialog
+      v-if="plugins.length > 0"
+      :show.sync="showPluginsDialog"
+      :plugins="plugins"
+    >
+    </plugins-dialog>
   </div>
 </template>
 
@@ -41,26 +56,36 @@
 import { ipcRenderer } from "electron";
 import AddDownloadDialog from './dialogs/AddDownloadDialog';
 import SettingsDialog from './dialogs/SettingsDialog';
+import PluginsDialog from './dialogs/PluginsDialog';
 
 export default {
   components: {
     'add-download-dialog': AddDownloadDialog,
-    'settings-dialog': SettingsDialog
+    'settings-dialog': SettingsDialog,
+    'plugins-dialog': PluginsDialog
   },
 
   data() {
     return {
       showAddDownloadDialog: false,
-
       showSettingsDialog: false,
-
-      hasNewVersion: false
+      showPluginsDialog: false,
+      hasNewVersion: false,
+      plugins: []
     }
   },
 
-  beforeMount() {
+  created() {
     ipcRenderer.on('update-service:find-new-version', () => {
       this.hasNewVersion = true;
+    });
+
+    ipcRenderer.on('plugin-service:loaded', (event, plugins) => {
+      this.plugins = plugins;
+    });
+
+    ipcRenderer.send('plugin-service', {
+      action: 'loadPlugins'
     });
   }
 }
@@ -76,6 +101,10 @@ export default {
     flex: 1;
     text-align: right;
   }
+}
+
+.plugins-button {
+  display: inline-block;
 }
 
 .settings-button {
