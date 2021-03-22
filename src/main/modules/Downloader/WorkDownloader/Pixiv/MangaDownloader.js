@@ -1,9 +1,7 @@
 import Download from '@/modules/Download';
-import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import path from 'path';
-import { PixivMangaProvider } from '../Providers';
+import MangaProvider from '@/modules/Downloader/Providers/Pixiv/MangaProvider';
 
 /**
  * @class
@@ -13,7 +11,7 @@ class MangaDownloader extends WorkDownloader {
     super();
 
     /**
-     * @type {PixivMangaProvider}
+     * @type {MangaProvider}
      */
     this.provider;
 
@@ -22,6 +20,16 @@ class MangaDownloader extends WorkDownloader {
     this.imageIndex = 0;
 
     this.type = 1;
+
+    this.downloadSpeed = 0;
+
+    this.downloadCompletedDataSize = 0;
+
+    this.downloadEscapedTime = 0;
+
+    this.downloadTotalCompletedDataSize = 0;
+
+    this.downloadTotalEscapedTime = 0;
   }
 
   /**
@@ -36,6 +44,14 @@ class MangaDownloader extends WorkDownloader {
     } else {
       return this.id;
     }
+  }
+
+  /**
+   * @override
+   * @returns {Number}
+   */
+  get speed() {
+    return Math.round(this.downloadCompletedDataSize / this.downloadEscapedTime * 1000);
   }
 
   /**
@@ -66,7 +82,8 @@ class MangaDownloader extends WorkDownloader {
    * @returns {void}
    */
   downloadImages() {
-    let url = this.images[this.imageIndex].urls.original;
+    let url = this.images[this.imageIndex].urls.original,
+        nowTime = 0;
 
     /**
      * Must set pageNum property in context for make sure the rename image works correctly
@@ -95,33 +112,35 @@ class MangaDownloader extends WorkDownloader {
       this.imageIndex++;
 
       this.progress = this.imageIndex / this.images.length;
+      this.downloadTotalCompletedDataSize += this.download.totalDataSize;
+      this.downloadTotalEscapedTime += this.download.escapedTime;
 
       this.setDownloading();
 
-      if (this.imageIndex > (this.images.length - 1)) {//
+      if (this.imageIndex > (this.images.length - 1)) {
         this.setFinish();
-
         this.download = null;
-        return;
+      } else {
+        this.downloadImages();
       }
-
-      this.downloadImages();
     });
 
     this.download.on('dl-progress', () => {
+      this.downloadCompletedDataSize = this.downloadTotalCompletedDataSize + this.download.completedDataSize;
+      this.downloadEscapedTime = this.downloadTotalEscapedTime + this.download.escapedTime;
+      this.progress += this.download.progress / this.images.length;
+      console.log('dl-progress', this, this.download);
       this.setDownloading(`downloading ${this.imageIndex} / ${this.images.length}`);
     });
 
     this.download.on('dl-error', error => {
-      this.download = null;
-
       this.setError(error);
+      this.download = null;
     });
 
     this.download.on('dl-aborted', () => {
-      this.download = null;
-
       this.setStop();
+      this.download = null;
     });
 
     this.download.download();

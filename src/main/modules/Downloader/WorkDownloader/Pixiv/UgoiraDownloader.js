@@ -1,17 +1,14 @@
+import fs from 'fs-extra';
+import path from 'path';
+import Zip from 'jszip';
+import { debug } from '@/global';
 import TaskManager from '@/modules/TaskManager';
 import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
 import Download from '@/modules/Download';
-import FormatName from '@/modules/Utils/FormatName';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import WorkDownloaderUnstoppableError from '../WorkDownloaderUnstoppableError';
-import Zip from 'jszip';
-import { debug } from '@/global';
-import fs from 'fs-extra';
-import path from 'path';
-import { PixivUgoiraProvider } from '../Providers';
-
-const isDevelopment = process.env.NODE_ENV !== 'production'
+import WorkDownloaderUnstoppableError from '../../WorkDownloaderUnstoppableError';
+import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
 
 /**
  * @class
@@ -26,7 +23,7 @@ class UgoiraDownloader extends WorkDownloader {
     this.meta = null;
 
     /**
-     * @type {PixivUgoiraProvider}
+     * @type {UgoiraProvider}
      */
     this.provider;
 
@@ -50,7 +47,7 @@ class UgoiraDownloader extends WorkDownloader {
   /**
    *
    * @param {Object} options
-   * @param {PixivUgoiraProvider} options.provider
+   * @param {UgoiraProvider} options.provider
    */
   static createDownloader({ provider, options }) {
     let downloader = new UgoiraDownloader();

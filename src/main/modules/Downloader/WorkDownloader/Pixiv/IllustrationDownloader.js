@@ -1,8 +1,6 @@
-import FormatName from '@/modules/Utils/FormatName';
-import MangaDownloader from '@/modules/Downloader/WorkDownloader/MangaDownloader'
+import MangaDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/MangaDownloader'
 import SettingStorage from '@/modules/SettingStorage';
-import path from 'path';
-import { PixivIllustrationProvider } from '../Providers';
+import IllustrationProvider from '@/modules/Downloader/Providers/Pixiv/IllustrationProvider';
 
 /**
  * @class
@@ -15,7 +13,7 @@ class IllustrationDownloader extends MangaDownloader {
     super();
 
     /**
-     * @type {PixivIllustrationProvider}
+     * @type {IllustrationProvider}
      */
     this.provider;
 
