@@ -187,7 +187,6 @@ class UserService extends BaseService {
 
         response.on('end', () => {
           let jsonData = JSON.parse(body);
-          // console.log(jsonData)
 
           if (jsonData && jsonData.body && jsonData.body.unread_count) {
             resolve();
