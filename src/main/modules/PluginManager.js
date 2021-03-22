@@ -1,8 +1,17 @@
 import EventEmitter from 'events';
 import path from 'path';
 import fs from 'fs-extra';
-import GetPath from '@/modules/Utils/GetPath';
+import { GetPath, FormatName } from '@/modules/Utils';
 import Application from '@/Application';
+import BaseProvider from '@/modules/Downloader/Providers/BaseProvider';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import Request from '@/modules/Request';
+import Download from '@/modules/Download';
+import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
+import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
+import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
+import md5 from 'md5';
+import { parse } from 'node-html-parser';
 
 class PluginManager extends EventEmitter {
   /**
@@ -22,16 +31,20 @@ class PluginManager extends EventEmitter {
     this.app = app;
 
     /**
-     * @type any[]
+     * @type {any[]}
      */
     this.plugins = [];
 
+    /**
+     * @type {String}
+     */
     this.pluginPath = path.join(GetPath.installation(), 'plugins');
 
     this.initial();
   }
 
   /**
+   * @param {Application} [app]
    * @returns PluginManager
    */
   static getDefault(app) {
@@ -54,11 +67,23 @@ class PluginManager extends EventEmitter {
    */
   initalPlugins() {
     if (fs.pathExistsSync(this.pluginPath)) {
-      let files = fs.readdirSync(this.pluginPath);
+      let files = fs.readdirSync(this.pluginPath),
+          pluginFolder = '',
+          pluginMainFile = '';
 
       files.forEach(file => {
         if (/.*\.js/.test(file)) {
-          this.plugins.push(this.createPlugin(file));
+          this.plugins.push(this.createPlugin(path.join(this.pluginPath, file)));
+        } else  {
+          pluginFolder = path.join(this.pluginPath, file);
+
+          if (fs.existsSync(pluginFolder) && fs.lstatSync(pluginFolder).isDirectory()) {
+            pluginMainFile = path.join(pluginFolder, 'main.js');
+
+            if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
+              this.plugins.push(this.createPlugin(pluginMainFile));
+            }
+          }
         }
       });
     }
@@ -69,15 +94,87 @@ class PluginManager extends EventEmitter {
    * @returns {void}
    */
   createPlugin(file) {
-    return this.bootPlugin(__non_webpack_require__(path.join(this.pluginPath, file)));
+    return this.bootPlugin(__non_webpack_require__(file), file);
   }
 
   /**
    * @param {any} plugin
-   * @returns {void}
+   * @param {String} file
+   * @returns {any}
    */
-  bootPlugin(plugin) {
-    return new plugin(this.app);
+  bootPlugin(plugin, file) {
+    let pluginInstance = plugin({
+      app: this.app,
+      utils: {
+        GetPath,
+        FormatName,
+        md5,
+        parse
+      },
+      classes: {
+        BaseProvider,
+        WorkDownloader,
+        Request,
+        Download
+      }
+    });
+
+    pluginInstance.providerName = file;
+    pluginInstance.id = md5(file);
+
+    if (!pluginInstance.title) {
+      pluginInstance.title = file;
+    }
+
+    DownloadAdapter.extendMap({
+      provider: pluginInstance,
+      patterns: pluginInstance.patterns
+    });
+
+    if (typeof pluginInstance.requestHeadersOverrider === 'function' &&
+        pluginInstance.requestUrlPatterns
+    ) {
+      RequestHeadersOverrider.getDefault().addMap({
+        id: pluginInstance.id,
+        patterns: pluginInstance.requestUrlPatterns,
+        requestHeaders: pluginInstance.requestHeadersOverrider
+      });
+    }
+
+    if (typeof pluginInstance.responseHeadersOverrider === 'function' &&
+        pluginInstance.responseUrlPatterns
+    ) {
+      ResponseHeadersOverrider.getDefault().addMap({
+        id: pluginInstance.id,
+        patterns: pluginInstance.responseUrlPatterns,
+        responseHeaders: pluginInstance.responseHeadersOverrider
+      });
+    }
+
+    return pluginInstance;
+  }
+
+  /**
+   * Get all booted plugins
+   * @returns {any[]}
+   */
+  getPlugins() {
+    return this.plugins;
+  }
+
+  /**
+   * Get plugin instance
+   * @param {String} id
+   * @returns {any|null}
+   */
+  getPlugin(id) {
+    for (let i = 0; i < this.plugins.length; i++) {
+      if (id === this.plugins[i].id) {
+        return this.plugins[i];
+      }
+    }
+
+    return null;
   }
 }
 
