@@ -1,5 +1,6 @@
 import BaseProvider from './BaseProvider';
 import Request from '@/modules/Request';
+import NovelDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/NovelDownloader';
 
 class NovelProvider extends BaseProvider {
   /**
@@ -77,6 +78,15 @@ class NovelProvider extends BaseProvider {
       this.request.on('end', () => this.request = null);
 
       this.request.end();
+    });
+  }
+
+  getDownloader(options) {
+    return this.requestNovel().then(() => {
+      return Promise.resolve(NovelDownloader.createDownloader({
+        provider: this,
+        options
+      }));
     });
   }
 }

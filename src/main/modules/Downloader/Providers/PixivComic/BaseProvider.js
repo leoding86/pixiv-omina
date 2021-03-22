@@ -28,6 +28,11 @@ class BaseProvider {
      * @type {string}
      */
     this.providerName = 'pixivcomic';
+
+    /**
+     * @type {boolean}
+     */
+    this.provideMultipleDownloader = false;
   }
 }
 

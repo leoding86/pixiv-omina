@@ -1,7 +1,7 @@
-import GeneralArtworkProvider from './GeneralArtworkProvider';
+import BaseProvider from '@/modules/Downloader/Providers/Pixiv/BaseProvider';
 import Request from '@/modules/Request';
 
-class MangaProvider extends GeneralArtworkProvider {
+class MangaProvider extends BaseProvider {
 
   /**
    *
@@ -13,6 +13,13 @@ class MangaProvider extends GeneralArtworkProvider {
    */
   static createProvider({ url, context }) {
     return new MangaProvider({ url, context });
+  }
+
+  /**
+   * Get downloader's id
+   */
+  get id() {
+    return [this.providerName, this.context.id].join(':');
   }
 
   /**

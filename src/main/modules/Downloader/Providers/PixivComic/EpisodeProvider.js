@@ -1,5 +1,6 @@
 import Request from '@/modules/Request';
 import BaseProvider from './BaseProvider';
+import EpisodeDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/EpisodeDownloader';
 
 class EpisodeProvider extends BaseProvider {
 
@@ -138,6 +139,13 @@ class EpisodeProvider extends BaseProvider {
 
       this.request.end();
     });
+  }
+
+  getDownloader(options) {
+    this.downloadManager.transformWorkDownloader(EpisodeDownloader.createDownloader({
+      provider: this,
+      options
+    }));
   }
 }
 

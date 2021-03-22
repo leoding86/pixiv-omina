@@ -1,7 +1,15 @@
 import BaseProvider from './BaseProvider';
 import Request from '@/modules/Request';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
 
 class UserProvider extends BaseProvider {
+  constructor() {
+    super();
+
+    this.provideMultipleDownloaders = true;
+  }
+
   /**
    *
    * @param {object} options
@@ -90,6 +98,32 @@ class UserProvider extends BaseProvider {
       this.request.on('end', () => this.request = null);
 
       this.request.end();
+    });
+  }
+
+  /**
+   * @inheritdoc
+   * @param {Object} options
+   * @returns {UndeterminedDownloader[]}
+   */
+  getDownloaders(options) {
+    return new Promise(resolve => {
+      return this.requestAllWorks().then(workIds => {
+        let downloaders = [];
+        workIds.forEach(id => {
+          downloaders.push(UndeterminedDownloader.createDownloader({
+            provider: GeneralArtworkProvider.createProvider({
+              url: this.getArtworkUrl(id),
+              context: {
+                id
+              }
+            }),
+            options
+          }))
+        });
+
+        resolve(downloaders);
+      });
     });
   }
 }

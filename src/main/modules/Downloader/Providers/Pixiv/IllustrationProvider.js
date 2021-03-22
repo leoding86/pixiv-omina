@@ -1,4 +1,4 @@
-import MangaProvider from './MangaProvider';
+import MangaProvider from '@/modules/Downloader/Providers/Pixiv/MangaProvider';
 
 class IllustrationProvider extends MangaProvider {
 

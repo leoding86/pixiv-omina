@@ -1,7 +1,7 @@
-import GeneralArtworkProvider from './GeneralArtworkProvider';
+import BaseProvider from '@/modules/Downloader/Providers/BaseProvider';
 import Request from '@/modules/Request';
 
-class UgoiraProvider extends GeneralArtworkProvider {
+class UgoiraProvider extends BaseProvider {
 
   /**
    *
@@ -13,6 +13,13 @@ class UgoiraProvider extends GeneralArtworkProvider {
    */
   static createProvider({ url, context }) {
     return new UgoiraProvider({ url, context });
+  }
+
+  /**
+   * Get downloader's id
+   */
+  get id() {
+    return [this.providerName, this.context.id].join(':');
   }
 
   /**

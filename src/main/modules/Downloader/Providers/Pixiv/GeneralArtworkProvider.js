@@ -1,6 +1,13 @@
 import BaseProvider from './BaseProvider';
 import Request from '@/modules/Request';
 import DateFormatter from '@/../utils/DateFormatter';
+import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/IllustrationDownloader';
+import MangaDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/MangaDownloader';
+import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/UgoiraDownloader';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
+import IllustrationProvider from '@/modules/Downloader/Providers/Pixiv/IllustrationProvider';
+import MangaProvider from '@/modules/Downloader/Providers/Pixiv/MangaProvider';
+import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
 
 class GeneralArtworkProvider extends BaseProvider {
 
@@ -93,6 +100,64 @@ class GeneralArtworkProvider extends BaseProvider {
       });
 
       this.request.end();
+    });
+  }
+
+  /**
+   * @inheritdoc
+   * @param {Object} options
+   * @returns {Promise}
+   */
+  getDownloader(options) {
+    return new Promise((resolve, reject) => {
+      let downloadManager = DownloadManager.getManager();
+
+      this.requestInfo().then(context => {
+        let downloader;
+
+        if (context.illustType === 0) {
+          if (options.acceptTypes.illustration) {
+            downloader = IllustrationDownloader.createDownloader({
+              provider: IllustrationProvider.createProvider({ url: this.url, context }),
+              options
+            })
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            reject(Error(`Download is deleted because it isn't accepted type which is illustration type`));
+            return;
+          }
+        } else if (context.illustType === 1) {
+          if (options.acceptTypes.manga) {
+            downloader = MangaDownloader.createDownloader({
+              provider: MangaProvider.createProvider({ url: this.url, context }),
+              options
+            });
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            reject(Error(`Download is deleted because it isn't accepted type which is manga type`));
+            return;
+          }
+        } else if (context.illustType === 2) {
+          if (options.acceptTypes.ugoira) {
+            downloader = UgoiraDownloader.createDownloader({
+              provider: UgoiraProvider.createProvider({ url: this.url, context }),
+              options
+            });
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            reject(Error(`Download is deleted because it isn't accepted type which is ugoira type`));
+            return;
+          }
+        } else {
+          reject(Error(`unsupported work type '${context.illustType}'`));
+          return;
+        }
+
+        resolve(downloader);
+        return;
+      }).catch(error => {
+        reject(error);
+      })
     });
   }
 }

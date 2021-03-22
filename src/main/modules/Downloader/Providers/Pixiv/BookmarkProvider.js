@@ -1,6 +1,9 @@
 import BaseProviderV2 from './BaseProviderV2';
 import Request from '@/modules/Request';
 import { parse } from 'node-html-parser';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
+import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import { debug } from '@/global';
 
 class BookmarkProvider extends BaseProviderV2 {
   /**
@@ -20,6 +23,7 @@ class BookmarkProvider extends BaseProviderV2 {
     this.rest = rest;
     this.page = page;
     this.url = this.getBookmarkUrl(); // used for display as download title
+    this.provideMultipleDownloaders = true;
   }
 
   /**
@@ -45,7 +49,7 @@ class BookmarkProvider extends BaseProviderV2 {
    * @returns {string}
    */
   getBookmarkUrl() {
-    return `https://www.pixiv.net/bookmark.php?rest=${this.rest}&type=illust_all` + (this.page > 2 ? `&p=${this.page}` : '');
+    return `https://www.pixiv.net/bookmark.php?rest=${this.rest}&type=illust_all` + (this.page > 1 ? `&p=${this.page}` : '');
   }
 
   getArtworkUrl(id) {
@@ -58,29 +62,34 @@ class BookmarkProvider extends BaseProviderV2 {
    * @returns {string[]}
    */
   parseWorkIds(content) {
-    let workIds = [],
-        dom = parse(content),
-        $items = dom.querySelectorAll('.display_editable_works .image-item');
+    try {
+      let workIds = [],
+          dom = parse(content),
+          $items = dom.querySelectorAll('.display_editable_works .image-item');
 
-    if ($items && $items.length > 0) {
-      $items.forEach($item => {
-        let $work = $item.querySelector('a.work');
+      if ($items && $items.length > 0) {
+        $items.forEach($item => {
+          let $work = $item.querySelector('a.work');
 
-        if ($work) {
-          let path = $work.getAttribute('href');
+          if ($work) {
+            let path = $work.getAttribute('href');
 
-          if (path) {
-            let matches = path.match(/(\d+)$/);
+            if (path) {
+              let matches = path.match(/(\d+)$/);
 
-            if (matches) {
-              workIds.push(matches[1]);
+              if (matches) {
+                workIds.push(matches[1]);
+              }
             }
           }
-        }
-      });
-    }
+        });
+      }
 
-    return workIds;
+      return workIds;
+    } catch (error) {
+      debug.log(error);
+      debug.log(content);
+    }
   }
 
   /**
@@ -124,6 +133,32 @@ class BookmarkProvider extends BaseProviderV2 {
       this.request.on('end', () => this.request = null);
 
       this.request.end();
+    });
+  }
+
+  /**
+   *
+   * @param {Object} options
+   * @returns {Promise<UndeterminedDownloader[]>}
+   */
+  getDownloaders(options) {
+    return new Promise(resolve => {
+      return this.requestAllWorks().then(workIds => {
+        let downloaders = [];
+        workIds.forEach(id => {
+          downloaders.push(UndeterminedDownloader.createDownloader({
+            provider: GeneralArtworkProvider.createProvider({
+              url: this.getArtworkUrl(id),
+              context: {
+                id
+              }
+            }),
+            options
+          }))
+        });
+
+        resolve(downloaders);
+      });
     });
   }
 }
