@@ -55,7 +55,7 @@ class FormatName {
       var metas = {
         id: {
           key: 'illustId',
-          possibleKeys: ['illustId', 'novelId']
+          possibleKeys: ['illustId', 'novelId', 'id']
         },
         title: {
           key: 'illustTitle',
