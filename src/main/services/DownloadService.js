@@ -197,6 +197,7 @@ class DownloadService extends BaseService {
 
         count++;
       } catch (error) {
+        debug.log(error);
         this.downloadCacheManager.removeDownload();
       }
     });
@@ -247,6 +248,7 @@ class DownloadService extends BaseService {
         options
       });
     } catch (error) {
+      debug.log(error);
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
     }
   }
@@ -269,6 +271,7 @@ class DownloadService extends BaseService {
         });
       });
     } catch (error) {
+      debug.log(error);
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
     }
   }
