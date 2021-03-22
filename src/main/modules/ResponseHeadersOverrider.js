@@ -62,7 +62,7 @@ class ResponseHeadersOverrider {
       responseHeaders;
   }
 
-  addMap(overrider) {
+  extendMap(overrider) {
     if (overrider.id) {
       let oldOverrider = null;
 
@@ -81,7 +81,7 @@ class ResponseHeadersOverrider {
     }
   }
 
-  deleteMap(id) {
+  deleteOverrider(id) {
     for (let i = 0; i < this.maps.length; i++) {
       if (this.maps[i].id && this.maps[i].id === id) {
         this.maps.splice(i, 1);
