@@ -28,6 +28,29 @@ class BaseProvider {
      * @type {string}
      */
     this.providerName = 'pixiv';
+
+    /**
+     * @type {boolean}
+     */
+    this.provideMultipleDownloaders = false;
+  }
+
+  /**
+   * Get downloader is provided by the provider
+   * @param {Object} options
+   * @throws {Error}
+   */
+  getDownloader(options) {
+    throw new Error('Method "getDownloader" hasn\'t been implemented');
+  }
+
+  /**
+   * Get downloader are provided by the provider
+   * @param {Object} options
+   * @throws {Error}
+   */
+  getDownloaders(options) {
+    throw new Error('Method "getDownloaders" hasn\'t been implemented');
   }
 }
 

@@ -15,6 +15,11 @@ class BaseProviderV2 {
      * @type {string}
      */
     this.providerName = 'pixiv';
+
+    /**
+     * @type {boolean}
+     */
+    this.provideMultipleDownloaders = false;
   }
 }
 
