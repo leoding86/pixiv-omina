@@ -38,6 +38,7 @@ class GeneralArtworkDownloader extends WorkDownloader {
     downloader.id = provider.id;
     downloader.url = url;
     downloader.saveTo = saveTo;
+    downloader.provider = provider;
     downloader.options = { types };
 
     return downloader;
@@ -130,10 +131,19 @@ class GeneralArtworkDownloader extends WorkDownloader {
 
       if (context.illustType === 0) {
         if (options.acceptTypes.illustration) {
+          /**
+           * refactor!!!
+           */
           downloader = IllustrationDownloader.createDownloader({
-            provider: IllustrationProvider.createProvider({ url: this.url, context }),
-            options
-          })
+            url: this.url,
+            saveTo: this.saveTo,
+            types: this.options.types,
+            provider: this.provider
+          });
+          // downloader = IllustrationDownloader.createDownloader({
+          //   provider: IllustrationProvider.createProvider({ url: this.url, context }),
+          //   options
+          // })
         } else {
           downloadManager.deleteWorkDownloader({ downloadId: this.id });
           debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is illustration type`));
@@ -141,10 +151,19 @@ class GeneralArtworkDownloader extends WorkDownloader {
         }
       } else if (context.illustType === 1) {
         if (options.acceptTypes.manga) {
+          /**
+           * refactor!!!
+           */
           downloader = MangaDownloader.createDownloader({
-            provider: MangaProvider.createProvider({ url: this.url, context }),
-            options
+            url: this.url,
+            saveTo: this.saveTo,
+            types: this.options.types,
+            provider: this.provider
           });
+          // downloader = MangaDownloader.createDownloader({
+          //   provider: MangaProvider.createProvider({ url: this.url, context }),
+          //   options
+          // });
         } else {
           downloadManager.deleteWorkDownloader({ downloadId: this.id });
           debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is manga type`));
@@ -152,10 +171,19 @@ class GeneralArtworkDownloader extends WorkDownloader {
         }
       } else if (context.illustType === 2) {
         if (options.acceptTypes.ugoira) {
+          /**
+           * refactor!!!
+           */
           downloader = UgoiraDownloader.createDownloader({
-            provider: UgoiraProvider.createProvider({ url: this.url, context }),
-            options
+            url: this.url,
+            saveTo: this.saveTo,
+            types: this.options.types,
+            provider: this.provider
           });
+          // downloader = UgoiraDownloader.createDownloader({
+          //   provider: UgoiraProvider.createProvider({ url: this.url, context }),
+          //   options
+          // });
         } else {
           downloadManager.deleteWorkDownloader({ downloadId: this.id });
           debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is ugoira type`));

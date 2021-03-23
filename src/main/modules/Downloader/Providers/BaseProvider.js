@@ -35,6 +35,14 @@ class BaseProvider {
   }
 
   /**
+   * Downloader will use this id as downloader's id
+   * @returns {string}
+   */
+  get id() {
+    return [this.providerName, this.context.id].join(':');
+  }
+
+  /**
    * Get downloader is provided by the provider
    * @param {Object} options
    * @throws {Error}
@@ -54,7 +62,7 @@ class BaseProvider {
 
   /**
    * Create a downloader
-   * @param {*} options
+   * @param {{url: String, saveTo: String, types: Object}} options
    * @throws {Error}
    */
   createDownloader(options) {

@@ -1,8 +1,10 @@
 import path from 'path';
 import fs from 'fs-extra';
+import { debug } from '@/global';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import NovelProvider from '@/modules/Downloader/Providers/Pixiv/NovelProvider';
+import Request from '@/modules/Request';
 
 /**
  * @class
@@ -15,13 +17,19 @@ class NovelDownloader extends WorkDownloader {
   constructor() {
     super();
 
-    this.meta = null;
+    /**
+     * @type {Request}
+     */
+    this.request;
 
     /**
-     * @type {NovelProvider}
+     * @type {any}
      */
-    this.provider = null;
+    this.context = {};
 
+    /**
+     * @type {string}
+     */
     this.type = 'Pixiv Novel';
   }
 
@@ -31,16 +39,74 @@ class NovelDownloader extends WorkDownloader {
 
   /**
    * Create downloader
-   * @param {{provider: NovelProvider, options: Object}} param0
+   * @param {{ url: string, saveTo: string, types: any, provider: NovelProvider }} args
    */
-  static createDownloader({provider, options}) {
+  static createDownloader({ url, saveTo, types, provider }) {
     let downloader = new NovelDownloader();
-    downloader.provider = provider;
-    downloader.url = provider.url;
     downloader.id = provider.id;
-    downloader.options = options;
-    downloader.context = provider.context;
+    downloader.url = url;
+    downloader.saveTo = saveTo;
+    downloader.options = { types };
     return downloader;
+  }
+
+  /**
+   * Get user profile all url
+   * @returns {string}
+   */
+  getNovelUrl() {
+    return `https://www.pixiv.net/ajax/novel/${this.id}`;
+  }
+
+  /**
+   * @returns {Promise.<string[],Error>}
+   */
+  requestNovel() {
+    return new Promise((resolve, reject) => {
+      this.request = new Request({
+        url: this.getNovelUrl(),
+        method: 'GET'
+      });
+
+      this.request.on('response', response => {
+        let body = '';
+
+        response.on('data', data => {
+          body += data;
+        });
+
+        response.on('end', () => {
+          let jsonData = JSON.parse(body.toString());
+
+          if (!jsonData || jsonData.error || !jsonData.body) {
+            reject(Error('cannot resolve novel data'));
+          } else {
+            this.context = jsonData.body;
+            resolve(jsonData.body);
+          }
+        });
+
+        response.on('error', error => {
+          reject(error);
+        });
+
+        response.on('aborted', () => {
+          reject(Error('Response has been interrepted'));
+        });
+      });
+
+      this.request.on('error', error => {
+        reject(error);
+      });
+
+      this.request.on('abort', () => {
+        reject(Error('Request has been interrepted'));
+      });
+
+      this.request.on('end', () => this.request = null);
+
+      this.request.end();
+    });
   }
 
   /**
@@ -49,14 +115,19 @@ class NovelDownloader extends WorkDownloader {
   start() {
     this.setStart();
 
-    this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('novelRename'));
+    this.requestNovel().then(() => {
+      this.makeSaveOptionFromRenameTemplate(SettingStorage.getSetting('novelRename'));
 
-    this.savedTarget = path.join(this.saveFolder, this.saveFilename) + '.txt';
+      this.savedTarget = path.join(this.saveFolder, this.saveFilename) + '.txt';
 
-    fs.ensureFileSync(this.savedTarget);
-    fs.writeFileSync(this.savedTarget, this.context.content);
+      fs.ensureFileSync(this.savedTarget);
+      fs.writeFileSync(this.savedTarget, this.context.content);
 
-    this.setFinish();
+      this.setFinish();
+    }).catch(error => {
+      debug.log(error);
+      this.setError(error);
+    });
   }
 
   /**

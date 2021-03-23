@@ -87,6 +87,11 @@ class WorkDownloader extends EventEmitter {
     this.type = null;
 
     /**
+     * @property {string}
+     */
+    this.saveTo = null;
+
+    /**
      * @property {boolean}
      */
     this.saveInSubfolder = true;

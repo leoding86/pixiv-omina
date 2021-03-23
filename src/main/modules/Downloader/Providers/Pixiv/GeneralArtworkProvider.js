@@ -22,11 +22,6 @@ class GeneralArtworkProvider extends BaseProvider {
      * @inheritdoc
      */
     this.version = 2;
-
-    /**
-     * @inheritdoc
-     */
-    this.providerName = 'pixiv-general-artwork';
   }
 
   /**
@@ -34,7 +29,7 @@ class GeneralArtworkProvider extends BaseProvider {
    * @returns {string}
    */
   get id() {
-    return [this.providerName, this.context.id].join(':');
+    return [this.providerName, 'artwork', this.context.id];
   }
 
   /**

@@ -4,6 +4,24 @@ import NovelDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/NovelDown
 
 class NovelProvider extends BaseProvider {
   /**
+   * @constructor
+   * @param {{ url: string, context: any }} args
+   */
+  constructor({ url, context }) {
+    super({ url, context });
+
+    /**
+     * @type {number}
+     */
+    this.version = 2;
+
+    /**
+     * @type {string}
+     */
+    this.providerName = 'pixiv-novel';
+  }
+
+  /**
    *
    * @param {object} options
    * @param {string} options.url
@@ -16,6 +34,7 @@ class NovelProvider extends BaseProvider {
   }
 
   /**
+   * Downloader will use this id as downloader's id
    * @returns {string}
    */
   get id() {
@@ -23,71 +42,12 @@ class NovelProvider extends BaseProvider {
   }
 
   /**
-   * Get user profile all url
-   * @returns {string}
+   * Create a downloader
+   * @param {{url: String, saveTo: String, types: Object}} args
+   * @throws {Error}
    */
-  getNovelUrl() {
-    return `https://www.pixiv.net/ajax/novel/${this.context.id}`;
-  }
-
-  /**
-   * @returns {Promise.<string[],Error>}
-   */
-  requestNovel() {
-    return new Promise((resolve, reject) => {
-      this.request = new Request({
-        url: this.getNovelUrl(),
-        method: 'GET'
-      });
-
-      this.request.on('response', response => {
-        let body = '';
-
-        response.on('data', data => {
-          body += data;
-        });
-
-        response.on('end', () => {
-          let jsonData = JSON.parse(body.toString());
-
-          if (!jsonData || jsonData.error || !jsonData.body) {
-            reject(Error('cannot resolve novel data'));
-          } else {
-            this.context = jsonData.body;
-            resolve(jsonData.body);
-          }
-        });
-
-        response.on('error', error => {
-          reject(error);
-        });
-
-        response.on('aborted', () => {
-          reject(Error('Response has been interrepted'));
-        });
-      });
-
-      this.request.on('error', error => {
-        reject(error);
-      });
-
-      this.request.on('abort', () => {
-        reject(Error('Request has been interrepted'));
-      });
-
-      this.request.on('end', () => this.request = null);
-
-      this.request.end();
-    });
-  }
-
-  getDownloader(options) {
-    return this.requestNovel().then(() => {
-      return Promise.resolve(NovelDownloader.createDownloader({
-        provider: this,
-        options
-      }));
-    });
+  createDownloader({ url, saveTo, types }) {
+    return NovelDownloader.createDownloader({ url, saveTo, types, provider: this });
   }
 }
 
