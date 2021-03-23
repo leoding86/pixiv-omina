@@ -228,6 +228,10 @@ class DownloadService extends BaseService {
     debug.sendStatus('All downloads are fetched');
   }
 
+  /**
+   * Handle create download action sent from renderer
+   * @param {{url: String, saveTo: String, types: Object}} args
+   */
   createDownloadAction({url, saveTo, types}) {
     try {
       let provider = DownloadAdapter.getProvider(url);
@@ -240,13 +244,20 @@ class DownloadService extends BaseService {
       }
 
       /**
-       * The option `acceptTypes` will pass to UndetermindDownloader for determining
-       * whether the download need to be created.
+       * Testing new way to add downloaders
        */
-      this.downloadManager.createDownloader({
-        provider,
-        options
-      });
+      if (provider.version === 2) {
+        this.downloadManager.addDownloader(provider.createDownloader({ url, saveTo, types }));
+      } else {
+        /**
+         * The option `acceptTypes` will pass to UndetermindDownloader for determining
+         * whether the download need to be created.
+         */
+        this.downloadManager.createDownloader({
+          provider,
+          options
+        });
+      }
     } catch (error) {
       debug.log(error);
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
@@ -254,7 +265,7 @@ class DownloadService extends BaseService {
   }
 
   /**
-   *
+   * Handle create bookmark download action sent from renderer
    * @param {Object} options
    * @param {Array} options.pages
    * @param {String} options.rest

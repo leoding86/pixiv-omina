@@ -65,9 +65,14 @@ class DownloadManager extends EventEmitter {
    * @returns {void}
    */
   transformWorkDownloader(downloader) {
+    let oldDownloader = this.getWorkDownloader(downloader.id);
     this.workDownloaderPool.set(downloader.id, downloader);
     this.emit('update', downloader);
     this.startWorkDownloader({ downloadId: downloader.id });
+
+    if (oldDownloader) {
+      oldDownloader = null;
+    }
   }
 
   /**

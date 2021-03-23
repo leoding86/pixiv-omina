@@ -1,5 +1,3 @@
-import Request from '@/modules/Request';
-
 class BaseProvider {
 
   /**
@@ -20,19 +18,20 @@ class BaseProvider {
     this.context = context;
 
     /**
-     * @type {Request}
-     */
-    this.request = null;
-
-    /**
      * @type {string}
      */
-    this.providerName = 'other';
+    this.providerName = 'unkown';
 
     /**
      * @type {boolean}
      */
     this.provideMultipleDownloaders = false;
+
+    /**
+     * Set provider version
+     * @type {number}
+     */
+    this.version = 1;
   }
 
   /**
@@ -51,6 +50,15 @@ class BaseProvider {
    */
   getDownloaders(options) {
     throw new Error('Method "getDownloaders" hasn\'t been implemented');
+  }
+
+  /**
+   * Create a downloader
+   * @param {*} options
+   * @throws {Error}
+   */
+  createDownloader(options) {
+    throw new Error(`Method "createDownloader" hasn't been implemented`);
   }
 }
 
