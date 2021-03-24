@@ -1,13 +1,4 @@
 import BaseProvider from './BaseProvider';
-import Request from '@/modules/Request';
-import DateFormatter from '@/../utils/DateFormatter';
-import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/IllustrationDownloader';
-import MangaDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/MangaDownloader';
-import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/UgoiraDownloader';
-import DownloadManager from '@/modules/Downloader/DownloadManager';
-import IllustrationProvider from '@/modules/Downloader/Providers/Pixiv/IllustrationProvider';
-import MangaProvider from '@/modules/Downloader/Providers/Pixiv/MangaProvider';
-import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
 import GeneralArtworkDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/GeneralArtworkDownloader';
 
 class GeneralArtworkProvider extends BaseProvider {
@@ -17,11 +8,6 @@ class GeneralArtworkProvider extends BaseProvider {
    */
   constructor({ url, context }) {
     super({ url, context });
-
-    /**
-     * @inheritdoc
-     */
-    this.version = 2;
   }
 
   /**
@@ -52,11 +38,16 @@ class GeneralArtworkProvider extends BaseProvider {
 
   /**
    * Create a downloader
-   * @param {{url: String, saveTo: String, types: Object}} options
+   * @param {{saveTo: string, options: object}} options
    * @returns {GeneralArtworkDownloader}
    */
-  createDownloader({ url, saveTo, types }) {
-    return GeneralArtworkDownloader.createDownloader({ url, saveTo, types, provider: this });
+  createDownloader({ saveTo, options }) {
+    return GeneralArtworkDownloader.createDownloader({
+      url: this.url,
+      saveTo,
+      options,
+      provider: this
+    });
   }
 }
 

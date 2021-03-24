@@ -1,19 +1,13 @@
+import { debug } from '@/global';
 import Download from '@/modules/Download';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
 import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
 import path from 'path';
-import {
-  PixivBookmarkProvider,
-  PixivUserProvider,
-  PixivGeneralArtworkProvider,
-  PixivMangaProvider,
-  PixivIllustrationProvider,
-  PixivUgoiraProvider,
-  PixivComicEpisodProvider
-} from './Providers';
 import FormatName from '../Utils/FormatName';
+import BaseProvider from './Providers/BaseProvider';
 
 /**
  * @class
@@ -25,7 +19,15 @@ class WorkDownloader extends EventEmitter {
   constructor() {
     super();
 
+    /**
+     * @type {WindowManager}
+     */
     this.windowManager = WindowManager.getManager();
+
+    /**
+     * @type {DownloadManager}
+     */
+    this.downloadManager = DownloadManager.getDefault();
 
     /**
      * @type {Request}
@@ -43,7 +45,7 @@ class WorkDownloader extends EventEmitter {
     this.url = null;
 
     /**
-     * @type {PixivBookmarkProvider|PixivUserProvider|PixivGeneralArtworkProvider|PixivMangaProvider|PixivIllustrationProvider|PixivUgoiraProvider|PixivComicEpisodProvider}
+     * @type {BaseProvider}
      */
     this.provider = null;
 
@@ -58,9 +60,9 @@ class WorkDownloader extends EventEmitter {
     this.progress = 0;
 
     /**
-     * @type {Object|null}
+     * @type {object}
      */
-    this.context = null;
+    this.context = {};
 
     /**
      * @type {WorkDownloader.state}
@@ -74,7 +76,6 @@ class WorkDownloader extends EventEmitter {
 
     /**
      * @property {Object} options
-     * @property {string} options.saveTo
      * @property {boolean} options.isUser
      */
     this.options = {
@@ -161,12 +162,10 @@ class WorkDownloader extends EventEmitter {
   }
 
   /**
-   * @param {Object} param
-   * @param {Object} param.provider
-   * @param {Object} param.options
+   * @param {{ url: string, saveTo: string, options: object, provider: any }}
    * @returns {WorkDownloader}
    */
-  static createDownloader({provider, options}) {
+  static createDownloader({url, saveTo, options, provider}) {
     throw Error('Abstract method, not implemented');
   }
 
@@ -225,7 +224,10 @@ class WorkDownloader extends EventEmitter {
 
   setDownloading(message) {
     this.statusMessage = message || 'Downloading';
-    this.state = WorkDownloader.state.downloading;
+
+    if (!this.isStopping() && !this.isStop()) {
+      this.state = WorkDownloader.state.downloading;
+    }
 
     if (!this.recycle) {
       this.emit('progress', { downloader: this });
@@ -284,6 +286,8 @@ class WorkDownloader extends EventEmitter {
     if (!this.recycle) {
       this.emit('error', { downloader: this });
     }
+
+    debug.log(error);
   }
 
   isPending() {
@@ -367,9 +371,9 @@ class WorkDownloader extends EventEmitter {
     this.saveFilename = FormatName.format(parts.pop(), this.context);
 
     if (parts.length > 0) {
-      this.saveFolder = path.join(this.options.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+      this.saveFolder = path.join(this.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
     } else {
-      this.saveFolder = this.options.saveTo;
+      this.saveFolder = this.saveTo;
     }
 
     return this;

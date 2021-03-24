@@ -1,6 +1,6 @@
 import Request from '@/modules/Request';
 import BaseProvider from './BaseProvider';
-import EpisodeDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/EpisodeDownloader';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader/PixivComic/WorkDownloader';
 
 class WorkProvider extends BaseProvider {
   /**
@@ -11,8 +11,6 @@ class WorkProvider extends BaseProvider {
    */
   constructor({ url, context }) {
     super({ url, context });
-
-    this.provideMultipleDownloader = true;
   }
 
   static createProvider({ url, context }) {
@@ -77,24 +75,12 @@ class WorkProvider extends BaseProvider {
     });
   }
 
-  /**
-   * @param {Object} options
-   * @returns {EpisodeDownloader[]}
-   */
-  getDownloaders(options) {
-    return new Promise(resolve => {
-      return this.requestContext().then(context => {
-        let downloaders = [];
-
-        context.episodeIds.forEach(id => {
-          downloaders.push(EpisodeDownloader.createDownloader({
-            provider: EpisodeDownloader.createProvider({context: { id: id, userName: context.userName } }),
-            options
-          }));
-        });
-
-        resolve(downloaders);
-      });
+  createDownloader({ saveTo, options }) {
+    return WorkDownloader.createDownloader({
+      url: this.url,
+      saveTo,
+      options,
+      provider: this
     });
   }
 }

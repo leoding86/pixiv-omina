@@ -62,10 +62,10 @@ class BaseProvider {
 
   /**
    * Create a downloader
-   * @param {{url: String, saveTo: String, types: Object}} options
+   * @param {{ saveTo: string, options: object }} options
    * @throws {Error}
    */
-  createDownloader(options) {
+  createDownloader({ saveTo, options }) {
     throw new Error(`Method "createDownloader" hasn't been implemented`);
   }
 }

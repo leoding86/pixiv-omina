@@ -43,11 +43,11 @@ class NovelProvider extends BaseProvider {
 
   /**
    * Create a downloader
-   * @param {{url: String, saveTo: String, types: Object}} args
+   * @param {{url: string, saveTo: string, options: object}} args
    * @throws {Error}
    */
-  createDownloader({ url, saveTo, types }) {
-    return NovelDownloader.createDownloader({ url, saveTo, types, provider: this });
+  createDownloader({ url, saveTo, options }) {
+    return NovelDownloader.createDownloader({ url, saveTo, options, provider: this });
   }
 }
 

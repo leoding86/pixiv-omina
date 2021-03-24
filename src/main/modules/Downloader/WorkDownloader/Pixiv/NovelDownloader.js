@@ -23,6 +23,11 @@ class NovelDownloader extends WorkDownloader {
     this.request;
 
     /**
+     * @type {NovelProvider}
+     */
+    this.provider;
+
+    /**
      * @type {any}
      */
     this.context = {};
@@ -39,14 +44,17 @@ class NovelDownloader extends WorkDownloader {
 
   /**
    * Create downloader
-   * @param {{ url: string, saveTo: string, types: any, provider: NovelProvider }} args
+   * @param {{ url: string, saveTo: string, options: any, provider: NovelProvider }} args
+   * @returns {NovelDownloader}
    */
-  static createDownloader({ url, saveTo, types, provider }) {
+  static createDownloader({ url, saveTo, options, provider }) {
     let downloader = new NovelDownloader();
     downloader.id = provider.id;
     downloader.url = url;
     downloader.saveTo = saveTo;
-    downloader.options = { types };
+    downloader.options = options;
+    downloader.provider = provider;
+
     return downloader;
   }
 
@@ -55,7 +63,7 @@ class NovelDownloader extends WorkDownloader {
    * @returns {string}
    */
   getNovelUrl() {
-    return `https://www.pixiv.net/ajax/novel/${this.id}`;
+    return `https://www.pixiv.net/ajax/novel/${this.provider.context.id}`;
   }
 
   /**

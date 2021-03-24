@@ -5,6 +5,7 @@ import IllustrationDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/Il
 import MangaDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/MangaDownloader';
 import UgoiraDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/UgoiraDownloader';
 import Request from '@/modules/Request';
+import DateFormatter from '@/../utils/DateFormatter';
 
 /**
  * @class
@@ -26,20 +27,28 @@ class GeneralArtworkDownloader extends WorkDownloader {
      * @type {String}
      */
     this.type = 'Pixiv Artwork';
+
+    this.options = {
+      acceptTypes: {
+        ugoira: true,
+        illustration: true,
+        manga: true
+      }
+    };
   }
 
   /**
    * Create a GeneralArtworkDownloader downloader
-   * @param {{url: String, saveTo: String, types: Object, provider: GeneralArtworkProvider }} options
+   * @param {{url: String, saveTo: String, options: Object, provider: GeneralArtworkProvider }} options
    * @returns {GeneralArtworkDownloader}
    */
-  static createDownloader({ url, saveTo, types, provider }) {
+  static createDownloader({ url, saveTo, options, provider }) {
     let downloader = new GeneralArtworkDownloader();
     downloader.id = provider.id;
     downloader.url = url;
     downloader.saveTo = saveTo;
+    downloader.options = Object.assign(downloader.options, options);
     downloader.provider = provider;
-    downloader.options = { types };
 
     return downloader;
   }
@@ -49,7 +58,7 @@ class GeneralArtworkDownloader extends WorkDownloader {
    * @returns {string}
    */
   getInfoUrl() {
-    return `https://www.pixiv.net/ajax/illust/${this.id}`;
+    return `https://www.pixiv.net/ajax/illust/${this.provider.context.id}`;
   }
 
   /**
@@ -120,83 +129,70 @@ class GeneralArtworkDownloader extends WorkDownloader {
 
   /**
    * Transform general downloader to specific downloader
-   * @param {Object} options
-   * @returns {Promise}
+   * @returns {void}
    */
-  transformDownloader(options) {
-    let downloadManager = DownloadManager.getManager();
+  transformDownloader() {
+    return new Promise((resolve, reject) => {
+      let downloadManager = DownloadManager.getManager();
 
-    this.requestInfo().then(context => {
-      let downloader;
+      this.setDownloading('_resolving_artwork_type');
 
-      if (context.illustType === 0) {
-        if (options.acceptTypes.illustration) {
-          /**
-           * refactor!!!
-           */
-          downloader = IllustrationDownloader.createDownloader({
-            url: this.url,
-            saveTo: this.saveTo,
-            types: this.options.types,
-            provider: this.provider
-          });
-          // downloader = IllustrationDownloader.createDownloader({
-          //   provider: IllustrationProvider.createProvider({ url: this.url, context }),
-          //   options
-          // })
-        } else {
-          downloadManager.deleteWorkDownloader({ downloadId: this.id });
-          debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is illustration type`));
-          return;
-        }
-      } else if (context.illustType === 1) {
-        if (options.acceptTypes.manga) {
-          /**
-           * refactor!!!
-           */
-          downloader = MangaDownloader.createDownloader({
-            url: this.url,
-            saveTo: this.saveTo,
-            types: this.options.types,
-            provider: this.provider
-          });
-          // downloader = MangaDownloader.createDownloader({
-          //   provider: MangaProvider.createProvider({ url: this.url, context }),
-          //   options
-          // });
-        } else {
-          downloadManager.deleteWorkDownloader({ downloadId: this.id });
-          debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is manga type`));
-          return;
-        }
-      } else if (context.illustType === 2) {
-        if (options.acceptTypes.ugoira) {
-          /**
-           * refactor!!!
-           */
-          downloader = UgoiraDownloader.createDownloader({
-            url: this.url,
-            saveTo: this.saveTo,
-            types: this.options.types,
-            provider: this.provider
-          });
-          // downloader = UgoiraDownloader.createDownloader({
-          //   provider: UgoiraProvider.createProvider({ url: this.url, context }),
-          //   options
-          // });
-        } else {
-          downloadManager.deleteWorkDownloader({ downloadId: this.id });
-          debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is ugoira type`));
-          return;
-        }
-      } else {
-        debug.log(Error(`Unsuppoert artwork type ${context.illustType}`));
-      }
+      this.requestInfo().then(context => {
+        let downloader;
 
-      /**
-       * Transform current downloader to specific artwork downloader
-       */
-      downloadManager.transformWorkDownloader(downloader);
+        if (context.illustType === 0) {
+          if (this.options.acceptTypes.illustration) {
+            downloader = IllustrationDownloader.createDownloader({
+              url: this.url,
+              saveTo: this.saveTo,
+              options: this.options,
+              provider: this.provider
+            });
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is illustration type`));
+          }
+        } else if (context.illustType === 1) {
+          if (this.options.acceptTypes.manga) {
+            downloader = MangaDownloader.createDownloader({
+              url: this.url,
+              saveTo: this.saveTo,
+              options: this.options,
+              provider: this.provider
+            });
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is manga type`));
+            return;
+          }
+        } else if (context.illustType === 2) {
+          if (this.options.acceptTypes.ugoira) {
+            downloader = UgoiraDownloader.createDownloader({
+              url: this.url,
+              saveTo: this.saveTo,
+              options: this.options,
+              provider: this.provider
+            });
+          } else {
+            downloadManager.deleteWorkDownloader({ downloadId: this.id });
+            debug.log(Error(`Downloader ${this.id} is deleted because it isn't accepted type which is ugoira type`));
+          }
+        } else {
+          debug.log(Error(`Unsuppoert artwork type ${context.illustType}`));
+        }
+
+        /**
+         * Set downloader's context
+         */
+        downloader.context = context;
+
+        /**
+         * Transform current downloader to specific artwork downloader
+         */
+        downloadManager.transformWorkDownloader(downloader);
+
+        resolve();
+      });
     });
   }
 
@@ -204,7 +200,12 @@ class GeneralArtworkDownloader extends WorkDownloader {
    * Start download
    */
   start() {
-    this.transformDownloader();
+    this.setStart();
+    this.transformDownloader().then(() => {
+      this.setDownloading('_create_downloader');
+    }).catch(error => {
+      this.setError(error);
+    });
   }
 }
 

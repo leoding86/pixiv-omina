@@ -4,11 +4,13 @@ import Zip from 'jszip';
 import { debug } from '@/global';
 import TaskManager from '@/modules/TaskManager';
 import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
+import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import WorkDownloaderUnstoppableError from '../../WorkDownloaderUnstoppableError';
 import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
 
 /**
  * @class
@@ -20,14 +22,21 @@ class UgoiraDownloader extends WorkDownloader {
   constructor() {
     super();
 
+    /**
+     * The meta data from ugoira
+     * @type {object}
+     */
     this.meta = null;
 
     /**
-     * @type {UgoiraProvider}
+     * @type {GeneralArtworkProvider}
      */
     this.provider;
 
-    this.type = 2;
+    /**
+     * @type {string}
+     */
+    this.type = 'Pixiv Ugoira';
   }
 
   /**
@@ -49,13 +58,13 @@ class UgoiraDownloader extends WorkDownloader {
    * @param {Object} options
    * @param {UgoiraProvider} options.provider
    */
-  static createDownloader({ provider, options }) {
+  static createDownloader({ url, saveTo, options, provider }) {
     let downloader = new UgoiraDownloader();
-    downloader.provider = provider;
-    downloader.url = provider.url;
     downloader.id = provider.id;
+    downloader.url = url;
+    downloader.saveTo = saveTo;
     downloader.options = options;
-    downloader.context = downloader.provider.context;
+    downloader.provider = provider;
 
     return downloader;
   }
@@ -72,9 +81,79 @@ class UgoiraDownloader extends WorkDownloader {
    * @returns {String}
    */
   getImageSaveFolder() {
-    return path.join(this.options.saveTo, this.getRelativeSaveFolder())
+    return path.join(this.saveTo, this.getRelativeSaveFolder())
   }
 
+  /**
+   * Get ugoira meta url
+   * @returns {string}
+   */
+  getMetaUrl() {
+    return `https://www.pixiv.net/ajax/illust/${this.provider.context.id}/ugoira_meta`;
+  }
+
+  /**
+   * @returns {Promise.<Object,Error>}
+   */
+  requestMeta() {
+    return new Promise((resolve, reject) => {
+      this.request = new Request({
+        url: this.getMetaUrl(),
+        method: 'GET'
+      });
+
+      this.request.on('error', error => {
+        reject(error);
+      });
+
+      this.request.on('abort', () => {
+        reject(Error('Request ugoira meta has been aborted'));
+      });
+
+      this.request.on('response', response => {
+        if (response.statusCode !== 200) {
+          reject(Error(response.statusCode));
+        } else {
+          let body = '';
+
+          response.on('error', error => {
+            reject(error);
+          });
+
+          response.on('data', data => {
+            body += data;
+          });
+
+          response.on('end', () => {
+            let jsonData = JSON.parse(body.toString());
+
+            if (jsonData &&
+              jsonData.body &&
+              jsonData.body.originalSrc &&
+              Array.isArray(jsonData.body.frames) &&
+              jsonData.body.frames.length > 0
+            ) {
+              resolve(jsonData.body);
+              return;
+            } else {
+              reject(Error('_cannot_resolve_ugoira_meta'));
+            }
+          });
+
+          response.on('aborted', () => {
+            reject(Error('_abort'));
+          });
+        }
+      });
+
+      this.request.end();
+    });
+  }
+
+  /**
+   * Pack frames info into file
+   * @param {string} file
+   */
   packFramesInfo(file) {
     this.setProcessing('Packing frames infomation');
 
@@ -110,6 +189,9 @@ class UgoiraDownloader extends WorkDownloader {
     });
   }
 
+  /**
+   * Download zip file
+   */
   downloadZip() {
     const url = this.meta.originalSrc;
 
@@ -156,13 +238,16 @@ class UgoiraDownloader extends WorkDownloader {
     this.download.download();
   }
 
+  /**
+   * Start download
+   */
   start() {
     this.setStart();
 
     if (!this.meta) {
-      this.setDownloading('Fetch ugoira meta for downloading');
+      this.setDownloading('_fetch_ugoira_meta');
 
-      this.provider.requestMeta().then(meta => {
+      this.requestMeta().then(meta => {
         this.meta = meta;
 
         this.downloadZip();
@@ -202,7 +287,6 @@ class UgoiraDownloader extends WorkDownloader {
 
     this.setStopping();
 
-    this.provider.request && this.provider.request.abort();
     this.download && this.download.abort();
     this.request && this.request.abort();
 

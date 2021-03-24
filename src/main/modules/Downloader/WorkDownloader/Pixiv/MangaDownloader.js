@@ -1,7 +1,8 @@
+import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import MangaProvider from '@/modules/Downloader/Providers/Pixiv/MangaProvider';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
 
 /**
  * @class
@@ -11,24 +12,58 @@ class MangaDownloader extends WorkDownloader {
     super();
 
     /**
-     * @type {MangaProvider}
+     * @type {GeneralArtworkProvider}
      */
     this.provider;
 
+    /**
+     * @type {Request}
+     */
+    this.request;
+
+    /**
+     * @type {Download}
+     */
+    this.download;
+
+    /**
+     * @type {string[]}
+     */
     this.images = [];
 
+    /**
+     * @type {number}
+     */
     this.imageIndex = 0;
 
-    this.type = 1;
+    /**
+     * @type {string}
+     */
+    this.type = 'Pixiv Manga';
 
+    /**
+     * @type {number}
+     */
     this.downloadSpeed = 0;
 
+    /**
+     * @type {number}
+     */
     this.downloadCompletedDataSize = 0;
 
+    /**
+     * @type {number}
+     */
     this.downloadEscapedTime = 0;
 
+    /**
+     * @type {number}
+     */
     this.downloadTotalCompletedDataSize = 0;
 
+    /**
+     * @type {number}
+     */
     this.downloadTotalEscapedTime = 0;
   }
 
@@ -56,19 +91,76 @@ class MangaDownloader extends WorkDownloader {
 
   /**
    *
-   * @param {Object} options
-   * @param {PixivMangaProvider} options.provider
-   * @param {Object} options.options
+   * @param {{ url: string, saveTo: string, options: object, provider: GeneralArtworkProvider }} args
    */
-  static createDownloader({ provider, options }) {
+  static createDownloader({ url, saveTo, options, provider }) {
     let downloader = new MangaDownloader();
-    downloader.provider = provider;
-    downloader.url = provider.url;
     downloader.id = provider.id;
+    downloader.url = url;
+    downloader.saveTo = saveTo;
     downloader.options = options;
-    downloader.context = downloader.provider.context;
+    downloader.provider = provider;
 
     return downloader;
+  }
+
+  /**
+   * Get artwork pages url
+   * @returns {string}
+   */
+  getPagesUrl() {
+    return `https://www.pixiv.net/ajax/illust/${this.provider.context.id}/pages`;
+  }
+
+  /**
+   * Get image pages
+   * @returns {Promise.<string[],Error>}
+   */
+  requestPages() {
+    return new Promise((resolve, reject) => {
+      let url = this.getPagesUrl();
+
+      this.request = new Request({
+        url: url,
+        method: 'GET'
+      });
+
+      this.request.on('error', error => {
+        reject(error);
+      });
+
+      this.request.on('response', response => {
+        let body = '';
+
+        response.on('error', error => {
+          reject(error);
+        });
+
+        response.on('data', data => {
+          body += data;
+        });
+
+        response.on('end', () => {
+          let jsonData = JSON.parse(body.toString());
+
+          if (jsonData && Array.isArray(jsonData.body) && jsonData.body.length > 0) {
+            resolve(jsonData.body);
+          } else {
+            reject(Error('Cannot resolve manga images'));
+          }
+        });
+
+        response.on('aborted', () => {
+          reject(Error('Resolve manga images has been aborted'));
+        });
+      });
+
+      this.request.on('close', () => {
+        this.request = null;
+      });
+
+      this.request.end();
+    });
   }
 
   /**
@@ -82,11 +174,10 @@ class MangaDownloader extends WorkDownloader {
    * @returns {void}
    */
   downloadImages() {
-    let url = this.images[this.imageIndex].urls.original,
-        nowTime = 0;
+    let url = this.images[this.imageIndex].urls.original;
 
     /**
-     * Must set pageNum property in context for make sure the rename image works correctly
+     * Must set pageNum property in context to make renaming image works correctly
      */
     this.context.pageNum = this.imageIndex;
 
@@ -121,7 +212,9 @@ class MangaDownloader extends WorkDownloader {
         this.setFinish();
         this.download = null;
       } else {
-        this.downloadImages();
+        if (!(this.isStop() || this.isStopping())) {
+          this.downloadImages();
+        }
       }
     });
 
@@ -156,9 +249,9 @@ class MangaDownloader extends WorkDownloader {
     this.setStart();
 
     if (this.images.length === 0) {
-      this.setDownloading('Fetch images that need to be downloaded');
+      this.setDownloading('_fetch_images_in_the_artwork');
 
-      this.provider.requestPages().then(images => {
+      this.requestPages().then(images => {
         this.images = images;
 
         this.downloadImages();
