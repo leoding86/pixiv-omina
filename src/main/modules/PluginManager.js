@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { GetPath, FormatName } from '@/modules/Utils';
 import Application from '@/Application';
+import BasePlugin from '@/modules/BasePlugin';
 import BaseProvider from '@/modules/Downloader/Providers/BaseProvider';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import Request from '@/modules/Request';
@@ -112,6 +113,7 @@ class PluginManager extends EventEmitter {
         parse
       },
       classes: {
+        BasePlugin,
         BaseProvider,
         WorkDownloader,
         Request,
@@ -134,7 +136,7 @@ class PluginManager extends EventEmitter {
     if (typeof pluginInstance.requestHeadersOverrider === 'function' &&
         pluginInstance.requestUrlPatterns
     ) {
-      RequestHeadersOverrider.getDefault().addMap({
+      RequestHeadersOverrider.getDefault().extendMap({
         id: pluginInstance.id,
         patterns: pluginInstance.requestUrlPatterns,
         requestHeaders: pluginInstance.requestHeadersOverrider
@@ -144,7 +146,7 @@ class PluginManager extends EventEmitter {
     if (typeof pluginInstance.responseHeadersOverrider === 'function' &&
         pluginInstance.responseUrlPatterns
     ) {
-      ResponseHeadersOverrider.getDefault().addMap({
+      ResponseHeadersOverrider.getDefault().extendMap({
         id: pluginInstance.id,
         patterns: pluginInstance.responseUrlPatterns,
         responseHeaders: pluginInstance.responseHeadersOverrider
