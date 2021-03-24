@@ -30,6 +30,17 @@
           </el-tooltip>
           <el-tooltip
             placement="bottom"
+            :content="$t('_paused')"
+          >
+            <el-button
+              :type="filter === 'paused' ? 'primary' : 'default'"
+              size="small"
+              icon="el-icon-video-pause"
+              @click="filterDownloads('stop')"
+            ></el-button>
+          </el-tooltip>
+          <el-tooltip
+            placement="bottom"
             :content="$t('_finished')"
           >
             <el-button
@@ -168,6 +179,8 @@ export default {
           if (this.filter === 'finished' && download.state === 'finish') {
             downloads.push(download);
           } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
+            downloads.push(download);
+          } else if (this.filter === 'stop' && download.state === 'stop') {
             downloads.push(download);
           }
         } else {
