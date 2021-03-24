@@ -194,5 +194,7 @@
 
   "_stop": "Stop",
 
-  "_plugins": "Plugins"
+  "_plugins": "Plugins",
+
+  "_paused": "Paused"
 }
