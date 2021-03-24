@@ -264,7 +264,7 @@ export default {
 
 .download-list-item__title-type {
   padding: 1px 2px;
-  background: #999;
+  background: rgb(0, 135, 255);
   color: white;
   box-sizing: border-box;
   border-radius: 3px;
