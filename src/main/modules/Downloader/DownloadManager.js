@@ -1,5 +1,4 @@
 import EventEmitter from 'events';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import {
   debug
@@ -43,6 +42,14 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Alias for getManager
+   * @returns {DownloadManager}
+   */
+  static getDefault() {
+    return DownloadManager.getManager();
+  }
+
+  /**
    * @param {number|string} id
    * @returns {WorkDownloader}
    */
@@ -58,6 +65,18 @@ class DownloadManager extends EventEmitter {
     this.workDownloaderPool.set(downloader.id, downloader);
     this.emit('add', downloader);
     this.startWorkDownloader({ downloadId: downloader.id });
+  }
+
+  /**
+   * Add a downloader to download manager
+   * @param {WorkDownloader} downloader
+   */
+  addDownloader(downloader) {
+    if (!this.workDownloaderPool.has(downloader.id)) {
+      this.workDownloaderPool.set(downloader.id, downloader);
+      this.emit('add', downloader);
+      this.startWorkDownloader({ downloadId: downloader.id });
+    }
   }
 
   /**
@@ -284,26 +303,6 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
-   *
-   * @param {Object} options
-   * @param {Object} options.provider
-   * @param {Object} options.options
-   */
-  createDownloader({provider, options}) {
-    debug.sendStatus('try to create a download');
-
-    try {
-      fs.ensureDirSync(options.saveTo);
-    } catch (error) {
-      debug.sendStatus('cannot create save dir(s)');
-      Promise.reject(error);
-      return;
-    }
-
-    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ provider, options }));
-  }
-
-  /**
    * @param {Object} param
    * @param {number|string} param.downloadId
    * @param {boolean} param.reset
@@ -364,6 +363,14 @@ class DownloadManager extends EventEmitter {
     this.emit('delete', downloadId);
 
     this.downloadNext();
+  }
+
+  /**
+   * Alias for deleteWorkDownloader
+   * @param {{ downloadId: string }} args
+   */
+  deleteDownload({ downloadId }) {
+    this.deleteWorkDownloader({ downloadId });
   }
 
   /**

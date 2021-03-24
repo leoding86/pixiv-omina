@@ -78,6 +78,7 @@ class DownloadCacheManager {
       if (download.id && this.cachedDownloads[download.id] === undefined) {
         this.cachedDownloads[download.id] = {
           url: download.url,
+          saveTo: download.saveTo,
           options: download.options
         };
       }

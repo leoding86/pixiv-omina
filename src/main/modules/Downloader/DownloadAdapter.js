@@ -1,8 +1,8 @@
 import {
   PixivGeneralArtworkProvider,
+  PixivNovelProvider,
   PixivUserProvider,
   PixivComicEpisodeProvider,
-  PixivNovelProvider,
   PixivNovelSeriesProvider,
   PixivComicWorkProvider
 } from './Providers';
@@ -49,7 +49,6 @@ class DownloadAdapter {
   ];
 
   /**
-   *
    * @param {string} src
    * @returns {PixivUserProvider|PixivGeneralArtworkProvider|PixivBookmarkProvider}
    * @throws {Error}

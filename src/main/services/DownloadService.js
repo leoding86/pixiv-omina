@@ -1,7 +1,9 @@
 import {
-  app,
   ipcMain
 } from 'electron';
+import {
+  debug
+} from '@/global';
 
 import BaseService from '@/services/BaseService';
 import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
@@ -10,13 +12,10 @@ import DownloadManager from '@/modules/Downloader/DownloadManager';
 import NotificationManager from '@/modules/NotificationManager';
 import SettingStorage from '@/modules/SettingStorage';
 import { PixivBookmarkProvider } from '@/modules/Downloader/Providers';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 import WindowManager from '@/modules/WindowManager';
-import {
-  debug
-} from '@/global';
 import path from 'path';
 import GetPath from '@/modules/Utils/GetPath';
+import BookmarkDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/BookmarkDownloader';
 
 /**
  * @property {Number} updateSensitivity
@@ -190,8 +189,11 @@ class DownloadService extends BaseService {
           options.saveTo = saveTo;
         }
 
-        downloaders.push(UndeterminedDownloader.createDownloader({
-          provider: DownloadAdapter.getProvider(cachedDownloads[key].url),
+        let provider = DownloadAdapter.getProvider(cachedDownloads[key].url);
+
+        downloaders.push(provider.createDownloader({
+          url: cachedDownloads[key].url,
+          saveTo: options.saveTo || cachedDownloads[key].saveTo, // for compatibility
           options
         }));
 
@@ -227,7 +229,7 @@ class DownloadService extends BaseService {
 
     debug.sendStatus('All downloads are fetched');
   }
-
+//
   /**
    * Handle create download action sent from renderer
    * @param {{url: String, saveTo: String, types: Object}} args
@@ -235,10 +237,11 @@ class DownloadService extends BaseService {
   createDownloadAction({url, saveTo, types}) {
     try {
       let provider = DownloadAdapter.getProvider(url);
-      let options = {
-        saveTo
-      };
+      let options = {};
 
+      /**
+       * Build acceptTypes option
+       */
       if (types) {
         options.acceptTypes = types;
       }
@@ -246,18 +249,7 @@ class DownloadService extends BaseService {
       /**
        * Testing new way to add downloaders
        */
-      if (provider.version === 2) {
-        this.downloadManager.addDownloader(provider.createDownloader({ url, saveTo, types }));
-      } else {
-        /**
-         * The option `acceptTypes` will pass to UndetermindDownloader for determining
-         * whether the download need to be created.
-         */
-        this.downloadManager.createDownloader({
-          provider,
-          options
-        });
-      }
+      this.downloadManager.addDownloader(provider.createDownloader({ saveTo, options }));
     } catch (error) {
       debug.log(error);
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
@@ -273,13 +265,15 @@ class DownloadService extends BaseService {
    */
   createBmDownloadAction({pages, rest, saveTo}) {
     try {
+      let provider;
+
       pages.forEach(page => {
-        this.downloadManager.createDownloader({
-          provider: PixivBookmarkProvider.createProvider({ page, rest }),
-          options: {
-            saveTo
-          }
-        });
+        provider = PixivBookmarkProvider.createProvider({ page, rest });
+
+        this.downloadManager.addDownloader(provider.createDownloader({
+          saveTo,
+          options: { page, rest }
+        }));
       });
     } catch (error) {
       debug.log(error);
