@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import BaseService from '@/services/BaseService';
 import PluginManager from '@/modules/PluginManager';
 import WindowManager from '@/modules/WindowManager';
+import SettingStorage from '@/modules/SettingStorage';
 
 class PluginService extends BaseService {
   /**
@@ -66,7 +67,8 @@ class PluginService extends BaseService {
           webviewTag: true
         }
       }, {}, {
-        loginUrl: plugin.loginUrl
+        loginUrl: plugin.loginUrl,
+        locale: SettingStorage.getDefault().getSetting('locale')
       });
 
       if (typeof plugin.checkLogined === 'function') {
