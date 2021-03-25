@@ -196,5 +196,19 @@
 
   "_plugins": "Plugins",
 
-  "_paused": "Paused"
+  "_paused": "Paused",
+
+  "_initializing": "Initializing",
+
+  "_no_plugin_installed": "No plugin installed",
+
+  "_logined": "Logined",
+
+  "_not_logined": "Not Logined",
+
+  "_feedback": "Feedback",
+
+  "_toggle_development_tools": "Toggle development tools",
+
+  "_close_this_window_after_you_logined": "Close this window after you logined"
 }

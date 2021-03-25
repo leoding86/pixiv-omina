@@ -196,5 +196,19 @@
 
   "_plugins": "插件",
 
-  "_paused": "暂停中"
+  "_paused": "暂停中",
+
+  "_initializing": "初始化中",
+
+  "_no_plugin_installed": "暂未安装插件",
+
+  "_logined": "已登录",
+
+  "_not_logined": "未登录",
+
+  "_feedback": "反馈",
+
+  "_toggle_development_tools": "开发工具",
+
+  "_close_this_window_after_you_logined": "登陆后关闭此窗口"
 }
