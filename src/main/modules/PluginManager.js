@@ -118,7 +118,8 @@ class PluginManager extends EventEmitter {
           GetPath,
           FormatName,
           md5,
-          parse
+          parse,
+          debug
         },
         classes: {
           BasePlugin,
