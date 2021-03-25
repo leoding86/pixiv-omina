@@ -2,6 +2,12 @@
   <div class="footer-container">
     <div class="footer-left">
       <div class="footer-btn"
+        @click="loginBtnClickHandle"
+      >
+        <i class="el-icon-user"></i> {{ loginText }}
+      </div>
+
+      <div class="footer-btn"
         @click="toggleTasks"
       >
         {{ $t('_jobs') }}({{jobsCount}})
@@ -10,17 +16,47 @@
     </div>
     <div class="footer-right">
       <div class="footer-btn"
-        @click="openDevTools()">{{ $t('_dev_tools') }}</div>
-      <div class="footer-btn"><a :href="bugsUrl" target="_blank">{{ $t('_report') }}</a></div>
+        @click="showPluginsDialog = true"
+        :title="$t('_plugins')"
+      >
+        <i class="el-icon-box"></i>
+      </div>
+      <div class="footer-btn"
+        @click="openDevTools()"
+        :title="$t('_toggle_development_tools')"
+      >
+        <i class="el-icon-view"></i>
+      </div>
+      <div class="footer-btn"
+        :title="$t('_feedback')"
+      >
+        <a :href="bugsUrl" target="_blank"><i class="el-icon-warning-outline"></i></a>
+      </div>
     </div>
+
+    <plugins-dialog
+      :show.sync="showPluginsDialog"
+      :plugins="plugins"
+    >
+    </plugins-dialog>
   </div>
 </template>
 
 <script>
 import packageInfo from '@/../../package.json';
 import { ipcRenderer } from 'electron';
+import BaseMixin from '@/../renderer/mixins/BaseMixin';
+import PluginsDialog from './dialogs/PluginsDialog';
 
 export default {
+  mixins: [
+    BaseMixin
+  ],
+
+  components: {
+    'plugins-dialog': PluginsDialog
+  },
+
   props: {
     jobsCount: {
       required: true
@@ -31,7 +67,15 @@ export default {
     return {
       bugsUrl: packageInfo.bugs.url,
       showTasks: false,
-      statusMessage: ''
+      statusMessage: '',
+      showPluginsDialog: false,
+      plugins: []
+    }
+  },
+
+  computed: {
+    loginText() {
+      return this.logined ? this.$t('_logined') : this.$t('_not_logined');
     }
   },
 
@@ -48,6 +92,14 @@ export default {
     ipcRenderer.on('debug-service:devToolsClosed', (event, data) => {
       this.$emit('devToolsToggled', false);
     });
+
+    ipcRenderer.on('plugin-service:loaded', (event, plugins) => {
+      this.plugins = plugins;
+    });
+
+    ipcRenderer.send('plugin-service', {
+      action: 'loadPlugins'
+    });
   },
 
   methods: {
@@ -62,6 +114,20 @@ export default {
           window: 'app'
         }
       });
+    },
+
+    loginBtnClickHandle() {
+      if (this.logined) {
+        if (window.confirm(this.$t('_are_you_sure_logout'))) {
+          ipcRenderer.send('user-service', {
+            action: 'userLogout'
+          });
+        }
+      } else {
+        ipcRenderer.send('user-service', {
+          action: 'userLogin'
+        });
+      }
     }
   }
 }
@@ -111,6 +177,12 @@ export default {
     a {
       color: #333;
       text-decoration: none;
+    }
+
+    i {
+      position: relative;
+      top: 2px;
+      font-size: 16px;
     }
   }
 }

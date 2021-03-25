@@ -1,7 +1,7 @@
 <template>
   <div id="app"
     v-loading="!inited"
-    :element-loading-text="$t('_initializing_and_checking_login_status')">
+    :element-loading-text="$t('_initializing')">
 
     <div id="header">
       <app-header>
@@ -76,17 +76,6 @@
     </div>
 
     <div id="container">
-      <div id="app-container-mask"
-        v-if="inited && !logined">
-        <div class="app-container-mask__body">
-          <el-button
-            type="primary"
-            @click="userLogin"
-          >{{ $t('_login_pixiv') }}</el-button>
-          <p class="login-error" v-if="loginError">{{ loginError }}</p>
-        </div>
-      </div>
-
       <div class="download-list__empty-notice"
         v-if="downloads.length < 1"
       >
@@ -390,16 +379,12 @@ export default {
         }
       });
 
-      if (this.logined) {
-        ipcRenderer.send('download-service', {
-          action: 'startDownload',
-          args: {
-            downloadId: null
-          }
-        });
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
-      }
+      ipcRenderer.send('download-service', {
+        action: 'startDownload',
+        args: {
+          downloadId: null
+        }
+      });
     },
 
     /**
@@ -435,17 +420,13 @@ export default {
     },
 
     startDownloadHandler(download) {
-      if (this.logined) {
-        if (this.downloads.length > 0) {
-          ipcRenderer.send('download-service', {
-            action: 'startDownload',
-            args: {
-              downloadId: download.id
-            }
-          });
-        }
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
+      if (this.downloads.length > 0) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: download.id
+          }
+        });
       }
     },
 
@@ -499,16 +480,12 @@ export default {
         }
       }
 
-      if (this.logined) {
-        ipcRenderer.send('download-service', {
-          action: 'batchStartDownloads',
-          args: {
-            downloadIds: downloadIds
-          }
-        });
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
-      }
+      ipcRenderer.send('download-service', {
+        action: 'batchStartDownloads',
+        args: {
+          downloadIds: downloadIds
+        }
+      });
     },
 
     batchStopDownloads() {
@@ -630,18 +607,6 @@ export default {
         this.filteredDownloads.forEach(download => {
           this.selectDownload(download);
         });
-      }
-    },
-
-    userLogin() {
-      if (!this.logined) {
-        this.inited = false;
-
-        ipcRenderer.send("user-service", {
-          action: 'userLogin'
-        });
-      } else {
-        this.$message(this.$t('_you_are_logined'));
       }
     },
 

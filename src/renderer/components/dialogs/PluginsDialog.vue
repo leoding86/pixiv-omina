@@ -8,7 +8,14 @@
     :width="'400px'"
     :visible.sync="show"
   >
-    <div class="plugins-dialog__wrap">
+    <div class="plugins-dialog__no-plugins"
+      v-if="plugins.length <= 0"
+    >
+      {{ $t('_no_plugin_installed') }}
+    </div>
+    <div class="plugins-dialog__wrap"
+      v-else
+    >
       <el-button
         v-for="(plugin, index) in plugins"
         :key="index"
@@ -22,6 +29,13 @@
       slot="footer"
       class="dialog-footer"
     >
+      <el-button
+        @click="openHelp"
+        size="mini"
+        type="primary"
+      >
+        {{ $t('_help') }}
+      </el-button>
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
@@ -60,12 +74,27 @@ export default {
           id: plugin.id
         }
       });
+    },
+
+    openHelp() {
+      let a = document.createElement('a');
+      a.target = "_blank";
+      a.href = this.settings.locale === 'zh_CN'
+               ? "https://github.com/leoding86/pixiv-omina/blob/master/docs/how-to-install-plugin_zh-CN.md"
+               : "https://github.com/leoding86/pixiv-omina/blob/master/docs/how-to-install-plugin_en.md";
+      a.click();
     }
   }
 }
 </script>
 
 <style lang="scss">
+.plugins-dialog__no-plugins {
+  padding-top: 10px;
+  text-align: center;
+  color: #9e9e9e;
+}
+
 .plugins-dialog__wrap {
   padding: 10px 10px 0 10px;
 

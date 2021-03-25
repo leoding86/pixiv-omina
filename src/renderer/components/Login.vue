@@ -1,7 +1,7 @@
 <template>
   <div id="login-window">
     <div class="notification">
-      <p><a href="javascript:void(0)" @click="closeWindow">Close this window after you logined</a></p>
+      <p><a href="javascript:void(0)" @click="closeWindow">{{ $t('_close_this_window_after_you_logined') }}</a></p>
     </div>
     <div class="webview">
       <webview :src="loginUrl"
@@ -51,6 +51,11 @@ div, webview, iframe, p {
 #login-window {
   width: 100%;
   height: 100%;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+  }
 }
 
 .notification {
