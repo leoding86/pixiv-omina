@@ -13,6 +13,8 @@ import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
 import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
 import md5 from 'md5';
 import { parse } from 'node-html-parser';
+import NotificationManager from '@/modules/NotificationManager';
+import { debug } from '@/global';
 
 class PluginManager extends EventEmitter {
   /**
@@ -40,6 +42,11 @@ class PluginManager extends EventEmitter {
      * @type {String}
      */
     this.pluginPath = path.join(GetPath.installation(), 'plugins');
+
+    /**
+     * @type {NotificationManager}
+     */
+    this.notificationManager = NotificationManager.getDefault();
 
     this.initial();
   }
@@ -104,56 +111,61 @@ class PluginManager extends EventEmitter {
    * @returns {any}
    */
   bootPlugin(plugin, file) {
-    let pluginInstance = plugin({
-      app: this.app,
-      utils: {
-        GetPath,
-        FormatName,
-        md5,
-        parse
-      },
-      classes: {
-        BasePlugin,
-        BaseProvider,
-        WorkDownloader,
-        Request,
-        Download
+    try {
+      let pluginInstance = plugin({
+        app: this.app,
+        utils: {
+          GetPath,
+          FormatName,
+          md5,
+          parse
+        },
+        classes: {
+          BasePlugin,
+          BaseProvider,
+          WorkDownloader,
+          Request,
+          Download
+        }
+      });
+
+      pluginInstance.providerName = file;
+      pluginInstance.id = md5(file);
+
+      if (!pluginInstance.title) {
+        pluginInstance.title = file;
       }
-    });
 
-    pluginInstance.providerName = file;
-    pluginInstance.id = md5(file);
-
-    if (!pluginInstance.title) {
-      pluginInstance.title = file;
-    }
-
-    DownloadAdapter.extendMap({
-      provider: pluginInstance,
-      patterns: pluginInstance.patterns
-    });
-
-    if (typeof pluginInstance.requestHeadersOverrider === 'function' &&
-        pluginInstance.requestUrlPatterns
-    ) {
-      RequestHeadersOverrider.getDefault().extendMap({
-        id: pluginInstance.id,
-        patterns: pluginInstance.requestUrlPatterns,
-        requestHeaders: pluginInstance.requestHeadersOverrider
+      DownloadAdapter.extendMap({
+        provider: pluginInstance,
+        patterns: pluginInstance.patterns
       });
-    }
 
-    if (typeof pluginInstance.responseHeadersOverrider === 'function' &&
-        pluginInstance.responseUrlPatterns
-    ) {
-      ResponseHeadersOverrider.getDefault().extendMap({
-        id: pluginInstance.id,
-        patterns: pluginInstance.responseUrlPatterns,
-        responseHeaders: pluginInstance.responseHeadersOverrider
-      });
-    }
+      if (typeof pluginInstance.requestHeadersOverrider === 'function' &&
+          pluginInstance.requestUrlPatterns
+      ) {
+        RequestHeadersOverrider.getDefault().extendMap({
+          id: pluginInstance.id,
+          patterns: pluginInstance.requestUrlPatterns,
+          requestHeaders: pluginInstance.requestHeadersOverrider
+        });
+      }
 
-    return pluginInstance;
+      if (typeof pluginInstance.responseHeadersOverrider === 'function' &&
+          pluginInstance.responseUrlPatterns
+      ) {
+        ResponseHeadersOverrider.getDefault().extendMap({
+          id: pluginInstance.id,
+          patterns: pluginInstance.responseUrlPatterns,
+          responseHeaders: pluginInstance.responseHeadersOverrider
+        });
+      }
+
+      return pluginInstance;
+    } catch (error) {
+      this.notificationManager.showNotification({ title: `Unable to boot plugin. Boot file: ${file}` });
+      debug.log(error);
+    }
   }
 
   /**
