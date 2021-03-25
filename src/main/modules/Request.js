@@ -35,14 +35,14 @@ class Request extends net.ClientRequest {
     });
 
     this.on('response', response => {
-      debug.sendStatus(`Response: Get response from ${this.options.url}`, true);
+      debug.sendStatus(`Response: Get response from ${this.options.url}`);
 
       response.on('data', () => {
         debug.sendStatus(`Response: Receiving data from ${this.options.url}`);
       });
 
       response.on('aborted', () => {
-        debug.sendStatus(`Response: Aborted from ${this.options.url}`, true);
+        debug.sendStatus(`Response: Aborted from ${this.options.url}`);
       });
 
       response.on('error', error => {
@@ -50,12 +50,12 @@ class Request extends net.ClientRequest {
       });
 
       response.on('end', () => {
-        debug.sendStatus(`Response: All data received from ${this.options.url}`, true);
+        debug.sendStatus(`Response: All data received from ${this.options.url}`);
       });
     });
 
     this.on('close', () => {
-      debug.sendStatus(`Request: ${this.options.url} closed`, true);
+      debug.sendStatus(`Request: ${this.options.url} closed`);
     });
 
     this.on('error', error => {
@@ -63,7 +63,7 @@ class Request extends net.ClientRequest {
     });
 
     this.on('finish', () => {
-      debug.sendStatus(`Request: ${this.options.url} all data sended`, true);
+      debug.sendStatus(`Request: ${this.options.url} all data sended`);
     });
   }
 
