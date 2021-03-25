@@ -117,6 +117,10 @@ class WindowManager {
       url += '&login_url=' + encodeURIComponent(queries.loginUrl);
     }
 
+    if (queries.locale && typeof queries.locale === 'string') {
+      url += '&locale=' + queries.locale;
+    }
+
     window.loadURL(url, loadUrlArgs)
 
     return window
