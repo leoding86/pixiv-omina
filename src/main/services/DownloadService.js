@@ -193,7 +193,7 @@ class DownloadService extends BaseService {
 
         downloaders.push(provider.createDownloader({
           url: cachedDownloads[key].url,
-          saveTo: options.saveTo || cachedDownloads[key].saveTo, // for compatibility
+          saveTo: options.saveTo || cachedDownloads[key].saveTo || this.settingStorage.getSetting('saveTo'), // for compatibility
           options
         }));
 
