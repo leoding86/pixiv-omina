@@ -9,6 +9,7 @@ import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
 import ServiceContainer from '@/ServiceContainer';
+import SettingStorage from '@/modules/SettingStorage';
 import { parse } from 'node-html-parser';
 
 /**
@@ -68,6 +69,8 @@ class UserService extends BaseService {
         nodeIntegration: true,
         webviewTag: true
       }
+    }, {}, {
+      locale: SettingStorage.getDefault().getSetting('locale')
     });
 
     loginWindow.on('closed', event => {
@@ -117,6 +120,7 @@ class UserService extends BaseService {
   }
 
   /**
+   * @deprecated
    * @returns {Promise}
    */
   getBookmarkInfoAction({ rest = 'show' }) {
