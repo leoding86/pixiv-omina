@@ -265,16 +265,13 @@ class DownloadService extends BaseService {
    */
   createBmDownloadAction({pages, rest, saveTo}) {
     try {
-      let provider;
+      let options = { pages, rest },
+          provider = PixivBookmarkProvider.createProvider(options);
 
-      pages.forEach(page => {
-        provider = PixivBookmarkProvider.createProvider({ page, rest });
-
-        this.downloadManager.addDownloader(provider.createDownloader({
-          saveTo,
-          options: { page, rest }
-        }));
-      });
+      this.downloadManager.addDownloader(provider.createDownloader({
+        saveTo,
+        options
+      }));
     } catch (error) {
       debug.log(error);
       WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);

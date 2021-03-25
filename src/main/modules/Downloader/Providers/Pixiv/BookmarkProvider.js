@@ -1,76 +1,46 @@
-import BaseProviderV2 from './BaseProviderV2';
+import BaseProvider from '@/modules/Downloader/Providers/Pixiv/BaseProvider';
 import BookmarkDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/BookmarkDownloader';
 
-class BookmarkProvider extends BaseProviderV2 {
-  /**
-   * @enum {string}
-   */
-  static rest = {
-    SHOW: 'show',
-    HIDE: 'hide',
-  };
+class BookmarkProvider extends BaseProvider {
+  constructor({ url, context }) {
+    super({ url, context });
+  }
 
-  constructor({
-    rest = BookmarkProvider.rest.SHOW,
-    page = 1
-  }) {
-    super();
-
-    /**
-     * @type {string}
-     */
-    this.rest = rest;
-
-    /**
-     * @type {number}
-     */
-    this.page = page;
-
-    /**
-     * @type {string}
-     */
-    this.url = this.getBookmarkUrl(); // used for display as download title
+  get id() {
+    return [this.providerName, 'bookmark'].join(':');
   }
 
   /**
    * Get bookmark url
    * @returns {string}
    */
-  getBookmarkUrl() {
-    return `https://www.pixiv.net/bookmark.php?rest=${this.rest}&type=illust_all` + (this.page > 1 ? `&p=${this.page}` : '');
+  static getBookmarkUrl({ rest = 'show', page = 1}) {
+    return `https://www.pixiv.net/bookmark.php?rest=${rest}&type=illust_all` + (page > 1 ? `&p=${page}` : '');
   }
 
   /**
    *
-   * @param {object} options
-   * @param {BookmarkProvider.rest} options.rest
-   * @param {string} options.page
    * @returns {BookmarkProvider}
    */
-  static createProvider({ rest, page }) {
-    return new BookmarkProvider({ rest, page });
+  static createProvider({ rest = 'show', pages = 1}) {
+    let provider = new BookmarkProvider({
+      url: BookmarkProvider.getBookmarkUrl({ rest }),
+      context: { rest, pages }
+    });
+
+    return provider;
   }
 
   /**
-   * @returns {string}
-   */
-  get id() {
-    return [this.providerName, 'bookmark', this.rest, this.page].join(':');
-  }
-
-  /**
-   * Create a bookmark downloader
-   * @param {{ saveTo: string }} args
+   *
+   * @param {{ saveTo: string, options: object }} args
    * @returns {BookmarkDownloader}
    */
-  createDownloader({ saveTo }) {
+  createDownloader({ saveTo, options }) {
     return BookmarkDownloader.createDownloader({
-      url: this.getBookmarkUrl(),
+      url: this.url,
       saveTo,
-      options: {
-        rest: this.rest,
-        page: this.page
-      },
+      options,
       provider: this
     });
   }
