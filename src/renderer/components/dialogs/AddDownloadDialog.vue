@@ -261,10 +261,9 @@ export default {
 
     /**
      * @param {string} pages
-     * @param {number} totalPages
      * @returns {string[]}
      */
-    parseBookmarkPages(pages, totalPages) {
+    parsePages(pages) {
       let p = [];
 
       if (pages.indexOf(',')) {
@@ -307,83 +306,61 @@ export default {
       });
 
       return p.filter((_p, index) => {
-        return this.isPageInRange(_p, totalPages) && p.indexOf(_p) === index
+        return p.indexOf(_p) === index
       });
     },
 
     addDownload() {
       this.checking = true;
 
-      User.checkLogin().then(() => {
-        if (this.currentTab === 'url') {
-          this.$refs['addUrlDownload'].validate(valid => {
-            if (valid) {
-              this.$emit('update:show', false);
+      if (this.currentTab === 'url') {
+        this.$refs['addUrlDownload'].validate(valid => {
+          if (valid) {
+            this.$emit('update:show', false);
 
-              ipcRenderer.send('download-service', {
-                action: 'createDownload',
-                args: this.download
-              });
-            }
-          });
+            ipcRenderer.send('download-service', {
+              action: 'createDownload',
+              args: this.download
+            });
+          }
+        });
 
-          this.checking = false;
-        } else if (this.currentTab === 'bookmark') {
-          this.$refs['addBmDownload'].validate(valid => {
-            if (valid) {
-              this.$emit('update:show', false);
+        this.checking = false;
+      } else if (this.currentTab === 'bookmark') {
+        this.$refs['addBmDownload'].validate(valid => {
+          if (valid) {
+            this.$emit('update:show', false);
 
-              ipcRenderer.once('user-service:bookmark-info', (event, args) => {
-                let totalPages = args.pages,
-                    pages = [];
+            User.checkLogin().then(() => {
+              this.checking = false;
 
-                // Parse pages setting
-                if (this.bookmarkForm.mode === 'pages') {
-                  pages = this.parseBookmarkPages(this.bookmarkForm.pages, totalPages);
-                } else {
-                  pages = [];
+              let pages = [];
 
-                  while (args.pages > 0) {
-                    pages.push(args.pages);
-                    args.pages--;
-                  }
-                }
+              // Parse pages setting
+              if (this.bookmarkForm.mode === 'pages') {
+                pages = this.parsePages(this.bookmarkForm.pages);
 
-                if (pages.length > 0) {
-                  ipcRenderer.send('download-service', {
-                    action: 'createBmDownload',
-                    args: {
-                      rest: this.bookmarkForm.rest,
-                      pages,
-                      saveTo: this.bookmarkForm.saveTo,
-                    }
-                  });
-                } else {
+                if (pages.length === 0) {
                   alert(this.$t('_cannot_add_bookmarks'));
                 }
+              }
 
-                this.checking = false;
-              });
-
-              ipcRenderer.once('user-service:bookmark-info-error', (event, args) => {
-                this.checking = false;
-                alert('Cannot get bookmark infomation');
-              });
-
-              ipcRenderer.send('user-service', {
-                action: 'getBookmarkInfo',
+              ipcRenderer.send('download-service', {
+                action: 'createBmDownload',
                 args: {
-                  rest: 'show'
+                  rest: this.bookmarkForm.rest,
+                  pages,
+                  saveTo: this.bookmarkForm.saveTo,
                 }
               });
-            }
-          });
-        }
-      }).catch(() => {
-        this.$message(this.$t('_you_need_login_first'));
-        this.$emit('user:logout');
-        this.checking = false;
-      });
+            }).catch(error => {
+              this.$message(this.$t('_you_need_login_first'));
+              this.$emit('user:logout');
+              this.checking = false;
+            });
+          }
+        });
+      }
     },
 
     storeDownloadType(value) {
