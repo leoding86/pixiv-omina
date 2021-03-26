@@ -83,6 +83,17 @@ class PluginService extends BaseService {
 
   /**
    *
+   * @param {{id: string}} args
+   * @param {Electron.Event} event
+   */
+  reloadAction({ id }, event) {
+    let plugin = this.pluginManager.reloadPlugin(id);
+
+    this.sendDataToWindow(this.responseChannel('reloaded'), { id, plugin });
+  }
+
+  /**
+   *
    * @returns {void}
    */
   sendPluginsLoaded() {

@@ -34,9 +34,9 @@ class PluginManager extends EventEmitter {
     this.app = app;
 
     /**
-     * @type {any[]}
+     * @type {Map<string, BasePlugin>}
      */
-    this.plugins = [];
+    this.plugins = new Map();
 
     /**
      * @type {String}
@@ -76,12 +76,14 @@ class PluginManager extends EventEmitter {
   initalPlugins() {
     if (fs.pathExistsSync(this.pluginPath)) {
       let files = fs.readdirSync(this.pluginPath),
+          plugin,
           pluginFolder = '',
           pluginMainFile = '';
 
       files.forEach(file => {
         if (/.*\.js/.test(file)) {
-          this.plugins.push(this.createPlugin(path.join(this.pluginPath, file)));
+          plugin = this.createPlugin(path.join(this.pluginPath, file));
+          this.plugins.set(plugin.id, plugin);
         } else  {
           pluginFolder = path.join(this.pluginPath, file);
 
@@ -89,7 +91,8 @@ class PluginManager extends EventEmitter {
             pluginMainFile = path.join(pluginFolder, 'main.js');
 
             if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
-              this.plugins.push(this.createPlugin(pluginMainFile));
+              plugin = this.createPlugin(pluginMainFile);
+              this.plugins.set(plugin.id, plugin);
             }
           }
         }
@@ -99,10 +102,16 @@ class PluginManager extends EventEmitter {
 
   /**
    * @param {string} file
-   * @returns {void}
+   * @returns {BasePlugin}
    */
   createPlugin(file) {
-    return this.bootPlugin(__non_webpack_require__(file), file);
+    if (__non_webpack_require__.cache[file]) {
+      delete __non_webpack_require__.cache[file];
+    }
+
+    let module = __non_webpack_require__(file);
+
+    return this.bootPlugin(module, file);
   }
 
   /**
@@ -130,7 +139,7 @@ class PluginManager extends EventEmitter {
         }
       });
 
-      pluginInstance.providerName = file;
+      pluginInstance.providerName = pluginInstance.entryFile = file;
       pluginInstance.id = md5(file);
 
       if (!pluginInstance.title) {
@@ -174,7 +183,7 @@ class PluginManager extends EventEmitter {
    * @returns {any[]}
    */
   getPlugins() {
-    return this.plugins;
+    return Array.from(this.plugins.values());
   }
 
   /**
@@ -183,13 +192,38 @@ class PluginManager extends EventEmitter {
    * @returns {any|null}
    */
   getPlugin(id) {
-    for (let i = 0; i < this.plugins.length; i++) {
-      if (id === this.plugins[i].id) {
-        return this.plugins[i];
-      }
+    return this.plugins.has(id)
+           ? this.plugins.get(id)
+           : null;
+  }
+
+  /**
+   * Reload plugin
+   * @param {string} id
+   */
+  reloadPlugin(id) {
+    let plugin;
+
+    if (typeof id === 'string') {
+      plugin = this.getPlugin(id);
     }
 
-    return null;
+    if (plugin) {
+      let reloadedPlugin = this.createPlugin(plugin.entryFile);
+      this.plugins.set(id, reloadedPlugin);
+
+      return reloadedPlugin;
+    } else {
+      throw new Error('_unable_to_reload_plugin');
+    }
+  }
+
+  /**
+   * Install a plugin.
+   * @param {string} entry File or Folder
+   */
+  installPlugin(entry) {
+    throw new Error('Method installPlugin has not been implmeneted');
   }
 }
 
