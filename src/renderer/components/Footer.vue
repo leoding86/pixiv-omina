@@ -4,7 +4,7 @@
       <div class="footer-btn"
         @click="loginBtnClickHandle"
       >
-        <i class="el-icon-user"></i> {{ loginText }}Pixiv
+        <i class="el-icon-user"></i> {{ loginText }} Pixiv
       </div>
 
       <div class="footer-btn"
