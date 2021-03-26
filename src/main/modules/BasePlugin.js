@@ -4,6 +4,16 @@ class BasePlugin {
    */
   constructor() {
     /**
+     * @type {string}
+     */
+    this.entryFile = '';
+
+    /**
+     * @type {string}
+     */
+    this.id = '';
+
+    /**
      * @property {RegExp[]}
      */
     this.patterns = [];
