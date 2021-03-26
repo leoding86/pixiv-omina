@@ -210,5 +210,7 @@
 
   "_toggle_development_tools": "开发工具",
 
-  "_close_this_window_after_you_logined": "登陆后关闭此窗口"
+  "_close_this_window_after_you_logined": "登陆后关闭此窗口",
+
+  "_plugin_reloaded": "插件已重载"
 }

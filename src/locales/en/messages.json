@@ -210,5 +210,7 @@
 
   "_toggle_development_tools": "Toggle development tools",
 
-  "_close_this_window_after_you_logined": "Close this window after you logined"
+  "_close_this_window_after_you_logined": "Close this window after you logined",
+
+  "_plugin_reloaded": "Plugin reloaded"
 }
