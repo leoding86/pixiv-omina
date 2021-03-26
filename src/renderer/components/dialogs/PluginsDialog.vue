@@ -16,14 +16,28 @@
     <div class="plugins-dialog__wrap"
       v-else
     >
-      <el-button
+      <div class="plugin-item"
         v-for="(plugin, index) in plugins"
         :key="index"
-        @click="login(plugin)"
       >
-        <img class="plugins-dialog__item-logo" :src="plugin.icon">
-        <span class="plugins-dialog__item-title">{{ plugin.title }}</span>
-      </el-button>
+        <div class="plugin-item__head">
+          <div class="plugin-item__title">
+            <img v-if="plugin.icon" :src="plugin.icon">
+            {{ plugin.title }}
+          </div>
+        </div>
+        <div class="plugin-item__foot">
+          <el-button v-if="plugin.loginUrl"
+            size="mini"
+            icon="el-icon-user"
+            @click="login(plugin)"
+          ></el-button>
+          <el-button size="mini"
+            icon="el-icon-refresh-left"
+            @click="reload(plugin)"
+          ></el-button>
+        </div>
+      </div>
     </div>
     <span
       slot="footer"
@@ -64,12 +78,31 @@ export default {
 
   created() {
     console.log(this.plugins);
+    ipcRenderer.on('plugin-service:reloaded', (event, { id, plugin }) => {
+      for (let i = 0; i < this.plugins.length; i++) {
+        if (id === this.plugins[i].id) {
+          this.$set(this.plugins, i, plugin);
+          break;
+        }
+      }
+
+      this.msg(this.$t('_plugin_reloaded'));
+    });
   },
 
   methods: {
     login(plugin) {
       ipcRenderer.send('plugin-service', {
         action: 'login',
+        args: {
+          id: plugin.id
+        }
+      });
+    },
+
+    reload(plugin) {
+      ipcRenderer.send('plugin-service', {
+        action: 'reload',
         args: {
           id: plugin.id
         }
@@ -111,5 +144,31 @@ export default {
 .plugins-dialog__item-title {
   position: relative;
   top: -2px;
+}
+
+.plugin-item {
+  display: flex;
+  margin: 5px 0;
+  padding: 8px;
+  background: #f6f6f6;
+  border-radius: 5px;
+}
+
+.plugin-item__head {
+  display: flex;
+  vertical-align: middle;
+  align-items: center;
+  flex: 1;
+
+  img {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    top: 3px;
+  }
+}
+
+.plugin-item_foot {
+  flex: 1;
 }
 </style>
