@@ -10,14 +10,8 @@ export default {
       }
     },
 
-    inited: {
-      set(val) {
-        this.$root.appInited = val;
-      },
-
-      get() {
-        return this.$root.appInited;
-      }
+    loginError() {
+      return this.$root.appLoginError;
     },
 
     settings() {
@@ -26,10 +20,10 @@ export default {
   },
 
   methods: {
-    msg(message) {
+    msg(message, duration = 1500) {
       this.$message({
         message: message,
-        duration: 1500
+        duration
       });
     },
 
