@@ -173,7 +173,9 @@ class PluginManager extends EventEmitter {
 
       return pluginInstance;
     } catch (error) {
-      this.notificationManager.showNotification({ title: `Unable to boot plugin. Boot file: ${file}` });
+      this.notificationManager
+          .createNotification({ title: `Unable to boot plugin. Boot file: ${file}` })
+          .show();
       debug.log(error);
     }
   }

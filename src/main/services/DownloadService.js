@@ -73,8 +73,8 @@ class DownloadService extends BaseService {
     this.downloadManager.on('add', downloader => {
       this.downloadCacheManager.cacheDownload(downloader);
 
-      this.notificationManager.showDownloadAddedNotification({
-        title: `Download ${downloader.id} is added`
+      this.notificationManager.queueNotification({
+        title: `Download ${downloader.id} id added`
       });
 
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
