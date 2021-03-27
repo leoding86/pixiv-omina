@@ -1,6 +1,5 @@
 <template>
   <div id="app"
-    v-loading="!inited"
     :element-loading-text="$t('_initializing')">
 
     <div id="header">
@@ -143,19 +142,6 @@ export default {
   },
 
   computed: {
-    loginError() {
-      switch (this.$root.appLoginError) {
-        case 'InvalidResponseError':
-        case 'InvalidResponseError':
-        case 'ResponseError':
-          return this.$t('_try_again');
-        case 'RequestError':
-          return this.$t('_network_error');
-        default:
-          return;
-      }
-    },
-
     filter() {
       return this.downloadFilter;
     },
@@ -196,11 +182,18 @@ export default {
       this.clearSelections();
     },
 
-    inited(value, oldValue) {
-      if (oldValue === false && value === true) {
-        ipcRenderer.send('download-service', {
-          action: 'fetchAllDownloads'
-        });
+    loginError(val) {
+      if (val) {
+        switch (val) {
+          case 'InvalidRequsetError':
+          case 'InvalidResponseError':
+          case 'ResponseError':
+            return this.msg(this.$t('_try_again'), 5000);
+          case 'RequestError':
+            return this.msg(this.$t('_network_error'), 5000);
+          default:
+            return;
+        }
       }
     },
 
@@ -309,6 +302,12 @@ export default {
 
   mounted() {
     document.addEventListener('keydown', this.keydownHandler);
+
+    this.$nextTick(() => {
+      ipcRenderer.send('download-service', {
+        action: 'fetchAllDownloads'
+      });
+    });
   },
 
   beforeDestroy() {
