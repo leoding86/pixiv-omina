@@ -34,7 +34,6 @@ class MainEntry {
 
       data() {
         return {
-          appInited: false,
           appLogined: false,
           appSettings: {},
           appPlatform: null,
@@ -66,7 +65,6 @@ class MainEntry {
         });
 
         ipcRenderer.on('user-service:check-login', (event, logined, error) => {
-          this.appInited = true;
           this.appLogined = logined;
           this.appLoginError = error;
         });
