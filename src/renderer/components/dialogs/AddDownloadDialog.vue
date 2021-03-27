@@ -200,22 +200,18 @@ export default {
 
   computed: {
     isUser() {
+      let isUser = false;
+
       for (let i = 0, l = this.pixivUserUrlPatterns.length; i < l; i++) {
         let matches = this.download.url.match(this.pixivUserUrlPatterns[i]);
 
         if (matches) {
-          Object.assign(this.download, {
-            types: {
-              ugoira: true,
-              illustration: true,
-              manga: true
-            }
-          });
-          return true;
+          isUser = true;
+          break;
         }
       }
 
-      return false;
+      return isUser;
     }
   },
 
@@ -317,6 +313,14 @@ export default {
         this.$refs['addUrlDownload'].validate(valid => {
           if (valid) {
             this.$emit('update:show', false);
+
+            if (!this.isUser) {
+              this.$set(this.download, 'types', {
+                illustration: true,
+                manga: true,
+                ugoira: true
+              });
+            }
 
             ipcRenderer.send('download-service', {
               action: 'createDownload',
