@@ -35,6 +35,8 @@ class FormatName {
    * @param {Array} skipChars
    */
   static replaceIllegalChars(str, skipChars) {
+    str += '';
+
     FormatName.getIllegalChars().forEach(char => {
       if (skipChars && skipChars.indexOf(char) > -1) return;
 
@@ -46,18 +48,18 @@ class FormatName {
     return str;
   }
 
-  static format(renameFormat, context, fallback) {
+  static format(renameFormat, context, fallback, extra = {}) {
     let filename = '';
 
     function getContextMetaValue(context, key) {
       var metas = {
         id: {
           key: 'illustId',
-          possibleKeys: ['illustId', 'novelId']
+          possibleKeys: ['illustId', 'novelId', 'id']
         },
         title: {
           key: 'illustTitle',
-          possibleKeys: ['illustTitle', 'novelTitle']
+          possibleKeys: ['illustTitle', 'novelTitle', 'title']
         },
         user_name: {
           key: 'userName',
@@ -70,6 +72,34 @@ class FormatName {
         page_num: {
           key: 'pageNum',
           possibleKeys: ['pageNum']
+        },
+        year: {
+          key: 'year',
+          possibleKeys: ['year']
+        },
+        month: {
+          key: 'month',
+          possibleKeys: ['month']
+        },
+        day: {
+          key: 'day',
+          possibleKeys: ['day']
+        },
+        number_title: {
+          key: 'numberTitle',
+          possibleKeys: ['numberTitle']
+        },
+        sub_title: {
+          key: 'subTitle',
+          possibleKeys: ['subTitle']
+        },
+        work_id: {
+          key: 'workId',
+          possibleKeys: ['workId']
+        },
+        work_title: {
+          key: 'workTitle',
+          possibleKeys: ['workTitle']
         }
       };
 
@@ -91,7 +121,7 @@ class FormatName {
     }
 
     if (!renameFormat) {
-      filename = fallback + '';
+      filename = FormatName.replaceIllegalChars(fallback) + '';
     } else {
       var matches = renameFormat.match(/%[a-z_]+%/ig);
       var name = renameFormat;
@@ -99,7 +129,7 @@ class FormatName {
       if (matches && matches.length > 0) {
         matches.forEach(function (match) {
           var key = match.slice(1, -1);
-          var val = getContextMetaValue(context, key);
+          var val = FormatName.replaceIllegalChars(getContextMetaValue(context, key));
 
           if (val !== undefined) {
             name = name.replace(match, val);
@@ -110,7 +140,7 @@ class FormatName {
       filename = !!name ? name : fallback;
     }
 
-    filename = FormatName.replaceIllegalChars(filename);
+    filename = FormatName.replaceIllegalChars(filename, extra.mode === 'folder' ? ['/'] : '');
 
     /**
      * Remove dots at end of the filename

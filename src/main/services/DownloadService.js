@@ -1,20 +1,26 @@
-import path from 'path';
-import fs from 'fs-extra';
 import {
-  app,
   ipcMain
 } from 'electron';
 import {
   debug
 } from '@/global';
-import UrlParser from '@/modules/UrlParser';
-import WindowManager from '@/modules/WindowManager';
-import DownloadManager from '@/modules/Downloader/DownloadManager';
-import DownloadCacheManager from '@/modules/DownloadCacheManager';
-import NotificationManager from '@/modules/NotificationManager';
-import BaseService from '@/services/BaseService';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
 
+import BaseService from '@/services/BaseService';
+import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
+import DownloadCacheManager from '@/modules/DownloadCacheManager';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
+import NotificationManager from '@/modules/NotificationManager';
+import SettingStorage from '@/modules/SettingStorage';
+import { PixivBookmarkProvider } from '@/modules/Downloader/Providers';
+import WindowManager from '@/modules/WindowManager';
+import path from 'path';
+import GetPath from '@/modules/Utils/GetPath';
+import BookmarkDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/BookmarkDownloader';
+
+/**
+ * @property {Number} updateSensitivity
+ * @property {Boolean} downloadsRestored
+ */
 class DownloadService extends BaseService {
   /**
    * @property
@@ -31,9 +37,15 @@ class DownloadService extends BaseService {
   constructor() {
     super();
 
+    this.updateSensitivity = 500;
+
+    this.downloadsRestored = false;
+
     this.mainWindow = WindowManager.getWindow('app');
 
     this.downloadManager = DownloadManager.getManager();
+
+    this.settingStorage = SettingStorage.getDefault();
 
     this.notificationManager = NotificationManager.getDefault();
 
@@ -41,14 +53,28 @@ class DownloadService extends BaseService {
      * @type {DownloadCacheManager}
      */
     this.downloadCacheManager = DownloadCacheManager.getManager({
-      cacheFile: path.join(app.getPath('userData'), 'cached_downloads.json')
+      cacheFile: SettingStorage.getSetting('singleUserMode') === false ?
+        path.join(GetPath.userData(), 'cached_downloads.json') :
+        path.join(GetPath.installation(), 'cached_downloads.json')
+    });
+
+    /**
+     * Listen settings change. If setting singleUserMode has been changed, the download cached file should
+     * be moved to new location.
+     */
+    this.settingStorage.on('change', (newSettings, oldSettings) => {
+      if (newSettings.singleUserMode && !oldSettings.singleUserMode) {
+        this.downloadCacheManager.moveCacheFile(path.join(GetPath.installation(), 'cached_downloads.json'));
+      } else if (!newSettings.singleUserMode && oldSettings.singleUserMode) {
+        this.downloadCacheManager.moveCacheFile(path.join(GetPath.userData(), 'cached_downloads.json'));
+      }
     });
 
     this.downloadManager.on('add', downloader => {
       this.downloadCacheManager.cacheDownload(downloader);
 
-      this.notificationManager.showDownloadAddedNotification({
-        title: `Download ${downloader.id} is added`
+      this.notificationManager.queueNotification({
+        title: `Download ${downloader.id} id added`
       });
 
       this.mainWindow.webContents.send(this.responseChannel('add'), downloader.toJSON());
@@ -73,7 +99,7 @@ class DownloadService extends BaseService {
     });
 
     this.downloadManager.on('stop', download => {
-      this.mainWindow.webContents.send(this.responseChannel('stop'), download.id);
+      this.mainWindow.webContents.send(this.responseChannel('stop'), download.toJSON());
     });
 
     this.downloadManager.on('stop-batch', downloadIds => {
@@ -82,11 +108,16 @@ class DownloadService extends BaseService {
 
     this.downloadManager.on('update', downloader => {
       if (this.downloadManager.getWorkDownloader(downloader.id)) {
-        this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+        let nowTime = Date.now();
+        if (this.startTime === null || (nowTime - this.startTime) >= this.updateSensitivity) {
+          this.startTime = nowTime;
+          this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
+        }
       }
     });
 
     this.downloadManager.on('finish', downloader => {
+      this.mainWindow.webContents.send(this.responseChannel('update'), downloader.toJSON());
       this.downloadCacheManager.removeDownload(downloader.id);
     });
 
@@ -98,7 +129,11 @@ class DownloadService extends BaseService {
 
     ipcMain.on(DownloadService.channel, this.channelIncomeHandler.bind(this));
 
-    this.restoreDownloads();
+    this.startTime = null;
+
+    // this.restoreDownloads();
+
+    // this.mainWindow.webContents.send(this.responseChannel('restore'));
   }
 
   /**
@@ -120,29 +155,65 @@ class DownloadService extends BaseService {
     return DownloadService.channel + `:${name}`;
   }
 
-  restoreDownloads() {
+  /**
+   * test method
+   */
+  restoreDownloadsAction({ saveTo }) {
+    this.restoreDownloads({ saveTo });
+  }
+
+  restoreDownloads({ saveTo }) {
+    /**
+     * Check if the downloads has been restored
+     */
+    if (this.downloadsRestored) {
+      return;
+    }
+
+    /**
+     * Mark downloads has been restored
+     */
+    this.downloadsRestored = true;
+
     const cachedDownloads = this.downloadCacheManager.getCachedDownloads();
-    let downloaders = [];
+
+    let downloaders = [], count = 0;
 
     debug.sendStatus('Restoring downloads');
 
-    for (let downloadId in cachedDownloads) {
-      console.log(cachedDownloads[downloadId], downloadId);
-      downloaders.push(UndeterminedDownloader.createDownloader({
-        workId: downloadId,
-        options: cachedDownloads[downloadId].options
-      }));
-    }
+    Object.keys(cachedDownloads).forEach(key => {
+      try {
+        let options = cachedDownloads[key].options;
 
-    debug.sendStatus('Downloads have been restored');
+        if (saveTo) {
+          options.saveTo = saveTo;
+        }
+
+        let provider = DownloadAdapter.getProvider(cachedDownloads[key].url);
+
+        downloaders.push(provider.createDownloader({
+          url: cachedDownloads[key].url,
+          saveTo: options.saveTo || cachedDownloads[key].saveTo || this.settingStorage.getSetting('saveTo'), // for compatibility
+          options
+        }));
+
+        count++;
+      } catch (error) {
+        debug.log(error);
+        this.downloadCacheManager.removeDownload();
+      }
+    });
 
     /**
      * do not start downloads automatically after downloads are restored
      */
     this.downloadManager.addDownloaders(downloaders, {
-      mute: true,
-      autoStart: false
+      mute: false
     });
+
+    this.mainWindow.webContents.send(this.responseChannel('download-service:restore'));
+
+    debug.sendStatus('Downloads have been restored. Count: ' + count);
   }
 
   fetchAllDownloadsAction() {
@@ -158,74 +229,53 @@ class DownloadService extends BaseService {
 
     debug.sendStatus('All downloads are fetched');
   }
-
-  createDownloadAction({url, saveTo}) {
-    debug.sendStatus('Try to create download');
-
+//
+  /**
+   * Handle create download action sent from renderer
+   * @param {{url: String, saveTo: String, types: Object}} args
+   */
+  createDownloadAction({url, saveTo, types}) {
     try {
-      fs.ensureDirSync(saveTo);
+      let provider = DownloadAdapter.getProvider(url);
+      let options = {};
+
+      /**
+       * Build acceptTypes option
+       */
+      if (types) {
+        options.acceptTypes = types;
+      }
+
+      /**
+       * Testing new way to add downloaders
+       */
+      this.downloadManager.addDownloader(provider.createDownloader({ saveTo, options }));
     } catch (error) {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `Cannot save files to path ${saveTo}`);
-
-      debug.sendStatus('Cannot create save path');
-
-      return;
+      debug.log(error);
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
     }
+  }
 
-    let workId = UrlParser.getWorkIdFromUrl(url);
+  /**
+   * Handle create bookmark download action sent from renderer
+   * @param {Object} options
+   * @param {Array} options.pages
+   * @param {String} options.rest
+   * @param {String} options.saveTo
+   */
+  createBmDownloadAction({pages, rest, saveTo}) {
+    try {
+      let options = { pages, rest },
+          provider = PixivBookmarkProvider.createProvider(options);
 
-    /**
-     * This is a work url
-     */
-    if (workId) {
-      if (this.downloadManager.getWorkDownloader(workId)) {
-        debug.sendStatus('Duplicated download');
-
-        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
-
-        return;
-      }
-
-      this.downloadManager.createWorkDownloader({
-        workId,
-        options: {
-          saveTo: saveTo
-        }
-      });
-
-      debug.sendStatus('Download created');
-
-      return;
+      this.downloadManager.addDownloader(provider.createDownloader({
+        saveTo,
+        options
+      }));
+    } catch (error) {
+      debug.log(error);
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
     }
-
-    let userUrlInfo = UrlParser.getPixivUserUrlInfo(url);
-
-    if (userUrlInfo) {
-      workId = `user-${userUrlInfo.userId}`;
-
-      if (this.downloadManager.getWorkDownloader(workId)) {
-        debug.sendStatus('Duplicated download');
-
-        WindowManager.getWindow('app').webContents.send(this.responseChannel('duplicated'), workId);
-
-        return;//
-      }
-
-      this.downloadManager.createUserDownloader({
-        workId,
-        options: {
-          saveTo: saveTo
-        }
-      });
-
-      debug.sendStatus('User download created');
-
-      return;
-    }
-
-    WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), `It's a invalid download url: ${url}`);
-
-    debug.sendStatus('Cannot create download');
   }
 
   deleteDownloadAction({downloadId}) {
@@ -280,6 +330,24 @@ class DownloadService extends BaseService {
     debug.sendStatus('Open download folder')
 
     this.downloadManager.openFolder({downloadId});
+  }
+
+  /**
+   * @returns {void}
+   */
+  hasCachedDownloadsAction() {
+    if (this.downloadsRestored) {
+      return;
+    }
+
+    WindowManager.getWindow('app').webContents.send(
+      this.responseChannel('cached-downloads-result'),
+      Object.keys(this.downloadCacheManager.getCachedDownloads()).length > 0
+    )
+  }
+
+  clearCachedDownloadsAction() {
+    this.downloadCacheManager.clearDownloads();
   }
 }
 

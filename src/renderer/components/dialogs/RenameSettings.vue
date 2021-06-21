@@ -1,10 +1,10 @@
 <template>
-  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule">
-    <el-form-item :label-width="formLabelWidth"
-      :label="$t('_save_ugoira_in_subfolder')"
-    >
-      <el-switch v-model="scopedSettings.saveUgoiraInSubfolder"></el-switch>
-    </el-form-item>
+  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule"
+    :label-width="formLabelWidth"
+  >
+    <el-divider
+      content-position="left"
+    >Works on Pixiv main site rename settings</el-divider>
 
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_ugoira') }}</span>
@@ -16,25 +16,29 @@
       <el-input v-model="scopedSettings.mangaRename"></el-input>
     </el-form-item>
 
-    <el-form-item :label-width="formLabelWidth">
-      <span slot="label">{{ $t('_format_manga_image') }}</span>
-      <el-input v-model="scopedSettings.mangaImageRename"></el-input>
-    </el-form-item>
-
-    <el-form-item :label-width="formLabelWidth"
+    <!-- <el-form-item :label-width="formLabelWidth"
       :label="$t('_save_illust_in_subfolder')"
     >
       <el-switch v-model="scopedSettings.saveIllustrationInSubfolder"></el-switch>
-    </el-form-item>
+    </el-form-item> -->
 
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_illust') }}</span>
-      <el-input :disabled="!scopedSettings.saveIllustrationInSubfolder" v-model="scopedSettings.illustrationRename"></el-input>
+      <el-input v-model="scopedSettings.illustrationRename"></el-input>
     </el-form-item>
 
+    <el-form-item>
+      <span slot="label">{{ $t('_format_novel') }}</span>
+      <el-input v-model="scopedSettings.novelRename"></el-input>
+    </el-form-item>
+
+    <el-divider
+      content-position="left"
+    >Works on Pixiv Comic rename setting</el-divider>
+
     <el-form-item :label-width="formLabelWidth">
-      <span slot="label">{{ $t('_format_illust_image') }}</span>
-      <el-input v-model="scopedSettings.illustrationImageRename"></el-input>
+      <span slot="label">{{ $t('_format_pixiv_comic') }}</span>
+      <el-input v-model="scopedSettings.pixivComicWorkRename"></el-input>
     </el-form-item>
   </el-form>
 </template>
@@ -45,16 +49,15 @@ import { ipcRenderer } from "electron";
 export default {
   data() {
     return {
-      formLabelWidth: "160px",
+      formLabelWidth: "120px",
 
       scopedSettings: {
-        saveUgoiraInSubfolder: true,
         saveIllustrationInSubfolder: true,
         ugoiraRename: '',
         mangaRename: '',
-        mangaImageRename: '',
         illustrationRename: '',
-        illustrationImageRename: ''
+        novelRename: '',
+        pixivComicWorkRename: ''
       },
 
       settingsRule: {
@@ -90,6 +93,12 @@ export default {
       },
 
       deep: true
+    }
+  },
+
+  methods: {
+    goToHelp() {
+      debugger;
     }
   }
 };

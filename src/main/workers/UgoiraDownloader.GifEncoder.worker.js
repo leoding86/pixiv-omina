@@ -5,6 +5,15 @@ import Zip from 'jszip';
 
 class UgoiraDownloaderGifEncoderWorker {
   constructor({ file, saveFile }) {
+    this.init({ file, saveFile });
+  }
+
+  static run({ file, saveFile }) {
+    let worker = new UgoiraDownloaderGifEncoderWorker({ file, saveFile });
+    return worker;
+  }
+
+  init({ file, saveFile }) {
     this.file = file;
 
     this.saveFile = saveFile;
@@ -19,15 +28,15 @@ class UgoiraDownloaderGifEncoderWorker {
 
     this.frameIndex = 0;
 
-    this.gifEncoder;
+    this.gifEncoder = null;
+
+    this.abortSign = false;
+
+    return this;
   }
 
-  static run({ file, saveFile }) {
-    let worker = new UgoiraDownloaderGifEncoderWorker({ file, saveFile });
-
-    worker.prepare().then(() => {
-      worker.encode();
-    });
+  abort() {
+    this.abortSign = true;
   }
 
   createTempFileWriteStream() {
@@ -65,7 +74,13 @@ class UgoiraDownloaderGifEncoderWorker {
   }
 
   addFrame() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (this.abortSign) {
+        this.abortSign = false;
+        reject(Error('aborted'));
+        return;
+      }
+
       const frame = this.frames[this.frameIndex];
 
       if (!frame) {
@@ -76,36 +91,78 @@ class UgoiraDownloaderGifEncoderWorker {
       this.zipObj.file(frame.file).async('nodebuffer').then(buffer => {
         return Jimp.read(buffer);
       }).then(image => {
-        if (!this.gifEncoder) {
-          this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height);
-          this.gifEncoder.setQuality(1);
-
-          this.gifEncoder.on('frame#stop', () => {
-            process.send({
-              status: 'progress',
-              progress: Math.floor(this.frameIndex / this.frames.length * 100) / 100
+        try {
+          if (!this.gifEncoder) {
+            this.gifEncoder = new GifEncoder(image.bitmap.width, image.bitmap.height, {
+              highWaterMark: 5 * 1024 * 1024
             });
+            this.gifEncoder.setQuality(1);
+
+            this.gifEncoder.on('frame#stop', () => {
+              process.send({
+                status: 'progress',
+                progress: Math.floor(this.frameIndex / this.frames.length * 100) / 100
+              });
+            });
+
+            this.gifEncoder.setRepeat(0);
+            this.gifEncoder.pipe(this.createTempFileWriteStream());
+            this.gifEncoder.writeHeader();
+          }
+
+          this.gifEncoder.setDelay(frame.delay);
+          this.gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
+
+          this.frameIndex++;
+
+          resolve(this.addFrame(this.frameIndex));
+        } catch (e) {
+          process.send({
+            status: 'error',
+            message: e.message
           });
-
-          this.gifEncoder.setRepeat(0);
-          this.gifEncoder.pipe(this.createTempFileWriteStream());
-          this.gifEncoder.writeHeader();
         }
-
-        this.gifEncoder.setDelay(frame.delay);
-        this.gifEncoder.addFrame(Array.prototype.slice.call(image.bitmap.data, 0));
-
-        this.frameIndex++;
-
-        resolve(this.addFrame(this.frameIndex));
       });
     });
   }
 }
 
+/**
+ * @var {UgoiraDownloaderGifEncoderWorker}
+ */
+let worker;
+
 process.on('message', data => {
-  UgoiraDownloaderGifEncoderWorker.run({
-    file: data.file,
-    saveFile: data.saveFile
-  });
+  if (data.action) {
+    if (data.action === 'abort') {
+      worker && worker.abort();
+    }
+  } else {
+    if (worker) {
+      worker.init({
+        file: data.file,
+        saveFile: data.saveFile
+      });
+    } else {
+      worker = UgoiraDownloaderGifEncoderWorker.run({
+        file: data.file,
+        saveFile: data.saveFile
+      });
+    }
+
+    worker.prepare().then(() => {
+      worker.encode();
+    }).catch(error => {
+      if (error.message === 'aborted') {
+        process.send({
+          status: 'abort'
+        });
+      } else {
+        process.send({
+          status: 'error',
+          message: error.message
+        });
+      }
+    });
+  }
 });

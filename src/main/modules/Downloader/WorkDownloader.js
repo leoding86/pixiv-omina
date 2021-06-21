@@ -1,8 +1,13 @@
-import path from 'path';
+import { debug } from '@/global';
+import Download from '@/modules/Download';
 import EventEmitter from 'events';
 import Request from '@/modules/Request';
-import Download from '@/modules/Download';
 import WindowManager from '@/modules/WindowManager';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
+import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
+import path from 'path';
+import FormatName from '../Utils/FormatName';
+import BaseProvider from './Providers/BaseProvider';
 
 /**
  * @class
@@ -14,7 +19,15 @@ class WorkDownloader extends EventEmitter {
   constructor() {
     super();
 
+    /**
+     * @type {WindowManager}
+     */
     this.windowManager = WindowManager.getManager();
+
+    /**
+     * @type {DownloadManager}
+     */
+    this.downloadManager = DownloadManager.getDefault();
 
     /**
      * @type {Request}
@@ -29,6 +42,16 @@ class WorkDownloader extends EventEmitter {
     /**
      * @type {string}
      */
+    this.url = null;
+
+    /**
+     * @type {BaseProvider}
+     */
+    this.provider = null;
+
+    /**
+     * @type {string}
+     */
     this.id = null;
 
     /**
@@ -37,9 +60,9 @@ class WorkDownloader extends EventEmitter {
     this.progress = 0;
 
     /**
-     * @type {Object|null}
+     * @type {object}
      */
-    this.context = null;
+    this.context = {};
 
     /**
      * @type {WorkDownloader.state}
@@ -53,7 +76,6 @@ class WorkDownloader extends EventEmitter {
 
     /**
      * @property {Object} options
-     * @property {string} options.saveTo
      * @property {boolean} options.isUser
      */
     this.options = {
@@ -64,6 +86,11 @@ class WorkDownloader extends EventEmitter {
      * @type {string|number}
      */
     this.type = null;
+
+    /**
+     * @property {string}
+     */
+    this.saveTo = null;
 
     /**
      * @property {boolean}
@@ -84,8 +111,25 @@ class WorkDownloader extends EventEmitter {
 
     /**
      * If mute is true, the intance will not fire any events
+     * @property {Boolean}
      */
     this.mute = false;
+
+    /**
+     * @property {String}
+     */
+    this.saveFolder = null;
+
+    /**
+     * @property {String}
+     */
+    this.saveFilename = null;
+
+    /**
+     * The plugin id
+     * @property {String}
+     */
+    this.pluginId = null;
   }
 
   get speed() {
@@ -97,7 +141,11 @@ class WorkDownloader extends EventEmitter {
   }
 
   get title() {
-    return this.id;
+    return this.url;
+  }
+
+  get externalUrl() {
+    return this.url;
   }
 
   /**
@@ -114,12 +162,10 @@ class WorkDownloader extends EventEmitter {
   }
 
   /**
-   * @param {Object} param
-   * @param {number|string} param.workId
-   * @param {Object} param.options
+   * @param {{ url: string, saveTo: string, options: object, provider: any }}
    * @returns {WorkDownloader}
    */
-  static createDownloader({workId, options}) {
+  static createDownloader({url, saveTo, options, provider}) {
     throw Error('Abstract method, not implemented');
   }
 
@@ -143,9 +189,11 @@ class WorkDownloader extends EventEmitter {
   }
 
   getImageSaveFolder() {
-    return this.saveInSubfolder ?
-      path.join(this.options.saveTo, this.getImageSaveFolderName()) :
-      this.options.saveTo;
+    throw Error('Method getImageSaveFolder is not implemented');
+  }
+
+  getRelativeSaveFolder() {
+    throw Error('Method getRelativeSaveFolder is not implemented');
   }
 
   isUser() {
@@ -176,7 +224,10 @@ class WorkDownloader extends EventEmitter {
 
   setDownloading(message) {
     this.statusMessage = message || 'Downloading';
-    this.state = WorkDownloader.state.downloading;
+
+    if (!this.isStopping() && !this.isStop()) {
+      this.state = WorkDownloader.state.downloading;
+    }
 
     if (!this.recycle) {
       this.emit('progress', { downloader: this });
@@ -235,6 +286,8 @@ class WorkDownloader extends EventEmitter {
     if (!this.recycle) {
       this.emit('error', { downloader: this });
     }
+
+    debug.log(error);
   }
 
   isPending() {
@@ -268,25 +321,30 @@ class WorkDownloader extends EventEmitter {
   }
 
   /**
-   *
+   * Check if the downloader can be stopped
+   */
+  isStoppable() {
+    return !(this.isStopping() || this.isProcessing());
+  }
+
+  /**
+   * Stop the downloader
    * @param {Object} options
    * @param {Boolean} [options.mute=false]
+   * @throws {WorkDownloaderUnstoppableError}
    */
   stop(options) {
+    if (!this.isStoppable()) {
+      throw new WorkDownloaderUnstoppableError();
+    }
+
     let { mute = false } = Object.assign({}, options);//
-
-    if (this.isProcessing()) {
-      return;
-    }
-
-    if (this.isStopping()) {
-      return;
-    }
 
     this.setMute(mute);
 
     this.setStopping();
 
+    this.provider && this.provider.request && this.provider.request.abort();
     this.download && this.download.abort();
     this.request && this.request.abort();
 
@@ -302,18 +360,42 @@ class WorkDownloader extends EventEmitter {
     throw 'Not implemeneted';
   }
 
+  /**
+   * Make saveFolder and saveFilename from rename template
+   * @param {String} template
+   * @returns {this}
+   */
+  makeSaveOptionFromRenameTemplate(template) {
+    let parts = template.split('/');
+
+    this.saveFilename = FormatName.format(parts.pop(), this.context);
+
+    if (parts.length > 0) {
+      this.saveFolder = path.join(this.saveTo, FormatName.format(parts.join('/'), this.context, null, { mode: 'folder' }), '/');
+    } else {
+      this.saveFolder = this.saveTo;
+    }
+
+    return this;
+  }
+
   toJSON() {
     let data = {
       id: this.id,
       title: this.title,
+      externalUrl: this.externalUrl,
       state: this.state,
-      speed: this.speed,
-      progress: this.progress,
+      speed: this.speed || (this.download ? this.download.speed : 0),
+      progress: this.progress || (this.download ? this.download.progress : 0),
       statusMessage: this.statusMessage,
       type: this.type
     };
 
     return data;
+  }
+
+  emit(event, ...args) {
+    super.emit(event, ...args);
   }
 }
 

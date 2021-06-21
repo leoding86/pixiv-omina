@@ -61,6 +61,7 @@ class DownloadCacheManager {
   cacheDownload(download) {
     if (download.id && this.cachedDownloads[download.id] === undefined) {
       this.cachedDownloads[download.id] = {
+        url: download.url,
         options: download.options
       };
 
@@ -76,6 +77,8 @@ class DownloadCacheManager {
     downloads.forEach(download => {
       if (download.id && this.cachedDownloads[download.id] === undefined) {
         this.cachedDownloads[download.id] = {
+          url: download.url,
+          saveTo: download.saveTo,
           options: download.options
         };
       }
@@ -110,6 +113,29 @@ class DownloadCacheManager {
       fs.writeFileSync(this.cacheFile, JSON.stringify(this.cachedDownloads));
     } catch (error) {
       this.debugService.sendNotice(`Cannot remove download from storage: ${error.message}`);
+    }
+  }
+
+  /**
+   * Clear all cached downloads
+   * @returns {void}
+   */
+  clearDownloads() {
+    fs.writeFileSync(this.cacheFile, '');
+  }
+
+  /**
+   * Move cache file to destination
+   * @param {String} dest
+   * @returns {void}
+   */
+  moveCacheFile(dest) {
+    if (dest !== this.cacheFile && fs.existsSync(this.cacheFile)) {
+      fs.moveSync(this.cacheFile, dest, {
+        overwrite: true
+      });
+
+      this.cacheFile = dest;
     }
   }
 }

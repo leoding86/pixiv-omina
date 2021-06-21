@@ -5,7 +5,7 @@
     :title="$t('_settings')"
     :show-close="false"
     :close-on-click-modal="false"
-    :width="'480px'"
+    :width="'640px'"
     :visible.sync="show"
   >
     <el-tabs
@@ -30,12 +30,28 @@
       </el-tab-pane>
 
       <el-tab-pane
+        :label="$t('_download')"
+        name="download"
+      >
+        <download-settings
+          @changed="settingsChangedHandler"
+        ></download-settings>
+      </el-tab-pane>
+
+      <el-tab-pane
         :label="$t('_proxy')"
         name="proxy"
       >
         <proxy-settings
           @changed="settingsChangedHandler"
         ></proxy-settings>
+      </el-tab-pane>
+
+      <el-tab-pane
+        :label="$t('_help')"
+        name="help"
+      >
+        <app-help></app-help>
       </el-tab-pane>
 
       <el-tab-pane
@@ -50,14 +66,13 @@
       class="dialog-footer"
     >
       <el-button
-        style="float:left;"
-        size="mini"
-        @click="showHelp"
-      >{{ $t('_help') }}</el-button>
-      <el-button
         @click="$emit('update:show', false)"
         size="mini"
       >{{ $t('_close') }}</el-button>
+      <el-button
+        @click="resetSettings"
+        size="mini"
+      >{{ $t('_reset') }}</el-button>
       <el-button
         type="primary"
         @click="saveSettings"
@@ -72,6 +87,8 @@ import { ipcRenderer } from 'electron';
 import GeneralSettings from './GeneralSettings';
 import ProxySettings from './ProxySettings';
 import RenameSettings from './RenameSettings';
+import DownloadSettings from './DownloadSettings';
+import Help from '../Help';
 import About from '../About';
 
 export default {
@@ -79,6 +96,8 @@ export default {
     'general-settings': GeneralSettings,
     'proxy-settings': ProxySettings,
     'rename-settings': RenameSettings,
+    'download-settings': DownloadSettings,
+    'app-help': Help,
     'app-about': About
   },
 
@@ -100,6 +119,12 @@ export default {
   beforeMount() {
     this.changedSettings = {};
     this.scopedSettings = Object.assign({}, this.settings);
+
+    ipcRenderer.on('setting-service:permission-error', this.permissionErrorHandler);
+  },
+
+  beforeDestroy() {
+    ipcRenderer.removeListener('setting-service:permission-error', this.permissionErrorHandler);
   },
 
   watch: {
@@ -117,6 +142,15 @@ export default {
       this.settingsChanged = !!this.diffSettings(this.changedSettings);
     },
 
+    resetSettings() {
+      if (window.confirm(this.$t('_reset_settings_confirmation'))) {
+        console.log('reset settings button is clicked');
+        ipcRenderer.send('setting-service', {
+          action: 'resetSettings'
+        });
+      }
+    },
+
     saveSettings() {
       const changedSettings = this.diffSettings(this.changedSettings);
 
@@ -130,19 +164,8 @@ export default {
       }
     },
 
-    showHelp() {
-      const h = this.$createElement;
-
-      this.$msgbox({
-        title: this.$t('_help'),
-        message: h('div', null, [
-          h('p', null, this.$t('_valid_rename_placeholders') + ': '),
-          h('p', null, '%id%, $title%, %user_id%, %user_name%, %page_num%')
-        ]),
-        showConfirmButton: false
-      }).catch(() => {
-        //ignore it
-      });
+    permissionErrorHandler() {
+      alert(this.$t('_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it'));
     }
   }
 }

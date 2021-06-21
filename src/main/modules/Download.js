@@ -1,12 +1,13 @@
-import fs from 'fs-extra';
 import path, { extname } from 'path';
-import formatUrl from 'url';
-import mime from 'mime-types';
+
+// import Request from '@/modules/Request';
+import Request from '@/modules/Request';
 import {
   debug
 } from '@/global';
-// import Request from '@/modules/Request';
-import Request from '@/modules/Request';
+import formatUrl from 'url';
+import fs from 'fs-extra';
+import mime from 'mime-types';
 
 /**
  * Notice that the dl-progress event is not triggered every time, review codes for detail.
@@ -64,16 +65,8 @@ class Download extends Request {
     this.tempFile = '';
 
     /**
-     * @property {number}
-     */
-    this.speed = 0;
-
-    /**
-     * @property {number}
-     */
-    this.progress = 0;
-
-    /**
+     * Milliseconds
+     *
      * @property {number}
      */
     this.speedSensitivity = 100;
@@ -102,6 +95,50 @@ class Download extends Request {
      * @property {boolean}
      */
     this.skipped = false;
+
+    /**
+     * @property {Number}
+     */
+    this.escapedTime = 0;
+
+    /**
+     * @property {Number}
+     */
+    this.completedDataSize = 0;
+
+    /**
+     * @property {Number}
+     */
+    this.totalDataSize = 0;
+
+    /**
+     * @property {Boolean}
+     */
+    this.isFinished = false;
+  }
+
+  /**
+   * @returns {Number}
+   */
+  get speed() {
+    if (this.escapedTime > 0) {
+      return this.completedDataSize / this.escapedTime * 1000;
+    } else {
+      return this.completedDataSize;
+    }
+  }
+
+  /**
+   * @returns {Number}
+   */
+  get progress() {
+    if (this.isFinished) {
+      return 1;
+    } else if (this.totalDataSize > 0) {
+      return this.completedDataSize / this.totalDataSize;
+    } else {
+      return 0;
+    }
   }
 
   /**
@@ -209,18 +246,15 @@ class Download extends Request {
       }
 
       this.on('response', response => {
-        let totalSize = 0;
-        let completeSize = 0;
-
-        if (response.headers['content-length']) {
-          totalSize = Array.isArray(response.headers['content-length']) ?
-            response.headers['content-length'][0] :
-            response.headers['content-length'];
-        }
-
         if (response.statusCode !== 200) {
           this.setError(Error(response.statusCode));
           return;
+        }
+
+        if (response.headers['content-length']) {
+          this.totalDataSize = Array.isArray(response.headers['content-length'])
+                      ? parseInt(response.headers['content-length'][0])
+                      : parseInt(response.headers['content-length']);
         }
 
         const contentType = response.headers['content-type'];
@@ -244,31 +278,27 @@ class Download extends Request {
           }
         }
 
-        let speedChunkDataLength = 0, duration = 0;
-
-        let startTime = Date.now();
-
-        let downloadTemporaryWriteStream = this.createDownloadTemporaryFileWriteStream(saveFile);
+        let startTime = Date.now(),
+            nowTime = 0,
+            eventStartTime = 0,
+            downloadTemporaryWriteStream = this.createDownloadTemporaryFileWriteStream(saveFile);
 
         response.pipe(downloadTemporaryWriteStream);
 
         response.on('data', data => {
-          let nowTime = Date.now();
+          nowTime = Date.now();
 
-          completeSize += data.length;
+          this.completedDataSize += data.length;
 
-          duration = nowTime - startTime;
+          this.escapedTime = nowTime - startTime;
 
-          if (duration >= this.speedSensitivity) {
-            this.speed = Math.floor(speedChunkDataLength / duration * 1000);
-            this.progress = (totalSize ? Math.floor(completeSize / totalSize * 100) : 0) / 100;
+          if (eventStartTime === 0 || (nowTime - eventStartTime) >= this.speedSensitivity) {
+            this.setProgress();
 
-            this.emit('dl-progress');
-
-            startTime = nowTime;
-            speedChunkDataLength = 0;
-          } else {
-            speedChunkDataLength += data.length;
+            /**
+             * Reset event start time
+             */
+            eventStartTime = Date.now();
           }
         });
 
@@ -280,15 +310,16 @@ class Download extends Request {
 
           this.renameTemporaryFileToSaveFile(path.join(this.saveTo, this.saveName));
 
-          this.speed = 0;
-
           this.endTime = Date.now();
 
           this.completeTime = this.endTime - this.startTime;
 
-          this.progress = 1;
-
-          this.setFinish();
+          /**
+           * Waiting os REALLY write data to file
+           */
+          setTimeout(() => {
+            this.setFinish();
+          }, 1000);
         });
 
         response.on('error', error => {
@@ -333,6 +364,12 @@ class Download extends Request {
     });
   }
 
+  setStart() {
+    this.emit('dl-begin');
+
+    debug.sendStatus(`Download ${this.options.url} is begin`);
+  }
+
   setProgress() {
     this.emit('dl-progress');
 
@@ -340,7 +377,7 @@ class Download extends Request {
   }
 
   setFinish() {
-    this.progress = 1;
+    this.isFinished = true;
 
     this.emit('dl-finish', { file: path.join(this.saveTo, this.saveName) });
 

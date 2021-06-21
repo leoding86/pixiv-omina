@@ -1,6 +1,9 @@
 <template>
-  <el-form ref="settingsForm" size="mini" :model="scopedSettings" :rules="settingsRule">
-    <el-form-item :label="$t('_language')" :label-width="formLabelWidth">
+  <el-form ref="settingsForm" size="mini" :model="scopedSettings"
+    :rules="settingsRule"
+    :label-width="formLabelWidth"
+  >
+    <el-form-item :label="$t('_language')">
       <el-select v-model="scopedSettings.locale">
         <el-option v-for="(lang, local) in avaliableLocales"
           :key="local"
@@ -10,33 +13,33 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item :label="$t('_close_to_tray')" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_close_to_tray')">
       <el-switch v-model="scopedSettings.closeToTray"></el-switch>
     </el-form-item>
 
-    <el-form-item :label="$t('_show_notification')" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_show_notification')">
       <el-switch v-model="scopedSettings.showNotification"></el-switch>
     </el-form-item>
 
-    <el-form-item :label="$t('_user_agent')" :label-width="formLabelWidth">
+    <el-form-item :label="$t('_user_agent')">
       <el-input type="textarea" v-model="scopedSettings.userAgent" :rows="4"></el-input>
     </el-form-item>
 
-    <el-form-item :label="$t('_save_to')" :label-width="formLabelWidth">
-      <directory-selector v-model="scopedSettings.saveTo"></directory-selector>
+    <el-form-item :label="$t('_single_user_mode')">
+      <el-switch v-model="scopedSettings.singleUserMode"></el-switch>
+      <el-tooltip effect="dark" placement="top"
+        :content="$t('_save_settings_and_other_data_in_installation_folder_if_it_s_enabled')"
+      >
+        <i class="el-icon-info"></i>
+      </el-tooltip>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
 import { ipcRenderer } from "electron";
-import DirectorySelector from "../DirectorySelector";
 
 export default {
-  components: {
-    "directory-selector": DirectorySelector
-  },
-
   data() {
     return {
       formLabelWidth: "140px",
@@ -44,9 +47,9 @@ export default {
       scopedSettings: {
         closeToTray: false,
         showNotification: true,
+        locale: 'en',
         userAgent: '',
-        saveTo: '',
-        locale: 'en'
+        singleUserMode: false
       },
 
       avaliableLocales: {

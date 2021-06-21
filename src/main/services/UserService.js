@@ -9,6 +9,8 @@ import WindowManager from '@/modules/WindowManager';
 import UrlBuilder from '@/../utils/UrlBuilder';
 import BaseService from '@/services/BaseService';
 import ServiceContainer from '@/ServiceContainer';
+import SettingStorage from '@/modules/SettingStorage';
+import { parse } from 'node-html-parser';
 
 /**
  * @class
@@ -67,10 +69,12 @@ class UserService extends BaseService {
         nodeIntegration: true,
         webviewTag: true
       }
+    }, {}, {
+      locale: SettingStorage.getDefault().getSetting('locale')
     });
 
     loginWindow.on('closed', event => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
+      this.checkUserLoginAction();
     });
   }
 
@@ -88,7 +92,7 @@ class UserService extends BaseService {
     });
 
     request.once('close', () => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('check-login'));
+      this.checkUserLoginAction();
     });
 
     request.end();//
@@ -97,28 +101,73 @@ class UserService extends BaseService {
   /**
    * Check login state then response renderer
    */
-  checkUserLoginedAction() {
+  checkUserLoginAction() {
     debug.sendStatus('Checking login status');
 
-    this.checkUserLogined().then(() => {
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('logined'));
+    this.checkUserLogin().then(() => {
+      WindowManager.getWindow('app').webContents.send(
+        this.responseChannel('check-login'), true
+      );
 
       debug.sendStatus('Logined');
     }).catch(error => {
-      if (error && error.message) {
-        // console.log(error.message);
-      }
+      WindowManager.getWindow('app').webContents.send(
+        this.responseChannel('check-login'), false, error && error.name
+      );
 
-      WindowManager.getWindow('app').webContents.send(this.responseChannel('not-login'));
+      debug.sendStatus('Not login');
+    });
+  }
 
-      debug.sendStatus('Logouted');
+  /**
+   * @deprecated
+   * @returns {Promise}
+   */
+  getBookmarkInfoAction({ rest = 'show' }) {
+    return new Promise((resolve, reject) => {
+      let url = UrlBuilder.getBookmarkUrl({ rest });
+
+      let request = new Request({
+        url: url
+      });
+
+      request.on('response', response => {
+        let body = '';
+
+        response.on('data', data => {
+          body += data;
+        });
+
+        response.on('error', () => {
+          WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info-error'));
+          reject('response error');
+        });
+
+        response.on('end', () => {
+          const doc = parse(body);
+          let $pageList = doc.querySelector('.page-list'),
+              $pages = $pageList.querySelectorAll('li'),
+              len = ($pages && $pages.length > 0) ? $pages.length : 1,
+              data = { pages: len };
+
+          WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info'), data);
+          resolve(data);
+        });
+      });
+
+      request.on('error', error => {
+        WindowManager.getWindow('app').webContents.send(this.responseChannel('bookmark-info-error'));
+        reject(error.message);
+      });
+
+      request.end();
     });
   }
 
   /**
    * @returns {Promise}
    */
-  checkUserLogined() {
+  checkUserLogin() {
     return new Promise((resolve, reject) => {
       let url = UrlBuilder.getAccountUnreadCountUrl();
 
@@ -133,25 +182,32 @@ class UserService extends BaseService {
           body += data;
         });
 
-        response.on('error', () => {
-          reject('response error');
+        response.on('error',error => {
+          reject({
+            name: 'ResponseError',
+            message: error.message
+          });
         });
 
         response.on('end', () => {
           let jsonData = JSON.parse(body);
-          // console.log(jsonData)
 
           if (jsonData && jsonData.body && jsonData.body.unread_count) {
             resolve();
             return;
           }
 
-          reject('cannot resolve response');
+          reject({
+            name: 'InvalidResponseError'
+          });
         });
       });
 
       request.on('error', error => {
-        reject(error.message);
+        reject({
+          name: 'RequestError',
+          message: error.message
+        });
       });
 
       request.end();

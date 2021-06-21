@@ -1,7 +1,6 @@
 <template>
   <div id="app"
-    v-loading="!inited"
-    :element-loading-text="$t('_initializing_and_checking_login_status')">
+    :element-loading-text="$t('_initializing')">
 
     <div id="header">
       <app-header>
@@ -26,6 +25,17 @@
               size="small"
               icon="el-icon-download"
               @click="filterDownloads('downloading')"
+            ></el-button>
+          </el-tooltip>
+          <el-tooltip
+            placement="bottom"
+            :content="$t('_paused')"
+          >
+            <el-button
+              :type="filter === 'paused' ? 'primary' : 'default'"
+              size="small"
+              icon="el-icon-video-pause"
+              @click="filterDownloads('stop')"
             ></el-button>
           </el-tooltip>
           <el-tooltip
@@ -65,18 +75,6 @@
     </div>
 
     <div id="container">
-      <app-test v-if="debug"></app-test>
-
-      <div id="app-container-mask"
-        v-if="inited && !logined">
-        <div class="app-container-mask__body">
-          <el-button
-            type="primary"
-            @click="userLogin"
-          >{{ $t('_login_pixiv') }}</el-button>
-        </div>
-      </div>
-
       <div class="download-list__empty-notice"
         v-if="downloads.length < 1"
       >
@@ -85,7 +83,7 @@
       <app-download-list
         class="app-download-list"
         v-else
-        :downloads=downloads
+        :downloads=filteredDownloads
         @start="startDownloadHandler"
         @stop="stopDownloadHandler"
         @delete="deleteDownloadHandler"
@@ -95,8 +93,21 @@
     </div>
 
     <div id="footer">
-      <app-footer @devToolsToggled="devToolsToggledHandler"></app-footer>
+      <app-footer
+        :jobs-count="jobsCount"
+        @devToolsToggled="devToolsToggledHandler"
+        @tasksToggled="tasksToggledHandler"
+      ></app-footer>
     </div>
+
+    <app-task-list
+      v-if="showTasks"
+      :tasks="tasks"
+      @pauseTask="pauseTaskHandler"
+      @startTask="startTaskHandler"
+    ></app-task-list>
+
+    <app-restore-downloads-dialog :show.sync="showRestoreDownloadsDialog"></app-restore-downloads-dialog>
   </div>
 </template>
 
@@ -105,14 +116,16 @@ import { ipcRenderer } from "electron";
 import Header from './Header';
 import Footer from './Footer';
 import DownloadList from './DownloadList';
-import Test from './Test';
+import TaskList from './TaskList';
+import RestoreDownloadsDialog from './dialogs/RestoreDownloadsDialog';
 
 export default {
   components: {
     'app-header': Header,
     'app-footer': Footer,
     'app-download-list': DownloadList,
-    'app-test': Test
+    'app-task-list': TaskList,
+    'app-restore-downloads-dialog': RestoreDownloadsDialog
   },
 
   data() {
@@ -120,13 +133,47 @@ export default {
       downloads: [],
       downloadFilter: 'all',
       hasSelectedDownload: false,
-      debug: false
+      debug: false,
+      showTasks: false,
+      tasks: [],
+      showRestoreDownloadsDialog: false,
+      networkCannotReach: false
     }
   },
 
   computed: {
     filter() {
       return this.downloadFilter;
+    },
+
+    filteredDownloads() {
+      let downloads = [];
+
+      this.downloads.forEach(download => {
+        if (this.filter !== 'all') {
+          if (this.filter === 'finished' && download.state === 'finish') {
+            downloads.push(download);
+          } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
+            downloads.push(download);
+          } else if (this.filter === 'stop' && download.state === 'stop') {
+            downloads.push(download);
+          }
+        } else {
+          downloads.push(download);
+        }
+      });
+
+      return downloads;
+    },
+
+    jobsCount() {
+      let count = 0;
+
+      this.tasks.forEach(task => {
+        count += task.jobsLeft;
+      });
+
+      return count;
     }
   },
 
@@ -135,10 +182,28 @@ export default {
       this.clearSelections();
     },
 
-    inited(value, oldValue) {
-      if (oldValue === false && value === true) {
+    loginError(val) {
+      if (val) {
+        switch (val) {
+          case 'InvalidRequsetError':
+          case 'InvalidResponseError':
+          case 'ResponseError':
+            return this.msg(this.$t('_try_again'), 5000);
+          case 'RequestError':
+            return this.msg(this.$t('_network_error'), 5000);
+          default:
+            return;
+        }
+      }
+    },
+
+    logined(value) {
+      if (!!value && !!this.settings.autostartDownload) {
         ipcRenderer.send('download-service', {
-          action: 'fetchAllDownloads'
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
         });
       }
     }
@@ -164,18 +229,16 @@ export default {
       this.addDownloads(downloads);
     });
 
-    ipcRenderer.on('download-service:stop', (event, downloadId) => {
-      this.updateDownloads({
-        id: downloadId,
-        state: 'stop'
-      });
+    ipcRenderer.on('download-service:stop', (event, download) => {
+      this.updateDownloads(download);
     });
 
     ipcRenderer.on('download-service:stop-batch', (event, downloadIds) => {
       downloadIds.forEach(downloadId => {
         this.updateDownloads({
           id: downloadId,
-          state: 'stop'
+          state: 'stop',
+          statusMessage: 'stop'
         });
       })
     });
@@ -205,6 +268,50 @@ export default {
     ipcRenderer.on('download-service:downloads', (event, downloads) => {
       this.addDownloads(downloads);
     });
+
+    ipcRenderer.on('download-service:restore', (event) => {
+      // Try to start restored downloads
+      if (this.logined && !!this.settings.autostartDownload) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: null
+          }
+        });
+      }
+    });
+
+    ipcRenderer.on('download-service:cached-downloads-result', (event, result) => {
+      if (result) {
+        this.showRestoreDownloadsDialog = true;
+      }
+    });
+
+    ipcRenderer.on('task-service:paused', (event, task) => {
+      this.updateTask(task);
+    });
+
+    ipcRenderer.on('task-service:progress', (event, task) => {
+      this.updateTask(task);
+    });
+
+    ipcRenderer.send('download-service', {
+      action: 'hasCachedDownloads'
+    });
+  },
+
+  mounted() {
+    document.addEventListener('keydown', this.keydownHandler);
+
+    this.$nextTick(() => {
+      ipcRenderer.send('download-service', {
+        action: 'fetchAllDownloads'
+      });
+    });
+  },
+
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.keydownHandler);
   },
 
   methods: {
@@ -212,12 +319,16 @@ export default {
       this.debug = val;
     },
 
+    tasksToggledHandler(val) {
+      this.showTasks = val;
+    },
+
     canStartDownload(download) {
-      return ['pending', 'stop', 'error'].indexOf(download.state) > -1;
+      return ['stop', 'error'].indexOf(download.state) > -1;
     },
 
     canStopDownload(download) {
-      return ['downloading', 'pending'].indexOf(download.state) > -1;
+      return ['pending', 'downloading', 'processing'].indexOf(download.state) > -1;
     },
 
     canDeleteDownload(download) {
@@ -267,16 +378,12 @@ export default {
         }
       });
 
-      if (this.logined) {
-        ipcRenderer.send('download-service', {
-          action: 'startDownload',
-          args: {
-            downloadId: null
-          }
-        });
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
-      }
+      ipcRenderer.send('download-service', {
+        action: 'startDownload',
+        args: {
+          downloadId: null
+        }
+      });
     },
 
     /**
@@ -312,17 +419,13 @@ export default {
     },
 
     startDownloadHandler(download) {
-      if (this.logined) {
-        if (this.downloads.length > 0) {
-          ipcRenderer.send('download-service', {
-            action: 'startDownload',
-            args: {
-              downloadId: download.id
-            }
-          });
-        }
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
+      if (this.downloads.length > 0) {
+        ipcRenderer.send('download-service', {
+          action: 'startDownload',
+          args: {
+            downloadId: download.id
+          }
+        });
       }
     },
 
@@ -376,16 +479,12 @@ export default {
         }
       }
 
-      if (this.logined) {
-        ipcRenderer.send('download-service', {
-          action: 'batchStartDownloads',
-          args: {
-            downloadIds: downloadIds
-          }
-        });
-      } else {
-        this.$message(this.$t('_you_need_login_first'));
-      }
+      ipcRenderer.send('download-service', {
+        action: 'batchStartDownloads',
+        args: {
+          downloadIds: downloadIds
+        }
+      });
     },
 
     batchStopDownloads() {
@@ -497,17 +596,46 @@ export default {
 
     filterDownloads(type) {
       this.downloadFilter = type;
-      this.$root.$emit('download-list:filter', this.downloadFilter);
     },
 
-    userLogin() {
-      if (!this.logined) {
-        ipcRenderer.send("user-service", {
-          action: 'userLogin'
+    /**
+     * @param {	KeyboardEvent} event
+     */
+    keydownHandler(event) {
+      if (event.ctrlKey && event.keyCode === 65) {
+        this.filteredDownloads.forEach(download => {
+          this.selectDownload(download);
         });
-      } else {
-        this.$message(this.$t('_you_are_logined'));
       }
+    },
+
+    updateTask(task) {
+      for (let i = 0; i < this.tasks.length; i++) {
+        if (task.name === this.tasks[i].name) {
+          this.$set(this.tasks, i, Object.assign({}, this.tasks[i], task));
+          return;
+        }
+      }
+
+      this.tasks.push(task);
+    },
+
+    pauseTaskHandler(name) {
+      ipcRenderer.send('task-service', {
+        action: 'pauseTask',
+        args: {
+          name
+        }
+      });
+    },
+
+    startTaskHandler(name) {
+      ipcRenderer.send('task-service', {
+        action: 'startTask',
+        args: {
+          name
+        }
+      });
     }
   }
 };
@@ -570,6 +698,12 @@ export default {
   margin: 20px 0;
   color: #dedede;
   text-shadow: 0 -1px 0 #6d6d6d;
+}
+
+.login-error {
+  padding: 10px 0;
+  font-size: 12px;
+  color: gray;
 }
 
 #test {

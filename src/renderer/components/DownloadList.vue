@@ -1,120 +1,103 @@
 <template>
   <div class="download-list">
     <div class="download-list-item__content">
-      <el-card class="download-list-item"
-        :class="{'download-list-item--selected': download.selected}"
-        v-for="download in filteredDownloads"
-        @click.stop.native="downloadClickHandler(download, $event)"
-        :key=download.id
+      <recycle-scroller
+        :items="downloads"
+        :item-size="120"
+        page-mode
+        key-field="id"
+        v-slot="{ item }"
       >
-        <div :class="getDownloadTypeClassname(download.type)">{{ getDownloadType(download.type) }}</div>
+        <el-card class="download-list-item"
+          :class="{'download-list-item--selected': item.selected}"
+          @click.stop.native="downloadClickHandler(item, $event)"
+          :key=item.id
+        >
+          <div
+            class="download-list-item__title-type"
+            :class="getDownloadTypeClassname(item.type)"
+          >{{ getDownloadType(item.type) }}</div>
 
-        <div class="download-list-item__mask"
-          v-if="download.frozing"></div>
-        <div class="download-list-item__body">
-          <div class="download-list-item__title-actions">
-            <div class="download-list-item__title">
-              <p><a target="_blank" :href="`https://www.pixiv.net/artworks/${download.id}`">{{ download.title }} <i class="el-icon-link"></i></a></p>
+          <div class="download-list-item__mask"
+            v-if="item.frozing"></div>
+          <div class="download-list-item__body">
+            <div class="download-list-item__title-actions">
+              <div class="download-list-item__title">
+                <p><a target="_blank" :href="item.externalUrl">{{ item.title }} <i class="el-icon-link"></i></a></p>
+              </div>
+              <div class="download-list-item__actions">
+                <el-button-group>
+                  <el-button
+                    v-if="item.state === 'stop' || item.state === 'error'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-video-play"
+                    @click.stop.prevent="$emit('start', item)"
+                  ></el-button>
+                  <el-button
+                    v-if="item.state === 'pending' || item.state === 'processing' || item.state === 'downloading'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-video-pause"
+                    @click.stop.prevent="clickStopHandler(item)"
+                  ></el-button>
+                  <el-button
+                    v-if="item.state === 'finish'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-folder"
+                    @click.stop.prevent="openFolder(item)"
+                  ></el-button>
+                  <!-- Hidden redownload button -->
+                  <el-button
+                    v-if="false && item.state === 'finish'"
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-refresh"
+                    @click.stop.prevent="item.state === 'finish' && $emit('redownload', item)"
+                  ></el-button>
+                  <el-button
+                    type="danger"
+                    size="mini"
+                    icon="el-icon-delete"
+                    @click.stop.prevent="clickDeleteHandler(item)"
+                  ></el-button>
+                </el-button-group>
+              </div>
             </div>
-            <div class="download-list-item__actions">
-              <el-button-group>
-                <el-button
-                  v-if="download.state === 'stop' || download.state === 'error'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-video-play"
-                  @click.stop.prevent="$emit('start', download)"
-                ></el-button>
-                <el-button
-                  v-if="download.state === 'pending' || download.state === 'downloading'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-video-pause"
-                  :disabled="download.state === 'processing'"
-                  @click.stop.prevent="clickStopHandler(download)"
-                ></el-button>
-                <el-button
-                  v-if="download.state === 'finish'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-folder"
-                  @click.stop.prevent="openFolder(download)"
-                ></el-button>
-                <!-- Hidden redownload button -->
-                <el-button
-                  v-if="false && download.state === 'finish'"
-                  type="primary"
-                  size="mini"
-                  icon="el-icon-refresh"
-                  @click.stop.prevent="download.state === 'finish' && $emit('redownload', download)"
-                ></el-button>
-                <el-button
-                  type="danger"
-                  size="mini"
-                  icon="el-icon-delete"
-                  :disabled="download.state === 'processing'"
-                  @click.stop.prevent="clickDeleteHandler(download)"
-                ></el-button>
-              </el-button-group>
+            <div class="download-list-item__progress">
+              <el-progress
+                :percentage="item.progress * 100"
+                :show-text="false"></el-progress>
             </div>
           </div>
-          <div class="download-list-item__progress">
-            <el-progress
-              :percentage="download.progress * 100"
-              :show-text="false"></el-progress>
+          <div class="download-list-item__footer">
+            <div class="download-list-item__status">
+              <p>{{ getDownloadStatus(item) }}<span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
+            </div>
           </div>
-        </div>
-        <div class="download-list-item__footer">
-          <div class="download-list-item__status">
-            <p>{{ download.statusMessage }}<span v-show="download.state === 'downloading'"> {{ getSpeedUnit(download.speed) }}</span> </p>
-          </div>
-        </div>
-      </el-card>
+        </el-card>
+      </recycle-scroller>
     </div>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from 'electron';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+import { RecycleScroller } from 'vue-virtual-scroller';
+
 export default {
+  components: {
+    'recycle-scroller': RecycleScroller
+  },
+
   props: {
     downloads: {
       required: true,
       type: Array,
       default: [],
     }
-  },
-
-  data() {
-    return {
-      filter: 'all'
-    }
-  },
-
-  computed: {
-    filteredDownloads() {
-      let downloads = [];
-
-      this.downloads.forEach(download => {
-        if (this.filter !== 'all') {
-          if (this.filter === 'finished' && download.state === 'finish') {
-            downloads.push(download);
-          } else if (this.filter === 'downloading' && (download.state === 'downloading' || download.state === 'pending' || download.state === 'processing')) {
-            downloads.push(download);
-          }
-        } else {
-          downloads.push(download);
-        }
-      });
-
-      return downloads;
-    }
-  },
-
-  beforeMount() {
-    this.$root.$on('download-list:filter', filter => {
-      this.filter = filter;
-    });
   },
 
   methods: {
@@ -127,7 +110,11 @@ export default {
         } else if (type == 1) {
           classname += '--manga';
         } else if (type == 2) {
-          classname += '--ugoira'
+          classname += '--ugoira';
+        } else if (type == 20) {
+          classname += '--pixiv-comic';
+        } else {
+          classname += '--other';
         }
       }
 
@@ -142,6 +129,12 @@ export default {
           return 'manga';
         } else if (type == 2) {
           return 'ugoira';
+        } else if (type == 20) {
+          return 'pixiv comic';
+        } else if (typeof type === 'string') {
+          return type;
+        } else {
+          return 'Other';
         }
       }
 
@@ -151,27 +144,25 @@ export default {
     getSpeedUnit(speed) {
       if (speed < 1000) {
         return Math.round(speed / 8) + ' B/s';
-      } else if (speed < 1000000) {
-        return Math.round(speed / 1000 / 8) + ' KB/s';
+      } else if (speed < 11000000) {
+        let readableSpeed = Math.round(speed * 100 / 1000 / 8) + '';
+        return readableSpeed.substr(0, readableSpeed.length - 2) + '.' + readableSpeed.substr(-2) + ' KB/s';
       } else {
-        return Math.round(speed / 1000 / 1000 / 8) + ' MB/s'
+        let readableSpeed = Math.round(speed * 100 / 1000 / 1000 / 8) + '';
+        return readableSpeed.substr(0, readableSpeed.length - 2) + '.' + readableSpeed.substr(-2) + ' MB/s';
       }
     },
 
-    clickStopHandler(download) {
-      if (download.state === 'processing') {
-        this.$alert('Cannot stop download in processing state');
-        return;
-      }
+    getDownloadStatus(download) {
+      return this.$t(`_${download.state}`)
+             + (download.state === 'error' ? `: ${download.statusMessage}` : '');
+    },
 
+    clickStopHandler(download) {
       this.$emit('stop', download);
     },
 
     clickDeleteHandler(download) {
-      if (download.state === 'processing') {
-        this.$alert('Cannot delete download in processing state');
-      }
-
       this.$emit('delete', download);
     },
 
@@ -273,7 +264,7 @@ export default {
 
 .download-list-item__title-type {
   padding: 1px 2px;
-  background: #999;
+  background: rgb(0, 135, 255);
   color: white;
   box-sizing: border-box;
   border-radius: 3px;
@@ -300,6 +291,10 @@ export default {
   @extend .download-list-item__title-type;
 
   background: rgb(146, 215, 218);
+}
+
+.download-list-item__title-type--pixiv-comic {
+  background: rgb(0, 135, 255);
 }
 
 .download-list-item__actions {

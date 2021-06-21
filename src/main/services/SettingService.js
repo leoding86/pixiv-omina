@@ -72,9 +72,22 @@ class SettingService extends BaseService {
    * @param {Electron.Event} event
    */
   updateSettingsAction(args, event) {
-    let changedSettings = this.settingStorage.setSettings(args.settings);
+    try {
+      let changedSettings = this.settingStorage.setSettings(args.settings);
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), changedSettings);
+    } catch (e) {
+      WindowManager.getWindow('app').webContents.send(this.responseChannel('permission-error'));
+    }
+  }
 
-    WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), changedSettings);
+  /**
+   * Reset settings action
+   * @returns {void}
+   */
+  resetSettingsAction() {
+    let defaultSettings = this.settingStorage.getDefaultSettings();
+
+    WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), defaultSettings);
   }
 }
 

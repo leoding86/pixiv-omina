@@ -4,13 +4,17 @@ function defaultSetting() {
   return {
     saveTo: app.getPath('downloads'),
 
-    illustrationRename: '%id%_%title%',
+    illustrationRename: '%id%_%title%/p%page_num%',
     illustrationImageRename: '%id%_p%page_num%',
 
-    mangaRename: '%id%_%title%',
+    mangaRename: '%id%_%title%/p%page_num%',
     mangaImageRename: '%id%_p%page_num%',
 
     ugoiraRename: '%id%_%title%',
+
+    novelRename: '%id%_%title%',
+
+    pixivComicWorkRename: '%user_name%/%work_id%_%work_title%/%number_title%%sub_title%/p%page_num%',
 
     overwriteMode: 'skip',
 
@@ -38,7 +42,19 @@ function defaultSetting() {
 
     saveIllustrationInSubfolder: true,
 
-    locale: 'en'
+    saveIllustrationToLocation: '',
+
+    saveUgoiraToLocation: '',
+
+    saveMangaToLocation: '',
+
+    locale: 'en',
+
+    autostartDownload: true,
+
+    convertUgoiraToGif: true,
+
+    singleUserMode: false
   }
 }
 

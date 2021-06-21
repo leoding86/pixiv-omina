@@ -4,21 +4,21 @@
       <el-button
         icon="el-icon-plus"
         size="small"
-        v-if="logined"
         @click="showAddDownloadDialog = true"
       ></el-button>
 
       <slot></slot>
     </div>
     <div class="header__right">
-      <div class="settings-button">
+      <div class="settings-button"
+        :style="{zIndex: 99999}"
+      >
         <i v-if="hasNewVersion"
           class="el-icon-top settings-button__update-icon"
         ></i>
         <el-button
           icon="el-icon-setting"
           size="small"
-          :style="!logined ? {zIndex: 99999} : null"
           @click="showSettingsDialog = true"
         ></el-button>
       </div>
@@ -51,14 +51,12 @@ export default {
   data() {
     return {
       showAddDownloadDialog: false,
-
       showSettingsDialog: false,
-
       hasNewVersion: false
     }
   },
 
-  beforeMount() {
+  created() {
     ipcRenderer.on('update-service:find-new-version', () => {
       this.hasNewVersion = true;
     });

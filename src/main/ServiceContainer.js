@@ -2,7 +2,9 @@ import SettingService from '@/services/SettingService';
 import UpdateService from '@/services/UpdateService';
 import UserService from '@/services/UserService';
 import DownloadService from '@/services/DownloadService';
+import TaskService from '@/services/TaskService';
 import DebugService from '@/services/DebugService';
+import PluginService from '@/services/PluginService';
 
 /**
  * @class
@@ -37,7 +39,9 @@ class ServiceContainer {
         .set('setting', SettingService.getService())
         .set('update', UpdateService.getService())
         .set('user', UserService.getService())
-        .set('download', DownloadService.getService());
+        .set('download', DownloadService.getService())
+        .set('task', TaskService.getService())
+        .set('plugin', PluginService.getService());
     }
 
     return ServiceContainer.instance;

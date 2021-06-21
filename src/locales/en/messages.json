@@ -39,7 +39,9 @@
 
   "_save": "Save",
 
-  "_valid_rename_placeholders": "Valid rename placeholders",
+  "_pixiv_valid_rename_placeholders": "Pixiv usable rename placeholders",
+
+  "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic usable rename placeholders",
 
   "_language": "Language",
 
@@ -53,15 +55,15 @@
 
   "_save_ugoira_in_subfolder": "Save ugoira in subfolder",
 
-  "_format_ugoira": "Format ugoira",
+  "_format_ugoira": "Rename ugoira",
 
-  "_format_manga": "Format manga",
+  "_format_manga": "Rename manga",
 
   "_format_manga_image": "Format manga image",
 
   "_save_illust_in_subfolder": "Save illust in subfolder",
 
-  "_format_illust": "Format illust",
+  "_format_illust": "Rename illust",
 
   "_format_illust_image": "Format illust image",
 
@@ -99,5 +101,116 @@
 
   "_please_input_url": "Please input url",
 
-  "view": "view"
+  "view": "view",
+
+  "_save_illustration_to": "Save illust to",
+
+  "_save_ugoira_to": "Save ugoira to",
+
+  "_save_manga_to": "Save manga to",
+
+  "_folders_for_saving_ugoira": "Folder(s) for saving ugoira",
+
+  "_folders_for_saving_illustration": "Folder(s) for saving illust",
+
+  "_folders_for_saving_manga": "Folder(s) for saving manga",
+
+  "_the_path_wills_suffix_to_download_location": "The paths will suffix to download location",
+
+  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "You can add forward slash to save images in subfolder. eg",
+
+  "_start_download_while_startup": "Start download on startup",
+
+  "_format_pixiv_comic": "Rename comic",
+
+  "_works_on_pixiv_main_site_rename_settings": "Works on Pixiv main site rename settings",
+
+  "_works_on_pixiv_comic_rename_setting": "Works on Pixiv Comic rename setting",
+
+  "_reset": "Reset",
+
+  "_url": "URL",
+
+  "_bookmark": "Bookmark",
+
+  "_pages": "Pages",
+
+  "_mode": "Mode",
+
+  "_bookmark_type": "Type",
+
+  "_public": "Public",
+
+  "_private": "Private",
+
+  "_convert_ugoira_to_gif": "Convert Ugoira to Gif",
+
+  "_work_type": "Work Type",
+
+  "_ugoira": "Ugoira",
+
+  "_illustration": "Illustration",
+
+  "_manga": "Manga",
+
+  "_jobs": "Jobs",
+
+  "_unfinished_downloads_found": "Unfinished download found",
+
+  "_clear_path": "Clear save path",
+
+  "_restore": "Restore",
+
+  "_don_t_change": "Don't change",
+
+  "_restore_downloads": "Restore downloads",
+
+  "_single_user_mode": "Single User Mode",
+
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "Save settings and other data in installation folder if it's enabled",
+
+  "_clear_and_close": "Clear and close",
+
+  "_clear_cached_downloads_and_close": "Clear cached downloads and close",
+
+  "_try_again": "Login failed. Please try again",
+
+  "_network_error": "Request error. Your network may not be able to connect Pixiv.",
+
+  "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
+    "You don't have write permission for saving data in installation directory. Install application in directory that you have write permission or run application with administrator privilege might fix it",
+
+  "_format_novel": "Rename novel",
+
+  "_pending": "Pending",
+
+  "_processing": "Processing",
+
+  "_error": "Error",
+
+  "_finish": "Finish",
+
+  "_stopping": "Stopping",
+
+  "_stop": "Stop",
+
+  "_plugins": "Plugins",
+
+  "_paused": "Paused",
+
+  "_initializing": "Initializing",
+
+  "_no_plugin_installed": "No plugin installed",
+
+  "_logined": "Logined",
+
+  "_not_logined": "Not Logined",
+
+  "_feedback": "Feedback",
+
+  "_toggle_development_tools": "Toggle development tools",
+
+  "_close_this_window_after_you_logined": "Close this window after you logined",
+
+  "_plugin_reloaded": "Plugin reloaded"
 }

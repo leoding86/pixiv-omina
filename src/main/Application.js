@@ -1,17 +1,26 @@
-import path from 'path';
-import { app, shell, Tray, Menu, systemPreferences, nativeImage } from 'electron';
-import ServiceContainer from '@/ServiceContainer';
-import Request from '@/modules/Request';
-import SettingStorage from '@/modules/SettingStorage';
+import { Menu, Tray, app, nativeImage, shell, systemPreferences } from 'electron';
+
 import NotificationManager from '@/modules/NotificationManager';
 import PartitionManager from '@/modules/PartitionManager';
+import Request from '@/modules/Request';
+import ServiceContainer from '@/ServiceContainer';
+import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
+import PluginManager from '@/modules/PluginManager';
+import path from 'path';
+import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
+import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
+import { debug } from '@/global';
 
 class Application {
   constructor() {
     this.mainWindow = null;
 
     this.tray = null;
+
+    this.pluginManager = null;
+
+    this.serviceContainer = null;
 
     this.quiting = false;
 
@@ -43,26 +52,17 @@ class Application {
   overrideRequestHeaders() {//
     this.partitionManager.getSession('main').webRequest.onBeforeSendHeaders(
       {
-        urls: [
-          '*://*.pixiv.net/*',
-          '*://*.pximg.net/*'
-        ]
+        urls: ['*://*/*']
       },
       (detail, cb) => {
-        let { requestHeaders } = detail;
+        let { requestHeaders } = detail,
+            requestHeadersOverrider = RequestHeadersOverrider.getDefault();
 
-        requestHeaders = Object.assign(
-          {},
-          requestHeaders,
-          {
-            'user-agent': SettingStorage.getSetting('userAgent'),
-            referer: 'https://www.pixiv.net/'
-          }
-        );
+        requestHeaders = requestHeadersOverrider.getRequestHeaders(detail.url, requestHeaders);
 
         cb({ requestHeaders });
       }
-    )
+    );
   }
 
   /**
@@ -72,21 +72,19 @@ class Application {
   overrideReceviedHeaders() {
     this.partitionManager.getSession('main').webRequest.onHeadersReceived(
       {
-        urls: ['*://*.pixiv.net/*', '*://*.pximg.net/*']
+        urls: ['*://*/*']
       },
       (detail, cb) => {
-        if (detail.responseHeaders['x-frame-options'] || detail.responseHeaders['X-Frame-Options']) {
-          delete detail.responseHeaders['x-frame-options'];
-          delete detail.responseHeaders['X-Frame-Options'];
-        }
+        let { responseHeaders } = detail,
+            responseHeadersOverrider = ResponseHeadersOverrider.getDefault();
+
+        responseHeaders = responseHeadersOverrider.getResponseHeaders(detail.url, responseHeaders);
 
         // console.log(`RESPONSE BY URL: ${detail.url}`)
         // console.log('RESPONSE HEADERS');
         // console.table(detail.responseHeaders);
 
-        cb({
-          responseHeaders: detail.responseHeaders
-        });
+        cb({ responseHeaders });
       }
     );
   }
@@ -100,7 +98,9 @@ class Application {
         proxyRules: settings['proxyService'] + ':' + settings['proxyServicePort'],
         proxyBypassRules: ''
       }).then(() => {
-        //ignore
+        debug.log(`Proxy has been set ${settings['proxyService']}:${settings['proxyServicePort']}`);
+      }).catch(error => {
+        debug.log(error);
       });
 
       if (settings['enableProxyAuth']) {
@@ -115,7 +115,9 @@ class Application {
         proxyRules: 'direct://',
         proxyBypassRules: ''
       }).then(() => {
-        // ignore
+        debug.log(`Proxy has been removed`);
+      }).catch(error => {
+        debug.log(error);
       });
 
       Request.removeGlobalOptions(['proxyUsername', 'proxyPassword']);
@@ -144,13 +146,7 @@ class Application {
    * @returns {Electron.NativeImage}
    */
   getTrayImage() {
-    if (process.platform === 'darwin') {
-      if (!systemPreferences.isDarkMode()) {
-        return nativeImage.createFromPath(this.getStatic('tray-in-light.png'));
-      }
-    } else {
-      return nativeImage.createFromPath(this.getStatic('tray-in-dark.png'));
-    }
+    return nativeImage.createFromPath(this.getStatic('tray.png'));
   }
 
   createMainWindow() {
@@ -208,7 +204,7 @@ class Application {
     Request.setGlobalOptions({
       session: this.partitionManager.getSession('main'),
       headers: {
-        'user-agent': SettingStorage.getSettings('userAgent'),
+        'user-agent': SettingStorage.getSetting('userAgent'),
         'referer': 'https://www.pixiv.net/'
       }
     });
@@ -226,10 +222,12 @@ class Application {
     this.mainWindow.on('close', event => {
       if (this.quiting) {
         this.partitionManager.getSession('main').clearCache();
-      } else if (SettingStorage.getSettings('closeToTray')) {
+      } else if (SettingStorage.getSetting('closeToTray')) {
         event.preventDefault();
         event.returnValue = false;
         event.sender.hide();
+      } else {
+        app.quit();
       }
     });
 
@@ -253,10 +251,15 @@ class Application {
     }
 
     /**
+     * Create plugin manager and boot all plugins
+     */
+    this.pluginManager = PluginManager.getDefault(this);
+
+    /**
      * After window has been created, then create services. Some services depend on main window,
      * Because services are designed for communicating with the windows
      */
-    ServiceContainer.getContainer();
+    this.serviceContainer = ServiceContainer.getContainer();
   }
 
   onActivate() {
@@ -312,8 +315,6 @@ class Application {
       url: incomingUrl,
       saveTo: SettingStorage.getSetting('saveTo')
     });
-
-    console.log(data);
   }
 
   onWindowAllClosed() {

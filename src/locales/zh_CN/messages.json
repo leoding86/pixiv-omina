@@ -39,7 +39,9 @@
 
   "_save": "保存",
 
-  "_valid_rename_placeholders": "可用的重命名占位",
+  "_pixiv_valid_rename_placeholders": "Pixiv作品可用的重命名占位",
+
+  "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic作品可用的重命名占位",
 
   "_language": "语言",
 
@@ -59,11 +61,11 @@
 
   "_format_manga_image": "重命名漫画图片",
 
-  "_save_illust_in_subfolder": "保存插图到子文件夹",
+  "_save_illust_in_subfolder": "保存插画到子文件夹",
 
-  "_format_illust": "重命名插图",
+  "_format_illust": "重命名插画",
 
-  "_format_illust_image": "重命名插图图片",
+  "_format_illust_image": "重命名插画图片",
 
   "_enable_proxy": "启用代理",
 
@@ -99,5 +101,116 @@
 
   "_please_input_url": "请输入链接地址",
 
-  "view": "前往查看"
+  "view": "前往查看",
+
+  "_save_illustration_to": "保存插画到",
+
+  "_save_ugoira_to": "保存动图到",
+
+  "_save_manga_to": "保存漫画到",
+
+  "_folders_for_saving_ugoira": "动图保存文件夹",
+
+  "_folders_for_saving_illustration": "插画保存文件夹",
+
+  "_folders_for_saving_manga": "漫画保存文件夹",
+
+  "_the_path_wills_suffix_to_download_location": "以下路径会后缀在下载路径",
+
+  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "你可以添加 / 来将图片保存到子文件夹，例如",
+
+  "_start_download_while_startup": "启动后自动开始下载",
+
+  "_format_pixiv_comic": "重命名pixiv comic",
+
+  "_works_on_pixiv_main_site_rename_settings": "Pixiv主站作品重命名设置",
+
+  "_works_on_pixiv_comic_rename_setting": "Pixiv Comic站点作品重命名设置",
+
+  "_reset": "重置",
+
+  "_url": "URL",
+
+  "_bookmark": "收藏夹",
+
+  "_pages": "分页",
+
+  "_mode": "模式",
+
+  "_bookmark_type": "收藏类型",
+
+  "_public": "公开",
+
+  "_private": "私有",
+
+  "_convert_ugoira_to_gif": "转化动图到GIF",
+
+  "_work_type": "作品类型",
+
+  "_ugoira": "动图",
+
+  "_illustration": "插画",
+
+  "_manga": "漫画",
+
+  "_jobs": "任务",
+
+  "_unfinished_downloads_found": "找到未完成的任务",
+
+  "_clear_path": "清除路径",
+
+  "_restore": "还原",
+
+  "_don_t_change": "未更改",
+
+  "_restore_downloads": "还原下载",
+
+  "_single_user_mode": "单用户模式",
+
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "启用时，保存配置以及其他数据到安装文件夹",
+
+  "_clear_and_close": "清除并关闭",
+
+  "_clear_cached_downloads_and_close": "清除所有缓存下载并关闭",
+
+  "_try_again": "登录失败，请重试",
+
+  "_network_error": "请求错误，你的网络可能无法访问Pixiv",
+
+  "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
+    "你目录写入权限以将数据保存到安装目录，重新安装软件到有写入权限的目录或以管理员运行应用可能可以解决问题",
+
+  "_format_novel": "重命名小说",
+
+  "_pending": "等待中",
+
+  "_processing": "处理中",
+
+  "_error": "错误",
+
+  "_finish": "完成",
+
+  "_stopping": "停止中",
+
+  "_stop": "停止",
+
+  "_plugins": "插件",
+
+  "_paused": "暂停中",
+
+  "_initializing": "初始化中",
+
+  "_no_plugin_installed": "暂未安装插件",
+
+  "_logined": "已登录",
+
+  "_not_logined": "未登录",
+
+  "_feedback": "反馈",
+
+  "_toggle_development_tools": "开发工具",
+
+  "_close_this_window_after_you_logined": "登陆后关闭此窗口",
+
+  "_plugin_reloaded": "插件已重载"
 }

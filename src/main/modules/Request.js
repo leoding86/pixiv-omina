@@ -46,7 +46,7 @@ class Request extends net.ClientRequest {
       });
 
       response.on('error', error => {
-        debug.sendStatus(`Response: Error (${error.message}) occured while receiving data from ${this.options.url}`);
+        debug.sendStatus(`Response: Error (${error.message}) occured while receiving data from ${this.options.url}`, true);
       });
 
       response.on('end', () => {
@@ -59,7 +59,7 @@ class Request extends net.ClientRequest {
     });
 
     this.on('error', error => {
-      debug.sendStatus(`Request: ${this.options.url} error (${error.message})`);
+      debug.sendStatus(`Request: ${this.options.url} error (${error.message})`, true);
     });
 
     this.on('finish', () => {

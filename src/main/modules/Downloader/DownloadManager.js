@@ -1,10 +1,10 @@
 import EventEmitter from 'events';
-import { shell } from 'electron';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import {
   debug
 } from '@/global';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import UndeterminedDownloader from '@/modules/Downloader/WorkDownloader/UndeterminedDownloader';
+import fs from 'fs-extra';
+import { shell } from 'electron';
 
 /**
  * @class
@@ -42,6 +42,14 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Alias for getManager
+   * @returns {DownloadManager}
+   */
+  static getDefault() {
+    return DownloadManager.getManager();
+  }
+
+  /**
    * @param {number|string} id
    * @returns {WorkDownloader}
    */
@@ -51,18 +59,39 @@ class DownloadManager extends EventEmitter {
 
   /**
    * @param {WorkDownloader} downloader
-   * @returns {this}
+   * @returns {void}
    */
   addWorkDownloader(downloader) {
-    if (!this.getWorkDownloader(downloader.id)) {
+    this.workDownloaderPool.set(downloader.id, downloader);
+    this.emit('add', downloader);
+    this.startWorkDownloader({ downloadId: downloader.id });
+  }
+
+  /**
+   * Add a downloader to download manager
+   * @param {WorkDownloader} downloader
+   */
+  addDownloader(downloader) {
+    if (!this.workDownloaderPool.has(downloader.id)) {
       this.workDownloaderPool.set(downloader.id, downloader);
-
       this.emit('add', downloader);
-
-      this.startWorkDownloader({downloadId: downloader.id});
+      this.startWorkDownloader({ downloadId: downloader.id });
     }
+  }
 
-    return this;
+  /**
+   * @param {WorkDownloader} downloader
+   * @returns {void}
+   */
+  transformWorkDownloader(downloader) {
+    let oldDownloader = this.getWorkDownloader(downloader.id);
+    this.workDownloaderPool.set(downloader.id, downloader);
+    this.emit('update', downloader);
+    this.startWorkDownloader({ downloadId: downloader.id });
+
+    if (oldDownloader) {
+      oldDownloader = null;
+    }
   }
 
   /**
@@ -70,23 +99,54 @@ class DownloadManager extends EventEmitter {
    * @param {Array.<WorkDownloader>} downloaders
    * @param {Object} [options]
    * @param {Boolean} [options.mute=false]
-   * @param {Boolean} [options.autoStart=true]
+   * @param {Boolean} [options.autoStart=false]
+   * @param {WorkDownloader} [options.replace=null]
    * @returns {void}
    */
   addDownloaders(downloaders, options) {
-    const { mute, autoStart } = Object.assign({mute: false, autoStart: true}, options);//
+    const { mute, autoStart, replace } = Object.assign({mute: false, autoStart: false, replace: null}, options);
 
     let addedDownloaders = [];
+    let addedDownloadersMap = new Map();
 
     downloaders.forEach(downloader => {
       if (!this.getWorkDownloader(downloader.id)) {
-        this.workDownloaderPool.set(downloader.id, downloader);
-
-        addedDownloaders.push(downloader);
-
         this.attachListenersToDownloader(downloader);
+        addedDownloadersMap.set(downloader.id, downloader);
+        addedDownloaders.push(downloader);
       }
     });
+
+    if (replace && this.getWorkDownloader(replace.id)) {
+      let beforeReplaceDownloadersMap = new Map();
+      let afterReplaceDownloadersMap = new Map();
+      let found = false;
+
+      this.workDownloaderPool.forEach((downloader, id) => {
+        if (id !== replace.id) {
+          if (found) {
+            afterReplaceDownloadersMap.set(id, downloader);
+          } else {
+            beforeReplaceDownloadersMap.set(id, downloader);
+          }
+        } else {
+          this.emit('delete', id);
+          this.workDownloaderPool.delete(id);
+          found = true;
+        }
+      });
+
+      this.workDownloaderPool = new Map([
+        ...beforeReplaceDownloadersMap,
+        ...addedDownloadersMap,
+        ...afterReplaceDownloadersMap
+      ]);
+    } else {
+      this.workDownloaderPool = new Map([
+        ...this.workDownloaderPool,
+        ...addedDownloadersMap
+      ]);
+    }
 
     if (!mute) this.emit('add-batch', addedDownloaders);
 
@@ -242,32 +302,6 @@ class DownloadManager extends EventEmitter {
     return ['finish', 'stopping', 'downloading', 'processing'].indexOf(download.state) < 0;
   }
 
-  canStopDownload(download) {
-    return ['pending', 'downloading'].indexOf(download.state) > -1;
-  }
-
-  canDeleteDownload(download) {
-    return ['stopping', 'processing'].indexOf(download.state) < 0;
-  }
-
-  /**
-   * Create a downloader
-   * @param {Object} args
-   * @param {string|number} args.workId
-   * @param {Object} args.options
-   * @returns {DownloadManager}
-   */
-  createWorkDownloader({workId, options}) {
-    let undeterminedDownloader = UndeterminedDownloader.createDownloader({ workId, options });
-
-    this.addWorkDownloader(undeterminedDownloader);
-  }
-
-  createUserDownloader({workId, options}) {
-    options.isUser = true;
-    this.addWorkDownloader(UndeterminedDownloader.createDownloader({ workId, options }));
-  }
-
   /**
    * @param {Object} param
    * @param {number|string} param.downloadId
@@ -285,32 +319,9 @@ class DownloadManager extends EventEmitter {
       this.attachListenersToDownloader(workDownloader);
 
       if (!this.reachMaxDownloading()) {
-        if (Object.getPrototypeOf(workDownloader) === UndeterminedDownloader.prototype) {
-          if (workDownloader.isUser()) {
-            workDownloader.getUserWorkDownloaders().then(downloaders => {
-              this.addDownloaders(downloaders);
-
-              this.deleteWorkDownloader({
-                downloadId: workDownloader.id
-              });
-            });
-          } else {
-            workDownloader.getRealDownloader().then(downloader => {
-              workDownloader = null;
-
-              this.workDownloaderPool.set(downloader.id, downloader);
-
-              this.startWorkDownloader({downloadId: downloader.id});
-            }).catch(error => {
-              throw error;
-            });
-          }
-        } else {
-          workDownloader.start();
-        }
+        workDownloader.start();
       } else {
         workDownloader.setPending();
-
         this.emit('update', workDownloader);
       }
     }
@@ -319,12 +330,12 @@ class DownloadManager extends EventEmitter {
   /**
    * Once stop a download, try to start next avaliable download
    * @param {Object} param
-   * @param {number|string} param.downloadId//
+   * @param {number|string} param.downloadId
    */
   stopWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader && this.canStopDownload(workDownloader)) {
+    if (workDownloader && workDownloader.isStoppable()) {
       workDownloader.stop();
     }
 
@@ -332,13 +343,14 @@ class DownloadManager extends EventEmitter {
   }
 
   /**
+   * Delete download using given download id, then try restart downloads
    * @param {Object} param
    * @param {number|string} param.downloadId//
    */
   deleteWorkDownloader({downloadId}) {
     let workDownloader = this.getWorkDownloader(downloadId);
 
-    if (workDownloader && this.canDeleteDownload(workDownloader)) {
+    if (workDownloader && !workDownloader.isStopping()) {
       this.workDownloaderPool.delete(downloadId);
 
       workDownloader.willRecycle();
@@ -349,6 +361,16 @@ class DownloadManager extends EventEmitter {
     }
 
     this.emit('delete', downloadId);
+
+    this.downloadNext();
+  }
+
+  /**
+   * Alias for deleteWorkDownloader
+   * @param {{ downloadId: string }} args
+   */
+  deleteDownload({ downloadId }) {
+    this.deleteWorkDownloader({ downloadId });
   }
 
   /**
@@ -361,7 +383,7 @@ class DownloadManager extends EventEmitter {
     downloadIds.forEach(downloadId => {
       let download = this.getWorkDownloader(downloadId);
 
-      if (download && this.canDeleteDownload(download)) {
+      if (download && !download.isStopping()) {
         this.workDownloaderPool.delete(downloadId);
 
         deletedDownloadIds.push(download.id);
@@ -390,14 +412,22 @@ class DownloadManager extends EventEmitter {
     downloadIds.forEach(downloadId => {
       let download = this.getWorkDownloader(downloadId);
 
-      if (download && this.canStopDownload(download)) {
-        download.stop({
-          mute: true
-        });
+      if (download) {
+        try {
+          download.stop({
+            mute: true
+          });
 
-        this.deattachListenersFromDownloader(download);
+          this.deattachListenersFromDownloader(download);
 
-        stoppedDownloadIds.push(download.id);
+          stoppedDownloadIds.push(download.id);
+        } catch (error) {
+          if (error.name === 'WorkDownloaderUnstoppableError') {
+            debug.sendStatus(`Download ${download.id} cannot be stopped`);
+          } else {
+            debug.sendStatus(`Download ${download.id} error ${error.message}`)
+          }
+        }
       }
     });
 

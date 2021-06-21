@@ -1,23 +1,29 @@
 export default {
   computed: {
-    logined() {
-      return this.$root.$data.appLogined;
+    logined: {
+      set(val) {
+        this.$root.appLogined = val;
+      },
+
+      get() {
+        return this.$root.appLogined;
+      }
     },
 
-    inited() {
-      return this.$root.$data.appInited;
+    loginError() {
+      return this.$root.appLoginError;
     },
 
     settings() {
-      return this.$root.$data.appSettings;
+      return this.$root.appSettings;
     }
   },
 
   methods: {
-    msg(message) {
+    msg(message, duration = 1500) {
       this.$message({
         message: message,
-        duration: 1500
+        duration
       });
     },
 

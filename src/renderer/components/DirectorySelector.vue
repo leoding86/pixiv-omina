@@ -1,6 +1,6 @@
 <template>
   <el-input
-    v-model="value"
+    v-model="display"
     disabled>
     <el-button
       slot="append"
@@ -19,6 +19,12 @@ export default {
       required: true,
       type: String,
       default: ''
+    }
+  },
+
+  computed: {
+    display() {
+      return this.value ? this.value : `(${this.$t('_don_t_change')})`;
     }
   },
 
