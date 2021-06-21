@@ -1,4 +1,6 @@
 import { net, session } from 'electron';
+
+import Exposer from '@/modules/Exposer';
 import { debug } from '@/global';
 
 /**
@@ -125,5 +127,7 @@ class Request extends net.ClientRequest {
     super.end(chunk, encoding, callback);
   }
 }
+
+Exposer.expose('omina.Request', Request);
 
 export default Request;

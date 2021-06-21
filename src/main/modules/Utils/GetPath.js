@@ -1,8 +1,9 @@
-import path from 'path';
+import Exposer from '@/modules/Exposer';
 import { app } from 'electron';
 import { isDev } from '@/env';
+import path from 'path';
 
-export default {
+let getPath = {
   userData() {
     return app.getPath('userData');
   },
@@ -12,3 +13,9 @@ export default {
                    path.join(app.getAppPath(), '../..');
   }
 }
+
+Exposer.expose('omina.utils.getPath', getPath);
+
+console.log(global);
+
+export default getPath;

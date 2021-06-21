@@ -1,5 +1,6 @@
 import path, { extname } from 'path';
 
+import Exposer from '@/modules/Exposer';
 // import Request from '@/modules/Request';
 import Request from '@/modules/Request';
 import {
@@ -400,5 +401,7 @@ class Download extends Request {
     return path.join(this.saveTo, this.saveName);
   }
 }
+
+Exposer.expose('omina.Download', Download);
 
 export default Download;

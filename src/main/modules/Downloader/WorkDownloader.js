@@ -1,13 +1,14 @@
-import { debug } from '@/global';
+import BaseProvider from './Providers/BaseProvider';
 import Download from '@/modules/Download';
+import DownloadManager from '@/modules/Downloader/DownloadManager';
 import EventEmitter from 'events';
+import Exposer from '@/modules/Exposer';
+import FormatName from '../Utils/FormatName';
 import Request from '@/modules/Request';
 import WindowManager from '@/modules/WindowManager';
-import DownloadManager from '@/modules/Downloader/DownloadManager';
 import WorkDownloaderUnstoppableError from './WorkDownloaderUnstoppableError';
+import { debug } from '@/global';
 import path from 'path';
-import FormatName from '../Utils/FormatName';
-import BaseProvider from './Providers/BaseProvider';
 
 /**
  * @class
@@ -398,5 +399,7 @@ class WorkDownloader extends EventEmitter {
     super.emit(event, ...args);
   }
 }
+
+Exposer.expose('omina.WorkDownloader', WorkDownloader);
 
 export default WorkDownloader;

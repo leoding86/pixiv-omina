@@ -1,3 +1,5 @@
+import Exposer from '@/modules/Exposer';
+
 class BasePlugin {
   /**
    * @constructor
@@ -65,5 +67,7 @@ class BasePlugin {
     return responseHeaders;
   }
 }
+
+Exposer.expose('omina.BasePlugin', BasePlugin);
 
 export default BasePlugin;

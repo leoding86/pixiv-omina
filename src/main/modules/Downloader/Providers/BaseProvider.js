@@ -1,3 +1,5 @@
+import Exposer from "@/modules/Exposer";
+
 class BaseProvider {
 
   /**
@@ -69,5 +71,7 @@ class BaseProvider {
     throw new Error(`Method "createDownloader" hasn't been implemented`);
   }
 }
+
+Exposer.expose('omina.BaseProvider', BaseProvider);
 
 export default BaseProvider;

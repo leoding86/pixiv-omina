@@ -1,3 +1,5 @@
+import Exposer from "../Exposer";
+
 class FormatName {
   static specials = {
     win: {//
@@ -152,5 +154,9 @@ class FormatName {
     return filename.length === 0 ? `file_${Date.now()}` : filename;
   }
 }
+
+Exposer.expose('omina.utils.formatName', FormatName);
+
+console.log(global);
 
 export default FormatName;
