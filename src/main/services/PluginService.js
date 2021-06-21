@@ -1,8 +1,9 @@
-import { ipcMain } from 'electron';
+import { dialog, ipcMain } from 'electron';
+
 import BaseService from '@/services/BaseService';
 import PluginManager from '@/modules/PluginManager';
-import WindowManager from '@/modules/WindowManager';
 import SettingStorage from '@/modules/SettingStorage';
+import WindowManager from '@/modules/WindowManager';
 
 class PluginService extends BaseService {
   /**
@@ -109,6 +110,27 @@ class PluginService extends BaseService {
     });
 
     this.sendDataToWindow(this.responseChannel('loaded'), data);
+  }
+
+  /**
+   * Load temprary plugin
+   *
+   * @param {Object} args
+   * @param {Electron.Event} event
+   */
+  loadTempraryPluginAction(args, event) {
+    dialog.showOpenDialog(
+      WindowManager.getWindow('app'),
+      {
+        properties: ['openDirectory']
+      },
+      (filePath, bookmarks) => {
+        if (filePath.length > 0) {
+          this.pluginManager.loadPlugin(filePath[0]);
+          this.sendPluginsLoaded();
+        }
+      }
+    )
   }
 }
 
