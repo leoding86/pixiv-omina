@@ -1,20 +1,21 @@
-import EventEmitter from 'events';
-import path from 'path';
-import fs from 'fs-extra';
-import { GetPath, FormatName } from '@/modules/Utils';
+import { FormatName, GetPath } from '@/modules/Utils';
+
 import Application from '@/Application';
 import BasePlugin from '@/modules/BasePlugin';
 import BaseProvider from '@/modules/Downloader/Providers/BaseProvider';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
+import EventEmitter from 'events';
+import NotificationManager from '@/modules/NotificationManager';
+import Request from '@/modules/Request';
 import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
 import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import { debug } from '@/global';
+import fs from 'fs-extra';
 import md5 from 'md5';
 import { parse } from 'node-html-parser';
-import NotificationManager from '@/modules/NotificationManager';
-import { debug } from '@/global';
+import path from 'path';
 
 class PluginManager extends EventEmitter {
   /**
@@ -37,6 +38,11 @@ class PluginManager extends EventEmitter {
      * @type {Map<string, BasePlugin>}
      */
     this.plugins = new Map();
+
+    /**
+     * @type {Map<String, String>}
+     */
+    this.pluginEntries = new Map();
 
     /**
      * @type {String}
@@ -75,28 +81,32 @@ class PluginManager extends EventEmitter {
    */
   initalPlugins() {
     if (fs.pathExistsSync(this.pluginPath)) {
-      let files = fs.readdirSync(this.pluginPath),
-          plugin,
-          pluginFolder = '',
-          pluginMainFile = '';
+      let files = fs.readdirSync(this.pluginPath);
 
       files.forEach(file => {
-        if (/.*\.js/.test(file)) {
-          plugin = this.createPlugin(path.join(this.pluginPath, file));
-          this.plugins.set(plugin.id, plugin);
-        } else  {
-          pluginFolder = path.join(this.pluginPath, file);
-
-          if (fs.existsSync(pluginFolder) && fs.lstatSync(pluginFolder).isDirectory()) {
-            pluginMainFile = path.join(pluginFolder, 'main.js');
-
-            if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
-              plugin = this.createPlugin(pluginMainFile);
-              this.plugins.set(plugin.id, plugin);
-            }
-          }
-        }
+        this.loadPlugin(path.join(this.pluginPath, file));
       });
+    }
+  }
+
+  /**
+   * Load plugin from entry point
+   * @param {String} entry
+   */
+  loadPlugin(entry) {
+    let plugin,
+        pluginMainFile = '';
+
+    if (/.*\.js/.test(entry)) {
+      this.createPlugin(entry);
+    } else  {
+      if (fs.existsSync(entry) && fs.lstatSync(entry).isDirectory()) {
+        pluginMainFile = path.join(entry, 'main.js');
+
+        if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
+          this.createPlugin(pluginMainFile);
+        }
+      }
     }
   }
 
@@ -109,9 +119,16 @@ class PluginManager extends EventEmitter {
       delete __non_webpack_require__.cache[file];
     }
 
-    let module = __non_webpack_require__(file);
+    let module = __non_webpack_require__(file),
+        plugin = this.bootPlugin(module, file);
 
-    return this.bootPlugin(module, file);
+    if (this.plugins.has(plugin.id)) {
+      this.plugins.delete(plugin.id);
+    }
+
+    this.plugins.set(plugin.id, plugin);
+
+    return plugin;
   }
 
   /**
