@@ -51,6 +51,10 @@
         {{ $t('_help') }}
       </el-button>
       <el-button
+        @click="loadTempraryPlugin"
+        size="mini"
+      >Load Temprary Plugin</el-button>
+      <el-button
         @click="$emit('update:show', false)"
         size="mini"
       >{{ $t('_cancel') }}</el-button>
@@ -116,6 +120,13 @@ export default {
                ? "https://github.com/leoding86/pixiv-omina/blob/master/docs/how-to-install-plugin_zh-CN.md"
                : "https://github.com/leoding86/pixiv-omina/blob/master/docs/how-to-install-plugin_en.md";
       a.click();
+    },
+
+    loadTempraryPlugin() {
+      ipcRenderer.send('plugin-service', {
+        action: 'loadTempraryPlugin',
+        args: {}
+      });
     }
   }
 }
