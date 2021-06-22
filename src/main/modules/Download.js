@@ -193,6 +193,7 @@ class Download extends Request {
 
   createDownloadTemporaryFileWriteStream(targetFilename) {
     this.tempFile = `${targetFilename}.${this.tempExtenstionName}`;
+    fs.ensureFileSync(this.tempFile);
     return fs.createWriteStream(this.tempFile);
   }
 
