@@ -1,3 +1,4 @@
+import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
 import Exposer from '@/modules/Exposer';
 
 class BasePlugin {
@@ -65,6 +66,14 @@ class BasePlugin {
    */
   responseHeadersOverrider({ url, context, responseHeaders }) {
     return responseHeaders;
+  }
+
+  /**
+   * Call when remove a plugin
+   * @returns {void}
+   */
+  uninstall() {
+    DownloadAdapter.removeProvider(this);
   }
 }
 
