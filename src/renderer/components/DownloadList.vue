@@ -15,7 +15,9 @@
         >
           <div
             class="download-list-item__title-type"
-            :class="getDownloadTypeClassname(item.type)"
+            :style="{
+              background: getDownloadTagColor(item)
+            }"
           >{{ getDownloadType(item.type) }}</div>
 
           <div class="download-list-item__mask"
@@ -101,37 +103,17 @@ export default {
   },
 
   methods: {
-    getDownloadTypeClassname(type) {
-      let classname = 'download-list-item__title-type';
-
-      if (type !== null) {
-        if (type == 0) {
-          classname += '--illustration';
-        } else if (type == 1) {
-          classname += '--manga';
-        } else if (type == 2) {
-          classname += '--ugoira';
-        } else if (type == 20) {
-          classname += '--pixiv-comic';
-        } else {
-          classname += '--other';
-        }
+    getDownloadTagColor(item) {
+      if (item.tagColor) {
+        return item.tagColor;
+      } else {
+        return 'rgb(0, 135, 255)';
       }
-
-      return classname;
     },
 
     getDownloadType(type) {
       if (type !== null) {
-        if (type == 0) {
-          return 'illustration';
-        } else if (type == 1) {
-          return 'manga';
-        } else if (type == 2) {
-          return 'ugoira';
-        } else if (type == 20) {
-          return 'pixiv comic';
-        } else if (typeof type === 'string') {
+        if (typeof type === 'string') {
           return type;
         } else {
           return 'Other';

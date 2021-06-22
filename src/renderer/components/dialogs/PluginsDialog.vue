@@ -5,7 +5,7 @@
     :title="$t('_plugins')"
     :show-close="false"
     :close-on-click-modal="false"
-    :width="'400px'"
+    :width="'480px'"
     :visible.sync="show"
   >
     <div class="plugins-dialog__no-plugins"
@@ -24,18 +24,19 @@
           <div class="plugin-item__title">
             <img v-if="plugin.icon" :src="plugin.icon">
             {{ plugin.title }}
+            <el-tag type="warning" v-if="plugin.isExternal" title="Temprary">T</el-tag>
           </div>
         </div>
         <div class="plugin-item__foot">
-          <el-button v-if="plugin.loginUrl"
-            size="mini"
-            icon="el-icon-user"
+          <el-link v-if="plugin.loginUrl" type="primary"
             @click="login(plugin)"
-          ></el-button>
-          <el-button size="mini"
-            icon="el-icon-refresh-left"
+          >{{ $t('_login') }}</el-link>
+          <el-link type="primary"
             @click="reload(plugin)"
-          ></el-button>
+          >{{ $t('_reload') }}</el-link>
+          <el-link type="danger"
+            @click="remove(plugin)"
+          >{{ $t('_remove') }}</el-link>
         </div>
       </div>
     </div>
@@ -53,7 +54,7 @@
       <el-button
         @click="loadTempraryPlugin"
         size="mini"
-      >Load Temprary Plugin</el-button>
+      >{{ $t('_load_temprary_plugin') }}</el-button>
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
@@ -92,6 +93,13 @@ export default {
 
       this.msg(this.$t('_plugin_reloaded'));
     });
+
+    /**
+     * Listen removed event from plugin service for removing the plugin from list
+     */
+    ipcRenderer.on('plugin-service:removed', (event, id) => {
+      this.removePluginFromList(id);
+    });
   },
 
   methods: {
@@ -127,6 +135,35 @@ export default {
         action: 'loadTempraryPlugin',
         args: {}
       });
+    },
+
+    /**
+     * Send a action to plugin service to remove a plugin
+     * @param {Object} plugin
+     * @returns {void}
+     */
+    remove(plugin) {
+      if (window.confirm(this.$t('_remove_plugin'))) {
+        ipcRenderer.send('plugin-service', {
+          action: 'removePlugin',
+          args: {
+            plugin
+          }
+        });
+      }
+    },
+
+    /**
+     * Remove the plugin from list via id
+     * @param {String} id Plugin's id
+     * @returns {void}
+     */
+    removePluginFromList(id) {
+      let index = this.plugins.findIndex(plugin => plugin.id === id);
+
+      if (index > -1) {
+        this.plugins.splice(index, 1);
+      }
     }
   }
 }
@@ -159,10 +196,15 @@ export default {
 
 .plugin-item {
   display: flex;
+  align-items: center;
   margin: 5px 0;
   padding: 8px;
   background: #f6f6f6;
   border-radius: 5px;
+
+  .el-link {
+    margin: 0 3px;
+  }
 }
 
 .plugin-item__head {
