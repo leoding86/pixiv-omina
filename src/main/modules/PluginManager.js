@@ -250,6 +250,8 @@ class PluginManager extends EventEmitter {
     }
 
     if (plugin) {
+      plugin.uninstall();
+
       let reloadedPlugin = this.createPlugin(plugin.entryFile);
 
       this.updatePluginInstance(id, reloadedPlugin);
@@ -266,12 +268,20 @@ class PluginManager extends EventEmitter {
    * @returns {void}
    */
   removePlugin(id) {
+    let plugin;
+
     if (this.internalPlugins.has(id)) {
+      plugin = this.internalPlugins.get(id);
       this.internalPlugins.delete(id);
     } else if (this.externalPlugins.has(id)) {
+      plugin = this.externalPlugins.get(id);
       this.externalPlugins.delete(id);
     } else {
       debug.log(`There isn't plugin [id] to remove`);
+    }
+
+    if (plugin) {
+      plugin.uninstall();
     }
   }
 
