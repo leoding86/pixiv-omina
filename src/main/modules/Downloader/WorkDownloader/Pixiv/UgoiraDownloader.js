@@ -1,16 +1,16 @@
-import fs from 'fs-extra';
-import path from 'path';
-import Zip from 'jszip';
-import { debug } from '@/global';
+import Download from '@/modules/Download';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
+import Request from '@/modules/Request';
+import SettingStorage from '@/modules/SettingStorage';
 import TaskManager from '@/modules/TaskManager';
 import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
-import Request from '@/modules/Request';
-import Download from '@/modules/Download';
-import SettingStorage from '@/modules/SettingStorage';
+import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import WorkDownloaderUnstoppableError from '../../WorkDownloaderUnstoppableError';
-import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
-import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
+import Zip from 'jszip';
+import { debug } from '@/global';
+import fs from 'fs-extra';
+import path from 'path';
 
 /**
  * @class
@@ -37,6 +37,8 @@ class UgoiraDownloader extends WorkDownloader {
      * @type {string}
      */
     this.type = 'Pixiv Ugoira';
+
+    this.tagColor = 'rgb(255, 170, 139)';
   }
 
   /**

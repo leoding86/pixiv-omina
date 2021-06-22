@@ -12,6 +12,8 @@ class IllustrationDownloader extends MangaDownloader {
     super();
 
     this.type = 'Pixiv Illustration';
+
+    this.tagColor = 'rgb(226, 118, 118)';
   }
 
   /**

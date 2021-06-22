@@ -1,8 +1,8 @@
-import SettingStorage from '@/modules/SettingStorage';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import Request from '@/modules/Request';
 import Download from '@/modules/Download';
 import EpisodeProvider from '../../Providers/PixivComic/EpisodeProvider';
+import Request from '@/modules/Request';
+import SettingStorage from '@/modules/SettingStorage';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 
 class EpisodeDownloader extends WorkDownloader {
 
@@ -15,6 +15,8 @@ class EpisodeDownloader extends WorkDownloader {
     this.type = 'Pixiv Comic episode';
 
     this.pageIndex = 0;
+
+    this.tagColor = rgb(255, 196, 0);
   }
 
   /**

@@ -89,6 +89,11 @@ class WorkDownloader extends EventEmitter {
     this.type = null;
 
     /**
+     * @type {String}
+     */
+    this.tagColor = 'rgb(0, 135, 255)';
+
+    /**
      * @property {string}
      */
     this.saveTo = null;
@@ -389,7 +394,8 @@ class WorkDownloader extends EventEmitter {
       speed: this.speed || (this.download ? this.download.speed : 0),
       progress: this.progress || (this.download ? this.download.progress : 0),
       statusMessage: this.statusMessage,
-      type: this.type
+      type: this.type,
+      tagColor: this.tagColor
     };
 
     return data;

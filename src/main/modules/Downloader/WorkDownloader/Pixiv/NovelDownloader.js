@@ -1,10 +1,10 @@
-import path from 'path';
-import fs from 'fs-extra';
-import { debug } from '@/global';
-import SettingStorage from '@/modules/SettingStorage';
-import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import NovelProvider from '@/modules/Downloader/Providers/Pixiv/NovelProvider';
 import Request from '@/modules/Request';
+import SettingStorage from '@/modules/SettingStorage';
+import WorkDownloader from '@/modules/Downloader/WorkDownloader';
+import { debug } from '@/global';
+import fs from 'fs-extra';
+import path from 'path';
 
 /**
  * @class
@@ -36,6 +36,8 @@ class NovelDownloader extends WorkDownloader {
      * @type {string}
      */
     this.type = 'Pixiv Novel';
+
+    this.type = 'rgb(225, 225, 225)';
   }
 
   get title() {

@@ -1,8 +1,8 @@
-import Request from '@/modules/Request';
 import Download from '@/modules/Download';
+import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
+import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
-import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/GeneralArtworkProvider';
 
 /**
  * @class
@@ -40,6 +40,8 @@ class MangaDownloader extends WorkDownloader {
      * @type {string}
      */
     this.type = 'Pixiv Manga';
+
+    this.tagColor = 'rgb(146, 215, 218)';
 
     /**
      * @type {number}
