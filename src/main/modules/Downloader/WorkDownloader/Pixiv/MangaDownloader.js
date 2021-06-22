@@ -224,7 +224,6 @@ class MangaDownloader extends WorkDownloader {
       this.downloadCompletedDataSize = this.downloadTotalCompletedDataSize + this.download.completedDataSize;
       this.downloadEscapedTime = this.downloadTotalEscapedTime + this.download.escapedTime;
       this.progress += this.download.progress / this.images.length;
-      console.log('dl-progress', this, this.download);
       this.setDownloading(`downloading ${this.imageIndex} / ${this.images.length}`);
     });
 

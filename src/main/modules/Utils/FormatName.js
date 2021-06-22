@@ -157,6 +157,4 @@ class FormatName {
 
 Exposer.expose('omina.utils.formatName', FormatName);
 
-console.log(global);
-
 export default FormatName;

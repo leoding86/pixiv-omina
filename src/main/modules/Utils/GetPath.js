@@ -16,6 +16,4 @@ let getPath = {
 
 Exposer.expose('omina.utils.getPath', getPath);
 
-console.log(global);
-
 export default getPath;
