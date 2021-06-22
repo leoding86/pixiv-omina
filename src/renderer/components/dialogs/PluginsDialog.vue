@@ -102,6 +102,11 @@ export default {
     });
   },
 
+  destroyed() {
+    ipcRenderer.removeAllListeners('plugin-service:reloaded');
+    ipcRenderer.removeAllListeners('plugin-service:removed');
+  },
+
   methods: {
     login(plugin) {
       ipcRenderer.send('plugin-service', {
