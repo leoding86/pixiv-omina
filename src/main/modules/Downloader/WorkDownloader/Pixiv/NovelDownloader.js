@@ -37,7 +37,7 @@ class NovelDownloader extends WorkDownloader {
      */
     this.type = 'Pixiv Novel';
 
-    this.type = 'rgb(225, 225, 225)';
+    this.tagColor = 'rgb(225, 225, 225)';
   }
 
   get title() {
