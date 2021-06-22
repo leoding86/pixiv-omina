@@ -1,10 +1,10 @@
 import {
+  PixivComicEpisodeProvider,
+  PixivComicWorkProvider,
   PixivGeneralArtworkProvider,
   PixivNovelProvider,
-  PixivUserProvider,
-  PixivComicEpisodeProvider,
   PixivNovelSeriesProvider,
-  PixivComicWorkProvider
+  PixivUserProvider
 } from './Providers';
 
 class DownloadAdapter {
@@ -82,6 +82,19 @@ class DownloadAdapter {
       provider,
       patterns
     });
+  }
+
+  /**
+   * Remove a map setting
+   * @param {BaseProvider} provider
+   * @returns {void}
+   */
+  static removeProvider(provider) {
+    let index = DownloadAdapter.matchMaps.findIndex(map => provider === map.provider);
+
+    if (index > -1) {
+      DownloadAdapter.matchMaps.splice(index, 1);
+    }
   }
 }
 
