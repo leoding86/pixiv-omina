@@ -43,6 +43,8 @@
 
   "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic作品可用的重命名占位",
 
+  "_pixiv_novel_valid_rename_placeholder": "Pixiv小说作品可用的重命名占位",
+
   "_language": "语言",
 
   "_close_to_tray": "关闭到状态栏",
@@ -212,5 +214,15 @@
 
   "_close_this_window_after_you_logined": "登陆后关闭此窗口",
 
-  "_plugin_reloaded": "插件已重载"
+  "_plugin_reloaded": "插件已重载",
+
+  "_remove_plugin": "移除插件？",
+
+  "_login": "登录",
+
+  "_reload": "重载",
+
+  "_remove": "移除",
+
+  "_load_temprary_plugin": "载入临时插件"
 }

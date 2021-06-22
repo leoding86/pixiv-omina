@@ -43,6 +43,8 @@
 
   "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic usable rename placeholders",
 
+  "_pixiv_novel_valid_rename_placeholder": "Pixiv Novel usable rename placehodlers",
+
   "_language": "Language",
 
   "_close_to_tray": "Close to tray",
@@ -212,5 +214,15 @@
 
   "_close_this_window_after_you_logined": "Close this window after you logined",
 
-  "_plugin_reloaded": "Plugin reloaded"
+  "_plugin_reloaded": "Plugin reloaded",
+
+  "_remove_plugin": "Remove plugin?",
+
+  "_login": "Login",
+
+  "_reload": "Reload",
+
+  "_remove": "Remove",
+
+  "_load_temprary_plugin": "Load temprary plugin"
 }
