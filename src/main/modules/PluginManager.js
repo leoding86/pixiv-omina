@@ -35,14 +35,14 @@ class PluginManager extends EventEmitter {
     this.app = app;
 
     /**
-     * @type {Map<string, BasePlugin>}
+     * @type {Map<String, BasePlugin>}
      */
-    this.plugins = new Map();
+    this.internalPlugins = new Map();
 
     /**
-     * @type {Map<String, String>}
+     * @type {Map<String, BasePlugin>}
      */
-    this.pluginEntries = new Map();
+    this.externalPlugins = new Map();
 
     /**
      * @type {String}
@@ -77,14 +77,20 @@ class PluginManager extends EventEmitter {
   }
 
   /**
-   * @returns void
+   * Initial internal plugins
+   * @returns {void}
    */
   initalPlugins() {
     if (fs.pathExistsSync(this.pluginPath)) {
       let files = fs.readdirSync(this.pluginPath);
 
       files.forEach(file => {
-        this.loadPlugin(path.join(this.pluginPath, file));
+        let plugin = this.loadPlugin(path.join(this.pluginPath, file));
+
+        /**
+         * Put the plugin to internal scope
+         */
+        this.internalPlugins.set(plugin.id, plugin);
       });
     }
   }
@@ -94,20 +100,21 @@ class PluginManager extends EventEmitter {
    * @param {String} entry
    */
   loadPlugin(entry) {
-    let plugin,
-        pluginMainFile = '';
+    let pluginMainFile = '';
 
-    if (/.*\.js/.test(entry)) {
-      this.createPlugin(entry);
-    } else  {
-      if (fs.existsSync(entry) && fs.lstatSync(entry).isDirectory()) {
-        pluginMainFile = path.join(entry, 'main.js');
+    if (fs.existsSync(entry) && fs.lstatSync(entry).isDirectory()) {
+      pluginMainFile = path.join(entry, 'main.js');
 
-        if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
-          this.createPlugin(pluginMainFile);
-        }
+      if (fs.existsSync(pluginMainFile) && fs.lstatSync(pluginMainFile).isFile) {
+        return this.createPlugin(pluginMainFile);
       }
     }
+
+    debug.log(`Cannot load plugin from entry ${entry}`);
+
+    this.notificationManager
+        .createNotification({ title: `Unable to load plugin` })
+        .show();
   }
 
   /**
@@ -121,12 +128,6 @@ class PluginManager extends EventEmitter {
 
     let module = __non_webpack_require__(file),
         plugin = this.bootPlugin(module, file);
-
-    if (this.plugins.has(plugin.id)) {
-      this.plugins.delete(plugin.id);
-    }
-
-    this.plugins.set(plugin.id, plugin);
 
     return plugin;
   }
@@ -198,6 +199,22 @@ class PluginManager extends EventEmitter {
   }
 
   /**
+   * Get internal plugins
+   * @returns {BasePlugin[]}
+   */
+  getInternalPlugins() {
+    return Array.from(this.internalPlugins.values());
+  }
+
+  /**
+   * Get external plugins
+   * @returns {BasePlugin[]}
+   */
+  getExternalPlugins() {
+    return Array.from(this.externalPlugins.values());
+  }
+
+  /**
    * Get all booted plugins
    * @returns {any[]}
    */
@@ -211,14 +228,19 @@ class PluginManager extends EventEmitter {
    * @returns {any|null}
    */
   getPlugin(id) {
-    return this.plugins.has(id)
-           ? this.plugins.get(id)
-           : null;
+    if (this.internalPlugins.has(id)) {
+      return this.internalPlugins.get(id);
+    } else if (this.externalPlugins.has(id)) {
+      return this.externalPlugins.get(id);
+    } else {
+      return null;
+    }
   }
 
   /**
    * Reload plugin
    * @param {string} id
+   * @throws {Error}
    */
   reloadPlugin(id) {
     let plugin;
@@ -229,11 +251,57 @@ class PluginManager extends EventEmitter {
 
     if (plugin) {
       let reloadedPlugin = this.createPlugin(plugin.entryFile);
-      this.plugins.set(id, reloadedPlugin);
+
+      this.updatePluginInstance(id, reloadedPlugin);
 
       return reloadedPlugin;
     } else {
       throw new Error('_unable_to_reload_plugin');
+    }
+  }
+
+  /**
+   * Remove a plugin via its id
+   * @param {String} id Plugin's id
+   * @returns {void}
+   */
+  removePlugin(id) {
+    if (this.internalPlugins.has(id)) {
+      this.internalPlugins.delete(id);
+    } else if (this.externalPlugins.has(id)) {
+      this.externalPlugins.delete(id);
+    } else {
+      debug.log(`There isn't plugin [id] to remove`);
+    }
+  }
+
+  /**
+   * Load a plugin temprarily
+   * @param {String} entry Plugin entry folder
+   * @returns {void}
+   */
+  loadTempraryPlugin(entry) {
+    let plugin = this.loadPlugin(entry);
+
+    if (plugin) {
+      /**
+       * Put the plugin to external scope
+       */
+      this.externalPlugins.set(plugin.id, plugin);
+    }
+  }
+
+  /**
+   * Update plugin's instance in the scope
+   * @param {String} id
+   * @param {BasePlugin} plugin
+   * @returns {void}
+   */
+  updatePluginInstance(id, plugin) {
+    if (this.internalPlugins.has(id)) {
+      this.internalPlugins.set(id, plugin);
+    } else if (this.externalPlugins.has(id)) {
+      this.externalPlugins.set(id, plugin);
     }
   }
 
@@ -243,6 +311,14 @@ class PluginManager extends EventEmitter {
    */
   installPlugin(entry) {
     throw new Error('Method installPlugin has not been implmeneted');
+  }
+
+  /**
+   * Uninstall a plugin
+   * @param {String} entry Entry file for the plugin
+   */
+  uninstallPlugin(entry) {
+    throw new Error('Method uninstallPlugin has not been implemented');
   }
 }
 
