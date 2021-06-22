@@ -100,12 +100,23 @@ class PluginService extends BaseService {
   sendPluginsLoaded() {
     let data = [];
 
-    this.pluginManager.getPlugins().forEach(plugin => {
+    this.pluginManager.getExternalPlugins().forEach(plugin => {
       data.push({
         id: plugin.id,
         title: plugin.title || '',
         loginUrl: plugin.loginUrl,
-        icon: plugin.icon
+        icon: plugin.icon,
+        isExternal: true
+      });
+    });
+
+    this.pluginManager.getInternalPlugins().forEach(plugin => {
+      data.push({
+        id: plugin.id,
+        title: plugin.title || '',
+        loginUrl: plugin.loginUrl,
+        icon: plugin.icon,
+        isExternal: false
       });
     });
 
@@ -126,11 +137,25 @@ class PluginService extends BaseService {
       },
       (filePath, bookmarks) => {
         if (filePath.length > 0) {
-          this.pluginManager.loadPlugin(filePath[0]);
+          this.pluginManager.loadTempraryPlugin(filePath[0]);
           this.sendPluginsLoaded();
         }
       }
     )
+  }
+
+  /**
+   * Remove a plugin
+   * @param {Object} args
+   * @param {Electron.Event} event
+   */
+  removePluginAction(args, event) {
+    this.pluginManager.removePlugin(args.plugin.id);
+
+    /**
+     * Notificate the renderer thread that plugin has been removed
+     */
+    this.sendDataToWindow(this.responseChannel('removed'), args.plugin.id);
   }
 }
 
