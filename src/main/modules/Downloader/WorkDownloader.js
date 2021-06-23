@@ -215,12 +215,12 @@ class WorkDownloader extends EventEmitter {
   }
 
   setPending(message) {
-    this.statusMessage = message || 'Pending';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.pending;
   }
 
   setStart(message) {
-    this.statusMessage = message || 'Start';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.downloading;
 
     if (!this.recycle) {
@@ -229,7 +229,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   setDownloading(message) {
-    this.statusMessage = message || 'Downloading';
+    this.statusMessage = message || '';
 
     if (!this.isStopping() && !this.isStop()) {
       this.state = WorkDownloader.state.downloading;
@@ -241,7 +241,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   setProcessing(message) {
-    this.statusMessage = message || 'Processing';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.processing;
 
     if (!this.recycle) {
@@ -250,7 +250,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   setStopping(message) {
-    this.statusMessage = message || 'Stopping';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.stopping;
 
     if (!this.recycle && !this.mute) {
@@ -259,7 +259,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   setStop(message) {
-    this.statusMessage = message || 'Stopped';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.stop;
 
     if (!this.recycle && !this.mute) {
@@ -268,7 +268,7 @@ class WorkDownloader extends EventEmitter {
   }
 
   setFinish(message) {
-    this.statusMessage = message || 'Finished';
+    this.statusMessage = message || '';
     this.state = WorkDownloader.state.finish;
 
     this.request = null;
