@@ -298,6 +298,9 @@ export default {
     ipcRenderer.send('download-service', {
       action: 'hasCachedDownloads'
     });
+
+    ipcRenderer.on('theme-service:load', this.loadTheme);
+    ipcRenderer.on('theme-service:reload', this.loadTheme);
   },
 
   mounted() {
@@ -636,6 +639,28 @@ export default {
           name
         }
       });
+    },
+
+    /**
+     * Handle events (load/reload) emitted from theme service
+     * @param {*} event
+     * @param {cssFile: string} data
+     * @returns {void}
+     */
+    loadTheme(event, data) {
+      let $customTheme = document.querySelector('#custom-theme'),
+          $head = document.querySelector('head');
+
+      if ($customTheme) {
+        $head.removeChild($customTheme);
+      }
+
+      let $link = document.createElement('link');
+      $link.id = 'custom-theme';
+      $link.setAttribute('rel', 'stylesheet');
+      $link.setAttribute('type', 'text/css');
+      $link.setAttribute('href', 'file:///' + data.cssFile + '?rnd=' + Date.now());
+      $head.appendChild($link);
     }
   }
 };

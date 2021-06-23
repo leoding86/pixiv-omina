@@ -33,6 +33,10 @@
         <i class="el-icon-info"></i>
       </el-tooltip>
     </el-form-item>
+
+    <el-form-item :label="$t('_reload_theme')">
+      <el-button @click="reloadTheme">{{ $t('_reload') }}</el-button>
+    </el-form-item>
   </el-form>
 </template>
 
@@ -90,6 +94,15 @@ export default {
       },
 
       deep: true
+    }
+  },
+
+  methods: {
+    reloadTheme() {
+      ipcRenderer.send('theme-service', {
+        action: 'reloadTheme',
+        args: { }
+      });
     }
   }
 };
