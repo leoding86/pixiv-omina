@@ -195,7 +195,7 @@ class EpisodeDownloader extends WorkDownloader {
 
       this.progress = this.pageIndex / this.context.pages.length;
 
-      this.setDownloading();
+      this.setDownloading(`${this.pageIndex} / ${this.context.pages.length}`);
 
       if (this.pageIndex > (this.context.pages.length - 1)) {
         this.setFinish();
@@ -207,7 +207,8 @@ class EpisodeDownloader extends WorkDownloader {
     });
 
     this.download.on('dl-progress', () => {
-      this.setDownloading(`downloading ${this.pageIndex} / ${this.context.pages.length}`);
+      this.progress = this.download.progress / this.context.pages.length + this.pageIndex / this.context.pages.length;
+      this.setDownloading(`${this.pageIndex} / ${this.context.pages.length}`);
     });
 
     this.download.on('dl-error', error => {

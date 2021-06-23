@@ -75,7 +75,7 @@
           </div>
           <div class="download-list-item__footer">
             <div class="download-list-item__status">
-              <p>{{ getDownloadStatus(item) }}<span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
+              <p>{{ getDownloadStatus(item) }} <span v-show="item.state === 'downloading'"> {{ getSpeedUnit(item.speed) }}</span> </p>
             </div>
           </div>
         </el-card>
@@ -137,7 +137,7 @@ export default {
 
     getDownloadStatus(download) {
       return this.$t(`_${download.state}`)
-             + (download.state === 'error' ? `: ${download.statusMessage}` : '');
+             + (download.statusMessage ? ` ${download.statusMessage}` : '');
     },
 
     clickStopHandler(download) {

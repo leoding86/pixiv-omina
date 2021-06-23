@@ -208,7 +208,7 @@ class MangaDownloader extends WorkDownloader {
       this.downloadTotalCompletedDataSize += this.download.totalDataSize;
       this.downloadTotalEscapedTime += this.download.escapedTime;
 
-      this.setDownloading();
+      this.setDownloading(`${this.imageIndex} / ${this.images.length}`);
 
       if (this.imageIndex > (this.images.length - 1)) {
         this.setFinish();
@@ -223,8 +223,8 @@ class MangaDownloader extends WorkDownloader {
     this.download.on('dl-progress', () => {
       this.downloadCompletedDataSize = this.downloadTotalCompletedDataSize + this.download.completedDataSize;
       this.downloadEscapedTime = this.downloadTotalEscapedTime + this.download.escapedTime;
-      this.progress += this.download.progress / this.images.length;
-      this.setDownloading(`downloading ${this.imageIndex} / ${this.images.length}`);
+      this.progress = this.download.progress / this.images.length + this.imageIndex / this.images.length;
+      this.setDownloading(`${this.imageIndex} / ${this.images.length}`);
     });
 
     this.download.on('dl-error', error => {
