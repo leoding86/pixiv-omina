@@ -1,10 +1,11 @@
+import DebugService from '@/services/DebugService';
+import DownloadService from '@/services/DownloadService';
+import PluginService from '@/services/PluginService';
 import SettingService from '@/services/SettingService';
+import TaskService from '@/services/TaskService';
+import ThemeService from './services/ThemeService';
 import UpdateService from '@/services/UpdateService';
 import UserService from '@/services/UserService';
-import DownloadService from '@/services/DownloadService';
-import TaskService from '@/services/TaskService';
-import DebugService from '@/services/DebugService';
-import PluginService from '@/services/PluginService';
 
 /**
  * @class
@@ -41,7 +42,8 @@ class ServiceContainer {
         .set('user', UserService.getService())
         .set('download', DownloadService.getService())
         .set('task', TaskService.getService())
-        .set('plugin', PluginService.getService());
+        .set('plugin', PluginService.getService())
+        .set('theme', ThemeService.getService());
     }
 
     return ServiceContainer.instance;
