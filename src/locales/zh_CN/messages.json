@@ -224,5 +224,7 @@
 
   "_remove": "移除",
 
-  "_load_temprary_plugin": "载入临时插件"
+  "_load_temprary_plugin": "载入临时插件",
+
+  "_reload_theme": "重载主题"
 }

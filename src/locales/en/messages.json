@@ -224,5 +224,7 @@
 
   "_remove": "Remove",
 
-  "_load_temprary_plugin": "Load temprary plugin"
+  "_load_temprary_plugin": "Load temprary plugin",
+
+  "_reload_theme": "Reload Theme"
 }
