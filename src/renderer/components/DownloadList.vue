@@ -9,15 +9,12 @@
         v-slot="{ item }"
       >
         <el-card class="download-list-item"
-          :class="{'download-list-item--selected': item.selected}"
+          :class="getDownloadListItemClassname(item)"
           @click.stop.native="downloadClickHandler(item, $event)"
           :key=item.id
         >
           <div
-            class="download-list-item__title-type"
-            :style="{
-              background: getDownloadTagColor(item)
-            }"
+            class="download-list-item__tag"
           >{{ getDownloadType(item.type) }}</div>
 
           <div class="download-list-item__mask"
@@ -103,6 +100,18 @@ export default {
   },
 
   methods: {
+    getDownloadListItemClassname(item) {
+      let classnames = ['download-list-item--selected'];
+
+      if (item.selected) {
+        classnames.push('download-list-item--selected');
+      }
+
+      classnames.push(`download-list-item--${this.getDownloadType(item.type).toLowerCase().split(' ').join('_')}`)
+
+      return classnames.join(' ');
+    },
+
     getDownloadTagColor(item) {
       if (item.tagColor) {
         return item.tagColor;
@@ -244,7 +253,7 @@ export default {
   }
 }
 
-.download-list-item__title-type {
+.download-list-item__tag {
   padding: 1px 2px;
   background: rgb(0, 135, 255);
   color: white;
@@ -257,26 +266,40 @@ export default {
   left: 0;
 }
 
-.download-list-item__title-type--ugoira {
-  @extend .download-list-item__title-type;
-
-  background: rgb(255, 170, 139);
+.download-list-item--undetermined {
+  .download-list-item-item__tag {
+    background: rgb(125, 125, 125);
+  }
 }
 
-.download-list-item__title-type--illustration {
-  @extend .download-list-item__title-type;
-
-  background: rgb(226, 118, 118);
+.download-list-item--pixiv_ugoira {
+  .download-list-item__tag {
+    background: rgb(255, 170, 139);
+  }
 }
 
-.download-list-item__title-type--manga {
-  @extend .download-list-item__title-type;
-
-  background: rgb(146, 215, 218);
+.download-list-item--pixiv_illustration {
+  .download-list-item__tag {
+    background: rgb(226, 118, 118);
+  }
 }
 
-.download-list-item__title-type--pixiv-comic {
-  background: rgb(0, 135, 255);
+.download-list-item--pixiv_manga {
+  .download-list-item__tag {
+    background: rgb(146, 215, 218);
+  }
+}
+
+.download-list-item--pixiv_comic {
+  .download-list-item__tag {
+    background: rgb(0, 135, 255);
+  }
+}
+
+.download-list-item--pixiv_novel {
+  .download-list-item__tag {
+    background: rgb(55, 55, 55);
+  }
 }
 
 .download-list-item__actions {
