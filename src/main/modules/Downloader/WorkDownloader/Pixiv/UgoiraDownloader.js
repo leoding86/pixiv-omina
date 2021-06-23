@@ -109,7 +109,7 @@ class UgoiraDownloader extends WorkDownloader {
       });
 
       this.request.on('abort', () => {
-        reject(Error('Request ugoira meta has been aborted'));
+        reject(Error('Request Ugoira meta has been aborted'));
       });
 
       this.request.on('response', response => {
@@ -181,9 +181,9 @@ class UgoiraDownloader extends WorkDownloader {
               file: file,
               saveFile: path.join(this.saveFolder, this.saveFilename) + '.gif'
             });
-            this.setFinish('Download complete, GIF generation task has send to task');
+            this.setFinish('(GIF generation sent to Jobs)');
           } else {
-            this.setFinish('Download complete, GIF generate skipped');
+            this.setFinish('(GIF generation was skipped)');
           }
         });
     }).catch(error => {

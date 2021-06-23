@@ -10,7 +10,7 @@
       <div class="footer-btn"
         @click="toggleTasks"
       >
-        {{ $t('_jobs') }}({{jobsCount}})
+        {{ $t('_jobs') }} ({{jobsCount}})
       </div>
       <div class="footer-status"><i class="el-icon-sort"></i> <span :title="statusMessage">{{ statusMessage }}</span></div>
     </div>

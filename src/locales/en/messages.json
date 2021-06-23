@@ -1,7 +1,7 @@
 {
-  "_initializing_and_checking_login_status": "Initializing and checking login status",
+  "_initializing_and_checking_login_status": "Initializing and checking the login status",
 
-  "_download": "Download",
+  "_download": "Downloads",
 
   "_all": "All",
 
@@ -13,21 +13,21 @@
 
   "_status": "Status",
 
-  "_there_is_no_download": "There is no download",
+  "_there_is_no_download": "Download list is empty",
 
-  "_download_is_already_exists_delete_it_and_try_again": "Download is already exists, delete it and try again",
+  "_download_is_already_exists_delete_it_and_try_again": "Download is already exists, remove it and try again",
 
-  "_this_is_not_a_valid_url": "This is not a valid url",
+  "_this_is_not_a_valid_url": "Invalid URL",
 
-  "_you_need_login_first": "You need login first",
+  "_you_need_login_first": "You must log in first",
 
-  "_you_are_logined": "You are logined",
+  "_you_are_logined": "You are logged in",
 
   "_settings": "Settings",
 
   "_general": "General",
 
-  "_rename": "Rename",
+  "_rename": "Filenames",
 
   "_proxy": "Proxy",
 
@@ -39,33 +39,33 @@
 
   "_save": "Save",
 
-  "_pixiv_valid_rename_placeholders": "Pixiv usable rename placeholders",
+  "_pixiv_valid_rename_placeholders": "Format placeholders available for Pixiv",
 
-  "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic usable rename placeholders",
+  "_pixiv_comic_valid_rename_placeholders": "Format placeholders available for Pixiv Comic",
 
-  "_pixiv_novel_valid_rename_placeholder": "Pixiv Novel usable rename placehodlers",
+  "_pixiv_novel_valid_rename_placeholder": "Format placeholders available for Pixiv Novel",
 
   "_language": "Language",
 
   "_close_to_tray": "Close to tray",
 
-  "_show_notification": "Show notification",
+  "_show_notification": "Show notifications",
 
-  "_user_agent": "User Agent",
+  "_user_agent": "User-Agent",
 
-  "_save_to": "Save to",
+  "_save_to": "Save path",
 
-  "_save_ugoira_in_subfolder": "Save ugoira in subfolder",
+  "_save_ugoira_in_subfolder": "Save Ugoira into subfolder",
 
-  "_format_ugoira": "Rename ugoira",
+  "_format_ugoira": "Ugoira format",
 
-  "_format_manga": "Rename manga",
+  "_format_manga": "Manga format",
 
   "_format_manga_image": "Format manga image",
 
-  "_save_illust_in_subfolder": "Save illust in subfolder",
+  "_save_illust_in_subfolder": "Save illust into subfolder",
 
-  "_format_illust": "Rename illust",
+  "_format_illust": "Illust format",
 
   "_format_illust_image": "Format illust image",
 
@@ -79,13 +79,13 @@
 
   "_password": "Password",
 
-  "_error_ocurred_when_checking_version": "Error ocurred when checking versoin",
+  "_error_ocurred_when_checking_version": "Version check error",
 
   "_checking": "Checking",
 
-  "_new_version_avaliable": "New avaliable version",
+  "_new_version_avaliable": "New available version -",
 
-  "_It_s_up_to_date": "It's up to date",
+  "_It_s_up_to_date": "Application is up to date",
 
   "_version": "Version",
 
@@ -101,39 +101,39 @@
 
   "_settings_saved": "Settings saved",
 
-  "_please_input_url": "Please input url",
+  "_please_input_url": "Please enter a URL",
 
   "view": "view",
 
   "_save_illustration_to": "Save illust to",
 
-  "_save_ugoira_to": "Save ugoira to",
+  "_save_ugoira_to": "Save Ugoira to",
 
   "_save_manga_to": "Save manga to",
 
-  "_folders_for_saving_ugoira": "Folder(s) for saving ugoira",
+  "_folders_for_saving_ugoira": "Ugoira save location",
 
-  "_folders_for_saving_illustration": "Folder(s) for saving illust",
+  "_folders_for_saving_illustration": "Illustrations save location",
 
-  "_folders_for_saving_manga": "Folder(s) for saving manga",
+  "_folders_for_saving_manga": "Manga save location",
 
   "_the_path_wills_suffix_to_download_location": "The paths will suffix to download location",
 
-  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "You can add forward slash to save images in subfolder. eg",
+  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "Forward slash can be used to save images into the subfolder, e.g.",
 
-  "_start_download_while_startup": "Start download on startup",
+  "_start_download_while_startup": "Resume downloads on startup",
 
-  "_format_pixiv_comic": "Rename comic",
+  "_format_pixiv_comic": "Comic format",
 
-  "_works_on_pixiv_main_site_rename_settings": "Works on Pixiv main site rename settings",
+  "_works_on_pixiv_main_site_rename_settings": "Filename formats for Pixiv",
 
-  "_works_on_pixiv_comic_rename_setting": "Works on Pixiv Comic rename setting",
+  "_works_on_pixiv_comic_rename_setting": "Filename format for Pixiv Comic",
 
   "_reset": "Reset",
 
   "_url": "URL",
 
-  "_bookmark": "Bookmark",
+  "_bookmark": "Bookmarks",
 
   "_pages": "Pages",
 
@@ -157,7 +157,7 @@
 
   "_jobs": "Jobs",
 
-  "_unfinished_downloads_found": "Unfinished download found",
+  "_unfinished_downloads_found": "Unfinished downloads found",
 
   "_clear_path": "Clear save path",
 
@@ -167,22 +167,22 @@
 
   "_restore_downloads": "Restore downloads",
 
-  "_single_user_mode": "Single User Mode",
+  "_single_user_mode": "Single-user mode",
 
-  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "Save settings and other data in installation folder if it's enabled",
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "If enabled, user settings and other data will be saved in installation directory",
 
   "_clear_and_close": "Clear and close",
 
   "_clear_cached_downloads_and_close": "Clear cached downloads and close",
 
-  "_try_again": "Login failed. Please try again",
+  "_try_again": "Failed to log on. Please try again.",
 
-  "_network_error": "Request error. Your network may not be able to connect Pixiv.",
+  "_network_error": "Request error. Your network may be unable to connect to Pixiv.",
 
   "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
-    "You don't have write permission for saving data in installation directory. Install application in directory that you have write permission or run application with administrator privilege might fix it",
+    "You don't have write permissions for saving the data in installation directory. Installing the application to directory where you have write permission or running the application as an administrator might fix it.",
 
-  "_format_novel": "Rename novel",
+  "_format_novel": "Novel format",
 
   "_pending": "Pending",
 
@@ -190,11 +190,11 @@
 
   "_error": "Error",
 
-  "_finish": "Finish",
+  "_finish": "Finished",
 
-  "_stopping": "Stopping",
+  "_stopping": "Pausing",
 
-  "_stop": "Stop",
+  "_stop": "Paused",
 
   "_plugins": "Plugins",
 
@@ -202,19 +202,19 @@
 
   "_initializing": "Initializing",
 
-  "_no_plugin_installed": "No plugin installed",
+  "_no_plugin_installed": "No plugins installed",
 
-  "_logined": "Logined",
+  "_logined": "Signed in",
 
-  "_not_logined": "Not Logined",
+  "_not_logined": "Unauthenticated",
 
   "_feedback": "Feedback",
 
   "_toggle_development_tools": "Toggle development tools",
 
-  "_close_this_window_after_you_logined": "Close this window after you logined",
+  "_close_this_window_after_you_logined": "Close this window after login",
 
-  "_plugin_reloaded": "Plugin reloaded",
+  "_plugin_reloaded": "Plugin has been reloaded",
 
   "_remove_plugin": "Remove plugin?",
 
@@ -224,13 +224,13 @@
 
   "_remove": "Remove",
 
-  "_load_temporary_plugin": "Load temporary plugin",
+  "_load_temporary_plugin": "Load plugin temporary",
 
-  "_reload_theme": "Reload Theme",
+  "_reload_theme": "Reload theme",
 
   "_install_plugin": "Install plugin",
 
-  "_open_log": "Open Log",
+  "_open_log": "Open log",
 
   "_log": "Log",
 
@@ -242,19 +242,19 @@
 
   "_interval_min": "Interval (min)",
 
-  "_task_arguments": "Task Arguments",
+  "_task_arguments": "Task arguments",
 
-  "_run_at": "Run At",
+  "_run_at": "Run at",
 
   "_task_scheduler": "Task Scheduler",
 
-  "_no_schedule": "No Schedule",
+  "_no_schedule": "No schedule",
 
   "_base": "Base",
 
-  "_run_now": "Run Now",
+  "_run_now": "Run now",
 
-  "_run_immediately": "Run Immediately",
+  "_run_immediately": "Run immediately",
 
   "_repeat": "Repeat",
 
@@ -262,11 +262,11 @@
 
   "_state": "State",
 
-  "_latest_run_time": "Latest Run Time",
+  "_latest_run_time": "Latest run time",
 
-  "_latest_run_result": "Latest Run Result",
+  "_latest_run_result": "Latest run result",
 
-  "_next_run_time": "Next Run Time",
+  "_next_run_time": "Next run time",
 
   "_actions": "Actions",
 
@@ -278,7 +278,7 @@
 
   "_idle": "Idle",
 
-  "_not_start": "Not Start",
+  "_not_start": "Not start",
 
   "_failure": "Failure",
 
@@ -286,5 +286,5 @@
 
   "_aborted": "Aborted",
 
-  "_open_file": "Open File"
+  "_open_file": "Open theme file"
 }
