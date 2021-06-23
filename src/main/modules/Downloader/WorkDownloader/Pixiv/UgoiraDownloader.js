@@ -181,9 +181,9 @@ class UgoiraDownloader extends WorkDownloader {
               file: file,
               saveFile: path.join(this.saveFolder, this.saveFilename) + '.gif'
             });
-            this.setFinish('Download complete, GIF generation task has send to task');
+            this.setFinish('(GIF generation sent to Tasks)');
           } else {
-            this.setFinish('Download complete, GIF generate skipped');
+            this.setFinish('(GIF generation was skipped)');
           }
         });
     }).catch(error => {
