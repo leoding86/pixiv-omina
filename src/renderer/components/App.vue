@@ -301,6 +301,10 @@ export default {
 
     ipcRenderer.on('theme-service:load', this.loadTheme);
     ipcRenderer.on('theme-service:reload', this.loadTheme);
+
+    ipcRenderer.send('theme-service', {
+      action: 'loadTheme'
+    });
   },
 
   mounted() {
