@@ -10,6 +10,14 @@
       <slot></slot>
     </div>
     <div class="header__right">
+      <el-button class="el-button--icon" size="small" @click="jumpTo('https://github.com/leoding86/webextension-pixiv-toolkit')">
+        <img :src="require('../../../static/github.svg').default" alt="Github">
+        Star it</el-button>
+      <el-button class="el-button--icon" size="small" @click="jumpTo('https://www.patreon.com/leoding')">
+        <img :src="require('../../../static/patreon.png').default" alt="Patreon">
+        Support it
+      </el-button>
+
       <div class="settings-button"
         :style="{zIndex: 99999}"
       >
@@ -60,6 +68,15 @@ export default {
     ipcRenderer.on('update-service:find-new-version', () => {
       this.hasNewVersion = true;
     });
+  },
+
+  methods: {
+    jumpTo(url) {
+      let a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.click();
+    }
   }
 }
 </script>
@@ -70,15 +87,17 @@ export default {
   flex-direction: row;
 
   .header__right {
+    display: flex;
+    justify-content: flex-end;
     position: relative;
     flex: 1;
-    text-align: right;
   }
 }
 
 .settings-button {
   display: inline-block;
   position: relative;
+  margin-left: 10px;
 
   &__update-icon {
     position: absolute;
