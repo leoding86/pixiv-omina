@@ -52,9 +52,13 @@
         {{ $t('_help') }}
       </el-button>
       <el-button
-        @click="loadTempraryPlugin"
+        @click="loadTemporaryPlugin"
         size="mini"
-      >{{ $t('_load_temprary_plugin') }}</el-button>
+      >{{ $t('_load_temporary_plugin') }}</el-button>
+      <el-button
+        @click="installPlugin"
+        size="mini"
+      >{{ $t('_install_plugin') }}</el-button>
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
@@ -82,10 +86,9 @@ export default {
   },
 
   created() {
-    console.log(this.plugins);
-    ipcRenderer.on('plugin-service:reloaded', (event, { id, plugin }) => {
+    ipcRenderer.on('plugin-service:reloaded', (event, plugin) => {
       for (let i = 0; i < this.plugins.length; i++) {
-        if (id === this.plugins[i].id) {
+        if (plugin.id === this.plugins[i].id) {
           this.$set(this.plugins, i, plugin);
           break;
         }
@@ -135,9 +138,16 @@ export default {
       a.click();
     },
 
-    loadTempraryPlugin() {
+    installPlugin() {
       ipcRenderer.send('plugin-service', {
-        action: 'loadTempraryPlugin',
+        action: 'installPlugin',
+        args: {}
+      });
+    },
+
+    loadTemporaryPlugin() {
+      ipcRenderer.send('plugin-service', {
+        action: 'loadTemporaryPlugin',
         args: {}
       });
     },
