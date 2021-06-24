@@ -101,7 +101,7 @@ export default {
 
   methods: {
     getDownloadListItemClassname(item) {
-      let classnames = ['download-list-item--selected'];
+      let classnames = ['download-list-item'];
 
       if (item.selected) {
         classnames.push('download-list-item--selected');
