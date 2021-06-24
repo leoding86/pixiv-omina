@@ -1,7 +1,8 @@
 # 如何安装插件
 
-以库中例子插件Example为例，首先将文件夹`Example`下载并保存到任意位置。然后找到`Pixiv Omina`的安装目录，将下载下来的文件夹复制到应用安装的`pluings`文件夹中，如果没有此文件夹需要手动新建一个。重启应用，重启后打开插件列表查看插件是否安装成功。
+> 以仓库中的 [Example](https://github.com/leoding86/pixiv-omina/tree/master/plugin_example) 插件为实例：
 
-<figure>
-<img src="../screenshots/how-to-install-plugin/example.zh-CN.png" alt="插件安装完成"/> <figcaption>插件安装完成</figcaption>
-</figure>
+1. 下载`Example`文件夹并保存到你想保存的位置；
+2. 打开`插件列表`（打开按钮是应用的右下角的箱子图标）；
+3. 点击`安装插件`，并选择你在第一步保存的文件夹`Example`；
+4. 完成
