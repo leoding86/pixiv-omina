@@ -28,6 +28,25 @@ body {
   }
 }
 
+.el-button--icon {
+  height: 33px;
+  overflow: hidden;
+
+  span {
+    position: relative;
+    top: -1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      margin-right: 5px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
 .el-message-box {
   padding-bottom: 0;
 
