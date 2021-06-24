@@ -51,6 +51,10 @@
     "extraResources": [
       "./static/**"
     ],
+    "extraFiles": [
+      "./LICENSE.txt",
+      "./LICENSE-3RD-PARTY.txt"
+    ],
     "win": {
       "target": [
         {
