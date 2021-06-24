@@ -168,6 +168,10 @@ class Application {
 
       shell.openExternal(url);
     });
+
+    this.mainWindow.webContents.on('will-navigate', (event, url) => {
+      event.preventDefault();
+    });
   }
 
   createTray() {
