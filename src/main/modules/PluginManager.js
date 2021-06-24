@@ -16,6 +16,7 @@ import fs from 'fs-extra';
 import md5 from 'md5';
 import { parse } from 'node-html-parser';
 import path from 'path';
+import rimraf from 'rimraf';
 
 class PluginManager extends EventEmitter {
   /**
@@ -47,7 +48,7 @@ class PluginManager extends EventEmitter {
     /**
      * @type {String}
      */
-    this.pluginPath = path.join(GetPath.installation(), 'plugins');
+    this.pluginPath = path.join(GetPath.userData(), 'plugins');
 
     /**
      * @type {NotificationManager}
@@ -98,6 +99,8 @@ class PluginManager extends EventEmitter {
   /**
    * Load plugin from entry point
    * @param {String} entry
+   * @returns {BasePlugin}
+   * @throws {Error}
    */
   loadPlugin(entry) {
     let pluginMainFile = '';
@@ -110,11 +113,7 @@ class PluginManager extends EventEmitter {
       }
     }
 
-    debug.log(`Cannot load plugin from entry ${entry}`);
-
-    this.notificationManager
-        .createNotification({ title: `Unable to load plugin` })
-        .show();
+    throw new Error(`Cannot load plugin from entry ${entry}`);
   }
 
   /**
@@ -158,7 +157,7 @@ class PluginManager extends EventEmitter {
       });
 
       pluginInstance.providerName = pluginInstance.entryFile = file;
-      pluginInstance.id = md5(file);
+      pluginInstance.id = md5(path.dirname(file));
 
       if (!pluginInstance.title) {
         pluginInstance.title = file;
@@ -199,6 +198,14 @@ class PluginManager extends EventEmitter {
   }
 
   /**
+   *
+   * @param {BasePlugin} plugin
+   */
+  isExternalPlugin(plugin) {
+    return this.externalPlugins.has(plugin.id);
+  }
+
+  /**
    * Get internal plugins
    * @returns {BasePlugin[]}
    */
@@ -212,14 +219,6 @@ class PluginManager extends EventEmitter {
    */
   getExternalPlugins() {
     return Array.from(this.externalPlugins.values());
-  }
-
-  /**
-   * Get all booted plugins
-   * @returns {any[]}
-   */
-  getPlugins() {
-    return Array.from(this.plugins.values());
   }
 
   /**
@@ -273,6 +272,7 @@ class PluginManager extends EventEmitter {
     if (this.internalPlugins.has(id)) {
       plugin = this.internalPlugins.get(id);
       this.internalPlugins.delete(id);
+      this.uninstallPlugin(plugin);
     } else if (this.externalPlugins.has(id)) {
       plugin = this.externalPlugins.get(id);
       this.externalPlugins.delete(id);
@@ -280,9 +280,7 @@ class PluginManager extends EventEmitter {
       debug.log(`There isn't plugin [id] to remove`);
     }
 
-    if (plugin) {
-      plugin.uninstall();
-    }
+    plugin.uninstall();
   }
 
   /**
@@ -290,7 +288,7 @@ class PluginManager extends EventEmitter {
    * @param {String} entry Plugin entry folder
    * @returns {void}
    */
-  loadTempraryPlugin(entry) {
+  loadTemporaryPlugin(entry) {
     let plugin = this.loadPlugin(entry);
 
     if (plugin) {
@@ -305,13 +303,20 @@ class PluginManager extends EventEmitter {
    * Update plugin's instance in the scope
    * @param {String} id
    * @param {BasePlugin} plugin
+   * @param {string} scope
    * @returns {void}
    */
-  updatePluginInstance(id, plugin) {
+  updatePluginInstance(id, plugin, scope = 'internal') {
     if (this.internalPlugins.has(id)) {
       this.internalPlugins.set(id, plugin);
     } else if (this.externalPlugins.has(id)) {
       this.externalPlugins.set(id, plugin);
+    } else {
+      if (scope === 'internal') {
+        this.internalPlugins.set(id, plugin);
+      } else if (scope === 'external') {
+        this.externalPlugins.set(id, plugin);
+      }
     }
   }
 
@@ -320,15 +325,39 @@ class PluginManager extends EventEmitter {
    * @param {string} entry File or Folder
    */
   installPlugin(entry) {
-    throw new Error('Method installPlugin has not been implmeneted');
+    let installationFolder = path.join(GetPath.userData(), 'plugins', md5(entry).toUpperCase());
+
+    /**
+     * Copy folder to plugin folder
+     */
+    if (fs.existsSync(entry) && fs.lstatSync(entry).isDirectory()) {
+      fs.copySync(entry, installationFolder);
+    }
+
+    try {
+      let plugin = this.loadPlugin(installationFolder);
+      this.updatePluginInstance(plugin.id, plugin, 'internal');
+    } catch (e) {
+      this.deletePluginAssets(installationFolder);
+      throw e;
+    }
   }
 
   /**
    * Uninstall a plugin
-   * @param {String} entry Entry file for the plugin
+   * @param {BasePlugin} plugin Plugin instance
+   * @returns {void}
    */
-  uninstallPlugin(entry) {
-    throw new Error('Method uninstallPlugin has not been implemented');
+  uninstallPlugin(plugin) {
+    this.deletePluginAssets(path.dirname(plugin.entryFile));
+  }
+
+  /**
+   * Delete plugin's assets
+   * @param {string} pluginPath
+   */
+  deletePluginAssets(pluginPath) {
+    rimraf(pluginPath, () => {});
   }
 }
 

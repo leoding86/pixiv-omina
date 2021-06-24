@@ -22,8 +22,6 @@ class ThemeService extends BaseService {
     this.settingStorage = SettingStorage.getDefault();
     this.themeManager = ThemeManager.getDefault();
     ipcMain.on(ThemeService.channel, this.channelIncomeHandler.bind(this));
-
-    this.initialTheme();
     this.settingStorage.on('change', this.handleSettingChange);
   }
 
@@ -47,22 +45,6 @@ class ThemeService extends BaseService {
   }
 
   /**
-   * @returns {void}
-   */
-  initialTheme() {
-    try {
-      this.sendDataToWindow(
-        this.responseChannel('load'),
-        {
-          cssFile: this.themeManager.getThemeCssFile(this.settingStorage.getSetting('singleUserMode'))
-        }
-      );
-    } catch (e) {
-      debug.log(e);
-    }
-  }
-
-  /**
    * Handle setting changes
    */
   handleSettingChange(newSettings, oldSettings) {
@@ -77,6 +59,19 @@ class ThemeService extends BaseService {
       } catch (e) {
         debug.log(e);
       }
+    }
+  }
+
+  loadThemeAction() {
+    try {
+      this.sendDataToWindow(
+        this.responseChannel('load'),
+        {
+          cssFile: this.themeManager.getThemeCssFile(this.settingStorage.getSetting('singleUserMode'))
+        }
+      );
+    } catch (e) {
+      debug.log(e);
     }
   }
 

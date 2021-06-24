@@ -1,6 +1,7 @@
 import { dialog, ipcMain } from 'electron';
 
 import BaseService from '@/services/BaseService';
+import NotificationManager from '@/modules/NotificationManager';
 import PluginManager from '@/modules/PluginManager';
 import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
@@ -21,6 +22,7 @@ class PluginService extends BaseService {
   constructor() {
     super();
     this.pluginManager = PluginManager.getDefault();
+    this.notificationManager = NotificationManager.getDefault();
     ipcMain.on(PluginService.channel, this.channelIncomeHandler.bind(this));
   }
 
@@ -49,6 +51,33 @@ class PluginService extends BaseService {
    */
   loadPluginsAction(args, event) {
     this.sendPluginsLoaded();
+  }
+
+  /**
+   *
+   * @param {object} args
+   * @param {Electron.Event} event
+   */
+  installPluginAction(args, event) {
+    dialog.showOpenDialog(
+      WindowManager.getWindow('app'),
+      {
+        properties: ['openDirectory']
+      },
+      (filePath, bookmarks) => {
+        if (filePath.length > 0) {
+          try {
+            this.pluginManager.installPlugin(filePath[0]);
+            this.sendPluginsLoaded();
+          } catch (e) {
+            this.notificationManager
+              .createNotification({ title: `Unable to install plugin` })
+              .show();
+            debug.log(e);
+          }
+        }
+      }
+    );
   }
 
   /**
@@ -90,7 +119,13 @@ class PluginService extends BaseService {
   reloadAction({ id }, event) {
     let plugin = this.pluginManager.reloadPlugin(id);
 
-    this.sendDataToWindow(this.responseChannel('reloaded'), { id, plugin });
+    this.sendDataToWindow(this.responseChannel('reloaded'), {
+      id: plugin.id,
+      title: plugin.title || '',
+      loginUrl: plugin.loginUrl,
+      icon: plugin.icon,
+      isExternal: this.pluginManager.isExternalPlugin(plugin),
+    });
   }
 
   /**
@@ -129,7 +164,7 @@ class PluginService extends BaseService {
    * @param {Object} args
    * @param {Electron.Event} event
    */
-  loadTempraryPluginAction(args, event) {
+  loadTemporaryPluginAction(args, event) {
     dialog.showOpenDialog(
       WindowManager.getWindow('app'),
       {
@@ -137,7 +172,7 @@ class PluginService extends BaseService {
       },
       (filePath, bookmarks) => {
         if (filePath.length > 0) {
-          this.pluginManager.loadTempraryPlugin(filePath[0]);
+          this.pluginManager.loadTemporaryPlugin(filePath[0]);
           this.sendPluginsLoaded();
         }
       }
