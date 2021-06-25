@@ -13,10 +13,10 @@
       <el-button class="el-button--icon" size="small" @click="jumpTo('https://github.com/leoding86/webextension-pixiv-toolkit')">
         <img :src="require('../../../static/github.svg').default" alt="Github">
         Star it</el-button>
-      <el-button class="el-button--icon" size="small" @click="jumpTo('https://www.patreon.com/leoding')">
+      <!-- <el-button class="el-button--icon" size="small" @click="jumpTo('https://www.patreon.com/leoding')">
         <img :src="require('../../../static/patreon.png').default" alt="Patreon">
         Support it
-      </el-button>
+      </el-button> -->
 
       <div class="settings-button"
         :style="{zIndex: 99999}"
