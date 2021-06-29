@@ -125,10 +125,16 @@ class PluginManager extends EventEmitter {
       delete __non_webpack_require__.cache[file];
     }
 
-    let module = __non_webpack_require__(file),
-        plugin = this.bootPlugin(module, file);
+    let module = __non_webpack_require__(file);
+    let pluginBootstrap;
 
-    return plugin;
+    if (typeof module === 'function') {
+      pluginBootstrap = module;
+    } else if (module.default && typeof module.default === 'function') {
+      pluginBootstrap = module.default;
+    }
+
+    return this.bootPlugin(pluginBootstrap, file);
   }
 
   /**
@@ -280,7 +286,11 @@ class PluginManager extends EventEmitter {
       debug.log(`There isn't plugin [id] to remove`);
     }
 
-    plugin.uninstall();
+    try {
+      plugin.uninstall();
+    } catch (e) {
+      //
+    }
   }
 
   /**
