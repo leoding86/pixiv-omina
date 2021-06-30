@@ -60,6 +60,7 @@ class DownloadManager extends EventEmitter {
   /**
    * @param {WorkDownloader} downloader
    * @returns {void}
+   * @deprecated
    */
   addWorkDownloader(downloader) {
     this.workDownloaderPool.set(downloader.id, downloader);
@@ -73,6 +74,7 @@ class DownloadManager extends EventEmitter {
    */
   addDownloader(downloader) {
     if (!this.workDownloaderPool.has(downloader.id)) {
+      this.attachListenersToDownloader(downloader);
       this.workDownloaderPool.set(downloader.id, downloader);
       this.emit('add', downloader);
       this.startWorkDownloader({ downloadId: downloader.id });
@@ -85,8 +87,13 @@ class DownloadManager extends EventEmitter {
    */
   transformWorkDownloader(downloader) {
     let oldDownloader = this.getWorkDownloader(downloader.id);
+
+    this.deattachListenersFromDownloader(oldDownloader);
+
+    this.attachListenersToDownloader(downloader);
     this.workDownloaderPool.set(downloader.id, downloader);
     this.emit('update', downloader);
+
     this.startWorkDownloader({ downloadId: downloader.id });
 
     if (oldDownloader) {
@@ -215,8 +222,6 @@ class DownloadManager extends EventEmitter {
     if (this.workDownloaderPool.has(downloader.id)) {
       this.emit('stop', downloader);
     }
-
-    this.deattachListenersFromDownloader(downloader);
   }
 
   /**
@@ -236,8 +241,6 @@ class DownloadManager extends EventEmitter {
   workDownloaderErrorHandler({ downloader }) {
     this.emit('update', downloader);
 
-    this.deattachListenersFromDownloader(downloader);
-
     this.downloadNext();
   }
 
@@ -249,8 +252,6 @@ class DownloadManager extends EventEmitter {
     this.emit('update', downloader);
 
     this.emit('finish', downloader);
-
-    this.deattachListenersFromDownloader(downloader);
 
     this.downloadNext();
   }
@@ -316,8 +317,6 @@ class DownloadManager extends EventEmitter {
         workDownloader.reset();
       }
 
-      this.attachListenersToDownloader(workDownloader);
-
       if (!this.reachMaxDownloading()) {
         workDownloader.start();
       } else {
@@ -359,6 +358,8 @@ class DownloadManager extends EventEmitter {
 
       workDownloader = null;
     }
+
+    this.deattachListenersFromDownloader(workDownloader);
 
     this.emit('delete', downloadId);
 
@@ -417,8 +418,6 @@ class DownloadManager extends EventEmitter {
           download.stop({
             mute: true
           });
-
-          this.deattachListenersFromDownloader(download);
 
           stoppedDownloadIds.push(download.id);
         } catch (error) {
