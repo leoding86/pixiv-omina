@@ -221,6 +221,13 @@ export default {
       this.firstSelectedDownload = null;
     });
 
+    ipcRenderer.on('error-service:error', (event, error) => {
+      this.$message({
+        type: 'error',
+        message: error,
+      });
+    });
+
     ipcRenderer.on('download-service:add', (event, download) => {
       this.addDownloads(download);
     });
