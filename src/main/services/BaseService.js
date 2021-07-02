@@ -2,6 +2,12 @@ import WindowManager from '@/modules/WindowManager';
 
 class BaseService {
   /**
+   * @static
+   * @type {string}
+   */
+  static channel = 'base';
+
+  /**
    * @param {string} event
    * @param {Object} args
    */
@@ -30,6 +36,14 @@ class BaseService {
 
   sendDataToWindow(channel, data) {
     WindowManager.getWindow('app').webContents.send(channel, data);
+  }
+
+  /**
+   * Get renderer response channel
+   * @param {string} name
+   */
+  responseChannel(name) {
+    return BaseService.channel + `:${name}`;
   }
 }
 
