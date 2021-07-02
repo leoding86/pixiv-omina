@@ -228,5 +228,9 @@
 
   "_reload_theme": "Reload Theme",
 
-  "_install_plugin": "Install plugin"
+  "_install_plugin": "Install plugin",
+
+  "_open_log": "Open Log",
+
+  "_log": "Log"
 }
