@@ -12,7 +12,7 @@
       >
         {{ $t('_jobs') }}({{jobsCount}})
       </div>
-      <div class="footer-status">{{ $t('_status') }}: <span :title="statusMessage">{{ statusMessage }}</span></div>
+      <div class="footer-status"><i class="el-icon-sort"></i> <span :title="statusMessage">{{ statusMessage }}</span></div>
     </div>
     <div class="footer-right">
       <div class="footer-btn"
@@ -152,6 +152,7 @@ export default {
 
   .footer-status {
     display: inline-block;
+    max-width: 350px;
     height: $height;
     line-height: $height;
     vertical-align: top;
