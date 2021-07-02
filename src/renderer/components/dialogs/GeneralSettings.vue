@@ -37,6 +37,10 @@
     <el-form-item :label="$t('_reload_theme')">
       <el-button @click="reloadTheme">{{ $t('_reload') }}</el-button>
     </el-form-item>
+
+    <el-form-item :label="$t('_log')">
+      <el-button @click="openLogs">{{ $t('_open_log') }}</el-button>
+    </el-form-item>
   </el-form>
 </template>
 
@@ -102,6 +106,12 @@ export default {
       ipcRenderer.send('theme-service', {
         action: 'reloadTheme',
         args: { }
+      });
+    },
+
+    openLogs() {
+      ipcRenderer.send('setting-service', {
+        action: 'openLogs'
       });
     }
   }
