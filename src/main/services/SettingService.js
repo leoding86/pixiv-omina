@@ -1,7 +1,10 @@
-import { ipcMain, dialog } from 'electron';
+import fs from 'fs';
+import path from 'path';
+import { ipcMain, dialog, shell } from 'electron';
 import WindowManager from '@/modules/WindowManager';
 import BaseService from '@/services/BaseService';
 import SettingStorage from '@/modules/SettingStorage';
+import GetPath from '@/modules/Utils/GetPath';
 
 class SettingService extends BaseService {
   /**
@@ -55,7 +58,13 @@ class SettingService extends BaseService {
         properties: ['openDirectory']
       },
       (filePath, bookmarks) => {
-        event.returnValue = { filePath, bookmarks };
+        try {
+          fs.accessSync(filePath, fs.constants.W_OK);
+          event.returnValue = { filePath, bookmarks };
+        } catch (error) {
+          event.returnValue = null;
+          throw new Error('You don\'t have permission to write file(s) to the location');
+        }
       }
     )
   }
@@ -88,6 +97,13 @@ class SettingService extends BaseService {
     let defaultSettings = this.settingStorage.getDefaultSettings();
 
     WindowManager.getWindow('app').webContents.send(this.responseChannel('change'), defaultSettings);
+  }
+
+  /**
+   * Open log file
+   */
+  openLogsAction() {
+    shell.openItem(path.join(GetPath.userData(), 'app.log'));
   }
 }
 
