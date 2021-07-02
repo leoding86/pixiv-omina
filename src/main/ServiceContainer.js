@@ -1,3 +1,4 @@
+import BaseService from './services/BaseService';
 import DebugService from '@/services/DebugService';
 import DownloadService from '@/services/DownloadService';
 import PluginService from '@/services/PluginService';
@@ -6,6 +7,7 @@ import TaskService from '@/services/TaskService';
 import ThemeService from './services/ThemeService';
 import UpdateService from '@/services/UpdateService';
 import UserService from '@/services/UserService';
+import ErrorService from '@/services/ErrorService';
 
 /**
  * @class
@@ -37,6 +39,7 @@ class ServiceContainer {
       ServiceContainer.instance = new ServiceContainer();
       ServiceContainer.instance.services
         .set('debug', DebugService.getService())
+        .set('error', ErrorService.getService())
         .set('setting', SettingService.getService())
         .set('update', UpdateService.getService())
         .set('user', UserService.getService())
@@ -52,7 +55,7 @@ class ServiceContainer {
   /**
    *
    * @param {string} name service name
-   * @returns {(SettingService|DownloadService|UserService|DebugService)}
+   * @returns {BaseService}
    */
   static getService(name) {
     if (ServiceContainer.instance.services.has(name)) {
