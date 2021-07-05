@@ -16,7 +16,7 @@ class EpisodeDownloader extends WorkDownloader {
 
     this.pageIndex = 0;
 
-    this.tagColor = rgb(255, 196, 0);
+    this.tagColor = 'rgb(255, 196, 0)';
   }
 
   /**
