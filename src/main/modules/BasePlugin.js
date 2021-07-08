@@ -1,6 +1,24 @@
 import DownloadAdapter from '@/modules/Downloader/DownloadAdapter';
+import ScheduleTaskPool from '@/modules/ScheduleTaskPool';
+import TaskScheduler from '@/modules/TaskScheduler';
 import Exposer from '@/modules/Exposer';
 
+/**
+ * @typedef TaskArgumentsConfig
+ * @property {string} name
+ * @property {string} fieldType
+ * @property {string|number} [default]
+ *
+ * @typedef TaskConfig
+ * @property {string} key
+ * @property {string} name
+ * @property {Function} Task
+ * @property {TaskArgumentsConfig[]} argumentsConfig
+ */
+
+/**
+ * @class
+ */
 class BasePlugin {
   /**
    * @constructor
@@ -40,6 +58,11 @@ class BasePlugin {
      * @property {RegExp[]}
      */
     this.requestUrlPatterns = [];
+
+    /**
+     * @type {TaskConfig}
+     */
+    this.taskConfig = null
   }
 
   /**
@@ -73,7 +96,7 @@ class BasePlugin {
    * @returns {void}
    */
   uninstall() {
-    DownloadAdapter.removeProvider(this);
+    //
   }
 }
 
