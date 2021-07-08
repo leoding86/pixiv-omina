@@ -1,10 +1,12 @@
 import { dialog, ipcMain } from 'electron';
 
+import BasePlugin from '@/modules/BasePlugin';
 import BaseService from '@/services/BaseService';
 import NotificationManager from '@/modules/NotificationManager';
 import PluginManager from '@/modules/PluginManager';
 import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
+import TaskScheduler from '@/modules/TaskScheduler';
 
 class PluginService extends BaseService {
   /**
@@ -21,9 +23,15 @@ class PluginService extends BaseService {
 
   constructor() {
     super();
-    this.pluginManager = PluginManager.getDefault();
+    this.pluginManager = PluginManager.getDefault(global.app);
     this.notificationManager = NotificationManager.getDefault();
+    this.taskScheduler = TaskScheduler.getDefault();
+
+    this.updateScheduleTaskPool();
+
     ipcMain.on(PluginService.channel, this.channelIncomeHandler.bind(this));
+
+    debug.log('Plugin service has been initiated');
   }
 
   /**
@@ -43,6 +51,37 @@ class PluginService extends BaseService {
    */
   responseChannel(name) {
     return PluginService.channel + `:${name}`;
+  }
+
+  /**
+   *
+   * @param {BasePlugin} plugin
+   */
+  addPluginScheduleTaskToPool(plugin) {
+    if (plugin.taskConfig &&
+      plugin.taskConfig.key &&
+      plugin.taskConfig.name &&
+      plugin.taskConfig.Task
+    ) {
+      this.taskScheduler.taskPool.addTask({
+        key: plugin.taskConfig.key,
+        name: plugin.taskConfig.name,
+        Task: plugin.taskConfig.Task
+      });
+    }
+  }
+
+  /**
+   * @returns {void}
+   */
+  updateScheduleTaskPool() {
+    this.pluginManager.getInternalPlugins().forEach(plugin => {
+      this.addPluginScheduleTaskToPool(plugin);
+    });
+
+    this.pluginManager.getExternalPlugins().forEach(plugin => {
+      this.addPluginScheduleTaskToPool(plugin);
+    });
   }
 
   /**
