@@ -49,6 +49,8 @@ class ErrorService extends BaseService {
   handleException(error) {
     debug.log(error);
 
+    console.error(error);
+
     WindowManager.getWindow('app').webContents.send(this.responseChannel('error'), error.message);
   }
 }
