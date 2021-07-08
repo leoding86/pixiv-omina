@@ -29,6 +29,7 @@
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.12",
     "sqlite3": "^5.0.0",
+    "uuid": "^8.3.2",
     "vue": "^2.6.10",
     "vue-i18n": "^8.15.3",
     "vue-virtual-scroller": "^1.0.0-rc.2"
