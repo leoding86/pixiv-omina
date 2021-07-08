@@ -8,6 +8,7 @@ import ThemeService from './services/ThemeService';
 import UpdateService from '@/services/UpdateService';
 import UserService from '@/services/UserService';
 import ErrorService from '@/services/ErrorService';
+import TaskSchedulerService from '@/services/TaskSchedulerService';
 
 /**
  * @class
@@ -45,6 +46,7 @@ class ServiceContainer {
         .set('user', UserService.getService())
         .set('download', DownloadService.getService())
         .set('task', TaskService.getService())
+        .set('taskScheduler', TaskSchedulerService.getService())
         .set('plugin', PluginService.getService())
         .set('theme', ThemeService.getService());
     }
