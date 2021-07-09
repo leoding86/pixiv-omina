@@ -5,6 +5,7 @@ import WindowManager from '@/modules/WindowManager';
 import {
   debug
 } from '@/global';
+import Schedule from '@/modules/Schedule';
 
 class TaskSchedulerService extends BaseService {
   /**
@@ -25,16 +26,30 @@ class TaskSchedulerService extends BaseService {
     this.taskScheduler = TaskScheduler.getDefault();
 
     /**
-     * Bind events
+     * Bind events on TaskScheduler
      */
     this.taskScheduler.on(
-      'schedule_deleted',
-      schedule => this.emit(this.responseChannel('schedule-deleted'), schedule.id)
+      'schedule_updated',
+      schedule => {
+        this.sendDataToWindow(this.responseChannel('schedule-updated'), schedule.toJson());
+      }
     );
 
-    this.taskScheduler.on(
-      'schedule_updated',
-      schedule => this.emit(this.responseChannel('schedule-updated'), schedule.toJson())
+    /**
+     * Bind events on ScheduleTaskPool
+     */
+    this.taskScheduler.taskPool.on(
+      'added',
+      data => {
+        this.sendDataToWindow(this.responseChannel('schedule-task-added'), data);
+      }
+    );
+
+    this.taskScheduler.taskPool.on(
+      'deleted',
+      key => {
+        this.sendDataToWindow(this.responseChannel('schedule-task-deleted'), key);
+      }
     );
 
     ipcMain.on(TaskSchedulerService.channel, this.channelIncomeHandler.bind(this));
@@ -59,20 +74,59 @@ class TaskSchedulerService extends BaseService {
     return TaskSchedulerService.channel + `:${name}`;
   }
 
-  createScheduleAction() {
-    //
+  /**
+   * @returns {void}
+   */
+  getAllTasksAction() {
+    this.sendDataToWindow(
+      this.responseChannel('all-tasks-gotten'),
+      this.taskScheduler.taskPool.getTasks()
+    );
   }
 
-  deleteScheduleAction() {
-    //
+  /**
+   * @returns {void}
+   */
+  getAllSchedulesAction() {
+    let schedules = this.taskScheduler.getAllSchedules(),
+        data = [];
+
+    schedules.forEach(schedule => {
+      data.push(schedule.toJson());
+    });
+
+    this.sendDataToWindow(
+      this.responseChannel('all-schedules-gotten'),
+      data
+    );
   }
 
-  startScheduleAction() {
-    //
+  createScheduleAction(args, event) {
+    let schedule = Schedule.createSchedule(args);
+
+    this.taskScheduler.addSchedule(schedule);
+
+    this.sendDataToWindow(
+      this.responseChannel('schedule-added'),
+      schedule.toJson()
+    );
   }
 
-  stopScheduleAction() {
-    //
+  deleteScheduleAction({ id }, event) {
+    this.taskScheduler.deleteSchedule(id);
+
+    this.sendDataToWindow(
+      this.responseChannel('schedule-deleted'),
+      { id }
+    );
+  }
+
+  startScheduleAction({ id }, event) {
+    this.taskScheduler.startSchedule(id);
+  }
+
+  stopScheduleAction({ id }, event) {
+    this.taskScheduler.stopSchedule(id);
   }
 }
 

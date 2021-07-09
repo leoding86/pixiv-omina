@@ -1,11 +1,13 @@
 import EventEmitter from 'events';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
-import ScheduleTaskPool from '@/modules/ScheduleTaskPool';
+import TaskScheduler from '@/modules/TaskScheduler';
 import ScheduleTask from '@/modules/ScheduleTask';
+import ScheduleTaskNotFoundError from '@/errors/ScheduleTaskNotFoundError';
 
 /**
  * @typedef {object} constructArguments
+ * @property {string} [id]
  * @property {number} [mode=2]
  * @property {number} [interval=3600000]
  * @property {string} [runAt=02:00:00]
@@ -21,16 +23,6 @@ import ScheduleTask from '@/modules/ScheduleTask';
  */
 
 /**
- * @event Schedule#stopped
- * @type {Schedule}
- */
-
-/**
- * @event Schedule#deleted
- * @type {Schedule}
- */
-
-/**
  * @event Schedule#success
  * @type {Schedule}
  */
@@ -41,8 +33,7 @@ import ScheduleTask from '@/modules/ScheduleTask';
  */
 
 /**
- * @event Schedule#exception
- * @type {Schedule}
+ * @class
  */
 class Schedule extends EventEmitter {
   /**
@@ -143,7 +134,7 @@ class Schedule extends EventEmitter {
     /**
      * @type {string}
      */
-    this.id = uuidv4();
+    this.id = args.id || uuidv4();
 
     /**
      * @type {number}
@@ -161,11 +152,6 @@ class Schedule extends EventEmitter {
     this.latestRunResultMessage = '';
 
     /**
-     * @type {boolean}
-     */
-    this.stopSignal = false;
-
-    /**
      * @type {number}
      */
     this.timeout = null;
@@ -181,9 +167,9 @@ class Schedule extends EventEmitter {
     this.state = Schedule.IDLE_STATE;
 
     /**
-     * @type {ScheduleTaskPool}
+     * @type {TaskScheduler}
      */
-    this.scheduleTaskPool = ScheduleTaskPool.getDefault();
+    this.taskScheduler = null;
 
     this.boot();
   }
@@ -195,6 +181,14 @@ class Schedule extends EventEmitter {
    */
   static createSchedule(args) {
     return new Schedule(args);
+  }
+
+  /**
+   *
+   * @param {TaskScheduler} taskScheduler
+   */
+  setTaskScheduler(taskScheduler) {
+    this.taskScheduler = taskScheduler;
   }
 
   /**
@@ -247,7 +241,7 @@ class Schedule extends EventEmitter {
    * @returns {void}
    */
   boot() {
-    this.stopSignal = false;
+    this.state = Schedule.IDLE_STATE;
 
     this.planNextRun();
   }
@@ -259,7 +253,7 @@ class Schedule extends EventEmitter {
    * @returns {void}
    */
   start() {
-    if (this.stopSignal) {
+    if (this.state === Schedule.STOP_STATE) {
       return;
     }
 
@@ -269,18 +263,16 @@ class Schedule extends EventEmitter {
 
     this.emit('start', this);
 
-    let TaskClass = this.scheduleTaskPool.getTask(this.taskKey);
-
-    if (!TaskClass) {
-      this.emit('exception', new Error('_cannot_found_task'));
-      return;
-    }
-
     try {
+      let TaskClass = this.taskScheduler.taskPool.getTask(this.taskKey);
+
+      if (!TaskClass) {
+        throw new ScheduleTaskNotFoundError();
+      }
+
       /**
        * Create task instance
        */
-      // this.task = this.taskClass.createTask(this.taskConstructorArguments);
       this.task = TaskClass.createTask(this.taskConstructorArguments);
 
       /**
@@ -323,56 +315,54 @@ class Schedule extends EventEmitter {
   }
 
   /**
+   * Stop running task. Should call this method in try catch
+   *
    * @returns {void}
    */
   stop() {
-    this.stopSignal = true;
+    this.state = Schedule.STOP_STATE;
 
     if (this.timeout) {
       clearTimeout(this.timeout);
     }
 
     if (this.task) {
-      try {
-        this.task.stop();
+      this.latestRunResult = Schedule.TASK_ABORTED_STATUS;
 
-        this.latestRunResult = Schedule.TASK_ABORTED_STATUS;
+      this.latestRunResultMessage = '_user_abort';
 
-        this.latestRunResultMessage = '_user_abort';
-      } catch (error) {
-        this.emit('exception', error);
-      }
+      /**
+       * Should consider that there'll maybe any exception happens when schedule try
+       * to stop the task
+       */
+      this.task.stop();
     }
-
-    this.state = Schedule.STOP_STATE;
-
-    this.emit('stopped', this);
   }
 
   /**
+   * Stop running task and do some clear up if there is clearup method in Task class
+   *
    * @param {boolean} clearup
    * @returns {void}
+   *
+   * @throws {Error}
    */
   delete(clearup = false) {
     this.stop();
 
-    // let task = this.taskClass.createTask(this.taskConstructorArguments);
-    let taskClass = this.scheduleTaskPool.getTask(this.taskKey);
+    let taskClass = this.taskScheduler.taskPool.getTask(this.taskKey);
 
     if (!taskClass) {
-      this.emit('exception', new Error('_cannot_found_task'));
-      return;
+      throw new Error('_cannot_found_task');
     }
 
     if (clearup && typeof task.clearup === 'function') {
       try {
         task.clearup(this.taskConstructorArguments);
       } catch (error) {
-        this.emit('exception', error);
+        throw new Error('_clearup_may_not_complete');
       }
     }
-
-    this.emit('deleted', this);
   }
 
   /**

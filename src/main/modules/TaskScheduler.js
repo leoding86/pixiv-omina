@@ -5,12 +5,7 @@ import ScheduleTaskPool from '@/modules/ScheduleTaskPool';
 import Schedule from '@/modules/Schedule';
 import { GetPath } from './Utils';
 import { debug } from '@/global';
-
-
-/**
- * @event Schedule#schedule_deleted
- * @type {Schedule}
- */
+import EventBus from '@/modules/EventBus';
 
 /**
  * @event Schedule#schedule_updated
@@ -128,14 +123,6 @@ class TaskScheduler extends EventEmitter {
    *
    * @param {Schedule} schedule
    */
-  handleScheduleDeleted(schedule) {
-    this.emit('schedule_deleted', schedule);
-  }
-
-  /**
-   *
-   * @param {Schedule} schedule
-   */
   handleScheduleError(schedule) {
     this.emitScheduleUpdated(schedule);
   }
@@ -152,24 +139,8 @@ class TaskScheduler extends EventEmitter {
    *
    * @param {Schedule} schedule
    */
-  handleScheduleStopped(schedule) {
-    this.emitScheduleUpdated(schedule);
-  }
-
-  /**
-   *
-   * @param {Schedule} schedule
-   */
   handleScheduleSuccess(schedule) {
     this.emitScheduleUpdated(schedule);
-  }
-
-  /**
-   * Throw the error out, the error will be caught in ErrorService
-   * @param {Error} error
-   */
-  handleScheduleException(error) {
-    throw error;
   }
 
   /**
@@ -179,9 +150,6 @@ class TaskScheduler extends EventEmitter {
     schedule.on('start', this.handleScheduleStart);
     schedule.on('success', this.handleScheduleSuccess);
     schedule.on('error', this.handleScheduleError);
-    schedule.on('stopped', this.handleScheduleStopped);
-    schedule.on('deleted', this.handleScheduleDeleted);
-    schedule.on('exception', this.handleScheduleException)
   }
 
   /**
@@ -229,6 +197,8 @@ class TaskScheduler extends EventEmitter {
    */
   addSchedule(schedule, notStart = false) {
     if (!this.schedules.has(schedule.id)) {
+      schedule.setTaskScheduler(this);
+
       this.bindScheduleListeners(schedule);
 
       this.schedules.set(schedule.id, schedule);
@@ -246,6 +216,14 @@ class TaskScheduler extends EventEmitter {
     } else {
       throw new Error(`Same schedule task exists`);
     }
+  }
+
+  /**
+   *
+   * @returns {Map.<string, Schedule}
+   */
+  getAllSchedules() {
+    return this.schedules;
   }
 
   /**
@@ -269,10 +247,14 @@ class TaskScheduler extends EventEmitter {
       let schedule = this.schedules.get(id);
 
       /**
-       * Stop schedule first, then delete the schedule
+       * Try to destroy schedule, if there is any error raised, then the
+       * deletion will be unsuccessful.
        */
-      schedule.stop();
       schedule.delete();
+
+      /**
+       * Delete schedule from schedule pool and update configuration
+       */
       this.schedules.delete(id);
       this.deleteScheduleConfig(schedule);
     }
@@ -284,8 +266,13 @@ class TaskScheduler extends EventEmitter {
    */
   stopSchedule(id) {
     if (this.schedules.has(id)) {
-      this.updateScheduleConfig(id, { stop: true });
-      this.schedules.get(id).stop();
+      try {
+        this.schedules.get(id).stop();
+      } catch (error) {
+        EventBus.getDefault().emit('error-need-notificate', error);
+      }
+
+      this.updateScheduleConfig(id);
     }
   }
 }

@@ -27,8 +27,6 @@ class PluginService extends BaseService {
     this.notificationManager = NotificationManager.getDefault();
     this.taskScheduler = TaskScheduler.getDefault();
 
-    this.updateScheduleTaskPool();
-
     ipcMain.on(PluginService.channel, this.channelIncomeHandler.bind(this));
 
     debug.log('Plugin service has been initiated');
@@ -51,37 +49,6 @@ class PluginService extends BaseService {
    */
   responseChannel(name) {
     return PluginService.channel + `:${name}`;
-  }
-
-  /**
-   *
-   * @param {BasePlugin} plugin
-   */
-  addPluginScheduleTaskToPool(plugin) {
-    if (plugin.taskConfig &&
-      plugin.taskConfig.key &&
-      plugin.taskConfig.name &&
-      plugin.taskConfig.Task
-    ) {
-      this.taskScheduler.taskPool.addTask({
-        key: plugin.taskConfig.key,
-        name: plugin.taskConfig.name,
-        Task: plugin.taskConfig.Task
-      });
-    }
-  }
-
-  /**
-   * @returns {void}
-   */
-  updateScheduleTaskPool() {
-    this.pluginManager.getInternalPlugins().forEach(plugin => {
-      this.addPluginScheduleTaskToPool(plugin);
-    });
-
-    this.pluginManager.getExternalPlugins().forEach(plugin => {
-      this.addPluginScheduleTaskToPool(plugin);
-    });
   }
 
   /**
