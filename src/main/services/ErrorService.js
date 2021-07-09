@@ -3,6 +3,7 @@ import WindowManager from '@/modules/WindowManager';
 import {
   debug
 } from '@/global';
+import EventBus from '@/modules/EventBus';
 
 class ErrorService extends BaseService {
   /**
@@ -21,6 +22,11 @@ class ErrorService extends BaseService {
     super();
 
     process.on('uncaughtException', this.handleException.bind(this));
+
+    EventBus.getDefault().on(
+      'error-need-notificate',
+      this.handleException.bind(this)
+    );
   }
 
   /**
