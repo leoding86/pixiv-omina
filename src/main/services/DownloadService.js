@@ -14,6 +14,7 @@ import SettingStorage from '@/modules/SettingStorage';
 import { PixivBookmarkProvider } from '@/modules/Downloader/Providers';
 import WindowManager from '@/modules/WindowManager';
 import path from 'path';
+import fs from 'fs';
 import GetPath from '@/modules/Utils/GetPath';
 import BookmarkDownloader from '@/modules/Downloader/WorkDownloader/Pixiv/BookmarkDownloader';
 
@@ -246,6 +247,12 @@ class DownloadService extends BaseService {
         options.acceptTypes = types;
       }
 
+      try {
+        fs.accessSync(saveTo, fs.constants.W_OK);
+      } catch (e) {
+        throw new Error('You don\'t have permission to write file(s) to the location');
+      }
+
       /**
        * Testing new way to add downloaders
        */
@@ -267,6 +274,12 @@ class DownloadService extends BaseService {
     try {
       let options = { pages, rest },
           provider = PixivBookmarkProvider.createProvider(options);
+
+      try {
+        fs.accessSync(saveTo, fs.constants.W_OK);
+      } catch (e) {
+        throw new Error('You don\'t have permission to write file(s) to the location');
+      }
 
       this.downloadManager.addDownloader(provider.createDownloader({
         saveTo,

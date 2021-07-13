@@ -18,6 +18,10 @@
         Support it
       </el-button> -->
 
+      <el-button class="el-button--icon" size="small" icon="el-icon-time"
+        @click="openTaskScheduler"
+      ></el-button>
+
       <div class="settings-button"
         :style="{zIndex: 99999}"
       >
@@ -42,6 +46,11 @@
       :settings="settings"
       :show.sync="showSettingsDialog"
     ></settings-dialog>
+
+    <task-scheduler-dialog
+      v-if="showTaskSchedulerDialog"
+      :show.sync="showTaskSchedulerDialog"
+    ></task-scheduler-dialog>
   </div>
 </template>
 
@@ -49,17 +58,20 @@
 import { ipcRenderer } from "electron";
 import AddDownloadDialog from './dialogs/AddDownloadDialog';
 import SettingsDialog from './dialogs/SettingsDialog';
+import TaskSchedulerDialog from './dialogs/TaskSchedulerDialog.vue';
 
 export default {
   components: {
     'add-download-dialog': AddDownloadDialog,
-    'settings-dialog': SettingsDialog
+    'settings-dialog': SettingsDialog,
+    'task-scheduler-dialog': TaskSchedulerDialog
   },
 
   data() {
     return {
       showAddDownloadDialog: false,
       showSettingsDialog: false,
+      showTaskSchedulerDialog: false,
       hasNewVersion: false
     }
   },
@@ -76,6 +88,10 @@ export default {
       a.href = url;
       a.target = '_blank';
       a.click();
+    },
+
+    openTaskScheduler() {
+      this.showTaskSchedulerDialog = true;
     }
   }
 }

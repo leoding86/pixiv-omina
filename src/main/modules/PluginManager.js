@@ -17,6 +17,7 @@ import md5 from 'md5';
 import { parse } from 'node-html-parser';
 import path from 'path';
 import rimraf from 'rimraf';
+import ScheduleTaskPool from '@/modules/ScheduleTaskPool';
 
 class PluginManager extends EventEmitter {
   /**
@@ -55,6 +56,16 @@ class PluginManager extends EventEmitter {
      */
     this.notificationManager = NotificationManager.getDefault();
 
+    /**
+     * @type {string}
+     */
+    this.configFile = path.join(GetPath.userData(), 'config', 'plugins');
+
+    /**
+     * @type {object}
+     */
+    this.config = {};
+
     this.initial();
   }
 
@@ -74,7 +85,40 @@ class PluginManager extends EventEmitter {
    * @returns void
    */
   initial() {
+    /**
+     * Inital internal plugins
+     */
     this.initalPlugins();
+
+    /**
+     * Initail external plugins
+     */
+    fs.ensureFileSync(this.configFile);
+
+    try {
+      this.config = JSON.parse(fs.readFileSync(this.configFile));
+
+      if (this.config && this.config.loadedTemporaryPlugins
+        && Array.isArray(this.config.loadedTemporaryPlugins)
+      ) {
+        let loadedTemporaryPluginEntries = this.config.loadedTemporaryPlugins;
+
+        /**
+         * Clearup loadedTemporaryPlugins key
+         */
+        this.config.loadedTemporaryPlugins = [];
+
+        this.saveConfig();
+
+        loadedTemporaryPluginEntries.forEach(entry => {
+          if (fs.existsSync(entry)) {
+            this.loadTemporaryPlugin(entry);
+          }
+        });
+      }
+    } catch (error) {
+      debug.log('Plugin config not found');
+    }
   }
 
   /**
@@ -194,6 +238,10 @@ class PluginManager extends EventEmitter {
         });
       }
 
+      if (pluginInstance.taskConfig) {
+        ScheduleTaskPool.getDefault().addTask(pluginInstance.taskConfig);
+      }
+
       return pluginInstance;
     } catch (error) {
       this.notificationManager
@@ -282,8 +330,17 @@ class PluginManager extends EventEmitter {
     } else if (this.externalPlugins.has(id)) {
       plugin = this.externalPlugins.get(id);
       this.externalPlugins.delete(id);
+      this.deleteTemporaryPluginToConfig(path.dirname(plugin.entryFile));
     } else {
       debug.log(`There isn't plugin [id] to remove`);
+    }
+
+    if (plugin) {
+      DownloadAdapter.removeProvider(plugin);
+
+      if (plugin.taskConfig && plugin.taskConfig.key) {
+        ScheduleTaskPool.getDefault().deleteTask(plugin.taskConfig.key);
+      }
     }
 
     try {
@@ -306,6 +363,8 @@ class PluginManager extends EventEmitter {
        * Put the plugin to external scope
        */
       this.externalPlugins.set(plugin.id, plugin);
+
+      this.addTemporaryPluginToConfig(path.dirname(plugin.entryFile));
     }
   }
 
@@ -368,6 +427,52 @@ class PluginManager extends EventEmitter {
    */
   deletePluginAssets(pluginPath) {
     rimraf(pluginPath, () => {});
+  }
+
+  /**
+   * Save config to file
+   * @returns {void}
+   */
+  saveConfig() {
+    fs.writeFileSync(this.configFile, JSON.stringify(this.config));
+  }
+
+  /**
+   *
+   * @param {string} entry
+   */
+  addTemporaryPluginToConfig(entry) {
+    if (this.config && this.config.loadedTemporaryPlugins
+      && Array.isArray(this.config.loadedTemporaryPlugins)
+    ) {
+      let index = this.config.loadedTemporaryPlugins.indexOf(entry)
+
+      if (index > -1) {
+        this.config.loadedTemporaryPlugins[index] = entry;
+      } else {
+        this.config.loadedTemporaryPlugins.push(entry);
+      }
+
+      this.saveConfig();
+    }
+  }
+
+  /**
+   *
+   * @param {string} entry
+   */
+  deleteTemporaryPluginToConfig(entry) {
+    if (this.config && this.config.loadedTemporaryPlugins
+      && Array.isArray(this.config.loadedTemporaryPlugins)
+    ) {
+      let index = this.config.loadedTemporaryPlugins.indexOf(entry)
+
+      if (index > -1) {
+        this.config.loadedTemporaryPlugins.splice(index, 1);
+      }
+
+      this.saveConfig();
+    }
   }
 }
 

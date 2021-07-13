@@ -6,7 +6,6 @@ import Request from '@/modules/Request';
 import ServiceContainer from '@/ServiceContainer';
 import SettingStorage from '@/modules/SettingStorage';
 import WindowManager from '@/modules/WindowManager';
-import PluginManager from '@/modules/PluginManager';
 import path from 'path';
 import RequestHeadersOverrider from '@/modules/RequestHeadersOverrider';
 import ResponseHeadersOverrider from '@/modules/ResponseHeadersOverrider';
@@ -17,8 +16,6 @@ class Application {
     this.mainWindow = null;
 
     this.tray = null;
-
-    this.pluginManager = null;
 
     this.serviceContainer = null;
 
@@ -254,10 +251,7 @@ class Application {
       );
     }
 
-    /**
-     * Create plugin manager and boot all plugins
-     */
-    this.pluginManager = PluginManager.getDefault(this);
+    global.app = this;
 
     /**
      * After window has been created, then create services. Some services depend on main window,

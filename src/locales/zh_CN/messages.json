@@ -228,5 +228,9 @@
 
   "_reload_theme": "重载主题",
 
-  "_install_plugin": "安装插件"
+  "_install_plugin": "安装插件",
+
+  "_open_log": "打开日志",
+
+  "_log": "日志"
 }

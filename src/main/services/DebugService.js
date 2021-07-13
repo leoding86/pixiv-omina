@@ -98,6 +98,10 @@ class DebugService extends BaseService {
     });
   }
 
+  /**
+   * Log message to file
+   * @param {Error|string|object} message
+   */
   log(message) {
     let log = '';
 

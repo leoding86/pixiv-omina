@@ -30,12 +30,14 @@ export default {
 
   methods: {
     selectDirectory() {
-      let { filePath, bookmarks } = ipcRenderer.sendSync('setting-service', {
+      let result = ipcRenderer.sendSync('setting-service', {
         action: 'selectDirectory',
         args: {}
       });
 
-      this.$emit('input', filePath.length > 0 ? filePath[0] : this.value);
+      if (result !== null && result.filePath) {
+        this.$emit('input', result.filePath.length > 0 ? result.filePath[0] : this.value);
+      }
     }
   }
 }
