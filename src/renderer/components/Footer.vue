@@ -16,12 +16,6 @@
     </div>
     <div class="footer-right">
       <div class="footer-btn"
-        @click="showPluginsDialog = true"
-        :title="$t('_plugins')"
-      >
-        <i class="el-icon-box"></i>
-      </div>
-      <div class="footer-btn"
         @click="openDevTools()"
         :title="$t('_toggle_development_tools')"
       >
@@ -33,12 +27,6 @@
         <a :href="bugsUrl" target="_blank"><i class="el-icon-warning-outline"></i></a>
       </div>
     </div>
-
-    <plugins-dialog
-      :show.sync="showPluginsDialog"
-      :plugins="plugins"
-    >
-    </plugins-dialog>
   </div>
 </template>
 
@@ -46,16 +34,11 @@
 import packageInfo from '@/../../package.json';
 import { ipcRenderer } from 'electron';
 import BaseMixin from '@/../renderer/mixins/BaseMixin';
-import PluginsDialog from './dialogs/PluginsDialog';
 
 export default {
   mixins: [
     BaseMixin
   ],
-
-  components: {
-    'plugins-dialog': PluginsDialog
-  },
 
   props: {
     jobsCount: {
@@ -67,9 +50,7 @@ export default {
     return {
       bugsUrl: packageInfo.bugs.url,
       showTasks: false,
-      statusMessage: '',
-      showPluginsDialog: false,
-      plugins: []
+      statusMessage: ''
     }
   },
 
@@ -91,14 +72,6 @@ export default {
 
     ipcRenderer.on('debug-service:devToolsClosed', (event, data) => {
       this.$emit('devToolsToggled', false);
-    });
-
-    ipcRenderer.on('plugin-service:loaded', (event, plugins) => {
-      this.plugins = plugins;
-    });
-
-    ipcRenderer.send('plugin-service', {
-      action: 'loadPlugins'
     });
   },
 

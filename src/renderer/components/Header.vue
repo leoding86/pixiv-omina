@@ -19,7 +19,11 @@
       </el-button> -->
 
       <el-button class="el-button--icon" size="small" icon="el-icon-time"
-        @click="openTaskScheduler"
+        @click="showTaskSchedulerDialog = true"
+      ></el-button>
+
+      <el-button class="el-button--icon" size="small" icon="el-icon-box"
+        @click="showPluginsDialog = true"
       ></el-button>
 
       <div class="settings-button"
@@ -51,6 +55,11 @@
       v-if="showTaskSchedulerDialog"
       :show.sync="showTaskSchedulerDialog"
     ></task-scheduler-dialog>
+
+    <plugins-dialog
+      v-if="showPluginsDialog"
+      :show.sync="showPluginsDialog"
+    ></plugins-dialog>
   </div>
 </template>
 
@@ -59,12 +68,14 @@ import { ipcRenderer } from "electron";
 import AddDownloadDialog from './dialogs/AddDownloadDialog';
 import SettingsDialog from './dialogs/SettingsDialog';
 import TaskSchedulerDialog from './dialogs/TaskSchedulerDialog.vue';
+import PluginsDialog from './dialogs/PluginsDialog.vue';
 
 export default {
   components: {
     'add-download-dialog': AddDownloadDialog,
     'settings-dialog': SettingsDialog,
-    'task-scheduler-dialog': TaskSchedulerDialog
+    'task-scheduler-dialog': TaskSchedulerDialog,
+    'plugins-dialog': PluginsDialog
   },
 
   data() {
@@ -72,6 +83,7 @@ export default {
       showAddDownloadDialog: false,
       showSettingsDialog: false,
       showTaskSchedulerDialog: false,
+      showPluginsDialog: false,
       hasNewVersion: false
     }
   },
@@ -88,10 +100,6 @@ export default {
       a.href = url;
       a.target = '_blank';
       a.click();
-    },
-
-    openTaskScheduler() {
-      this.showTaskSchedulerDialog = true;
     }
   }
 }
