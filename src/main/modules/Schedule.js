@@ -23,7 +23,7 @@ import ScheduleTaskNotFoundError from '@/errors/ScheduleTaskNotFoundError';
  */
 
 /**
- * @event Schedule#success
+ * @event Schedule#complete
  * @type {Schedule}
  */
 
@@ -69,7 +69,7 @@ class Schedule extends EventEmitter {
   /**
    * @type {number}
    */
-  static TASK_SUCCESS_STATUS = 2;
+  static TASK_COMPLETE_STATUS = 2;
 
   /**
    * @type {number}
@@ -247,7 +247,7 @@ class Schedule extends EventEmitter {
   }
 
   /**
-   * @fires Schedule#success
+   * @fires Schedule#complete
    * @fires Schedule#error
    *
    * @returns {void}
@@ -280,16 +280,16 @@ class Schedule extends EventEmitter {
        */
       this.task.start().then(result => {
         /**
-         * Set the schedule's result to success status
+         * Set the schedule's result to complete status
          */
-        this.latestRunResult = Schedule.TASK_SUCCESS_STATUS;
+        this.latestRunResult = Schedule.TASK_COMPLETE_STATUS;
 
         this.latestRunResultMessage = (result && result.resultMessage) ? result.resultMessage : '_done';
 
         /**
-         * Fire success event
+         * Fire complete event
          */
-        this.emit('success', this);
+        this.emit('complete', this);
 
         if (this.repeat) {
           this.planNextRun();

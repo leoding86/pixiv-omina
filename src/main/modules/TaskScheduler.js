@@ -139,7 +139,7 @@ class TaskScheduler extends EventEmitter {
    *
    * @param {Schedule} schedule
    */
-  handleScheduleSuccess(schedule) {
+  handleScheduleComplete(schedule) {
     this.emitScheduleUpdated(schedule);
   }
 
@@ -148,7 +148,7 @@ class TaskScheduler extends EventEmitter {
    */
   bindScheduleListeners(schedule) {
     schedule.on('start', this.handleScheduleStart);
-    schedule.on('success', this.handleScheduleSuccess);
+    schedule.on('complete', this.handleScheduleComplete);
     schedule.on('error', this.handleScheduleError);
   }
 
