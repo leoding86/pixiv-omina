@@ -62,7 +62,8 @@
       <el-button
         @click="$emit('update:show', false)"
         size="mini"
-      >{{ $t('_cancel') }}</el-button>
+        type="danger"
+      >{{ $t('_close') }}</el-button>
     </span>
   </el-dialog>
 </template>
@@ -76,16 +77,20 @@ export default {
       required: true,
       type: Boolean,
       default: false
-    },
-
-    plugins: {
-      required: true,
-      type: Array,
-      default: []
     }
   },
 
+  data() {
+    return {
+      plugins: [],
+    };
+  },
+
   created() {
+    ipcRenderer.on('plugin-service:loaded', (event, plugins) => {
+      this.plugins = plugins;
+    });
+
     ipcRenderer.on('plugin-service:reloaded', (event, plugin) => {
       for (let i = 0; i < this.plugins.length; i++) {
         if (plugin.id === this.plugins[i].id) {
@@ -102,6 +107,10 @@ export default {
      */
     ipcRenderer.on('plugin-service:removed', (event, id) => {
       this.removePluginFromList(id);
+    });
+
+    ipcRenderer.send('plugin-service', {
+      action: 'loadPlugins'
     });
   },
 
