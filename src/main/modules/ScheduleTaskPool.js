@@ -84,10 +84,10 @@ class ScheduleTaskPool extends EventEmitter {
 
   /**
    *
-   * @returns {valueStructure[]}
+   * @returns {map.<string,valueStructure>}
    */
   getTasks() {
-    return Array.from(this.taskPool);
+    return this.taskPool;
   }
 }
 
