@@ -78,9 +78,19 @@ class TaskSchedulerService extends BaseService {
    * @returns {void}
    */
   getAllTasksAction() {
+    let tasks = [];
+
+    this.taskScheduler.taskPool.getTasks().forEach(task => {
+      tasks.push({
+        key: task.key,
+        name: task.name,
+        argumentsConfig: task.argumentsConfig
+      });
+    });
+
     this.sendDataToWindow(
       this.responseChannel('all-tasks-gotten'),
-      this.taskScheduler.taskPool.getTasks()
+      tasks
     );
   }
 
