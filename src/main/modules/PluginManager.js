@@ -98,27 +98,35 @@ class PluginManager extends EventEmitter {
     try {
       this.config = JSON.parse(fs.readFileSync(this.configFile));
 
-      if (this.config && this.config.loadedTemporaryPlugins
-        && Array.isArray(this.config.loadedTemporaryPlugins)
-      ) {
-        let loadedTemporaryPluginEntries = this.config.loadedTemporaryPlugins;
+      if (this.config) {
+        if (this.config.loadedTemporaryPlugins && Array.isArray(this.config.loadedTemporaryPlugins)) {
+          let loadedTemporaryPluginEntries = this.config.loadedTemporaryPlugins;
 
-        /**
-         * Clearup loadedTemporaryPlugins key
-         */
-        this.config.loadedTemporaryPlugins = [];
+          /**
+           * Clearup loadedTemporaryPlugins key
+           */
+          this.config.loadedTemporaryPlugins = [];
 
-        this.saveConfig();
+          this.saveConfig();
 
-        loadedTemporaryPluginEntries.forEach(entry => {
-          if (fs.existsSync(entry)) {
-            this.loadTemporaryPlugin(entry);
-          }
-        });
+          loadedTemporaryPluginEntries.forEach(entry => {
+            if (fs.existsSync(entry)) {
+              this.loadTemporaryPlugin(entry);
+            }
+          });
+        } else {
+          this.config.loadedTemporaryPlugins = [];
+        }
       }
+
+      return;
     } catch (error) {
       debug.log('Plugin config not found');
     }
+
+    this.config = {
+      loadedTemporaryPlugins: []
+    };
   }
 
   /**
