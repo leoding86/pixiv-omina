@@ -232,5 +232,23 @@
 
   "_open_log": "打开日志",
 
-  "_log": "日志"
+  "_log": "日志",
+
+  "_schedule": "计划",
+
+  "_task": "任务",
+
+  "_interval_min": "间隔（分钟）",
+
+  "_task_arguments": "任务参数",
+
+  "_run_at": "运行于",
+
+  "_task_scheduler": "计划任务",
+
+  "_no_schedule": "无计划",
+
+  "_base": "基础",
+
+  "_run_now": "立即运行"
 }

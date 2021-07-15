@@ -232,5 +232,23 @@
 
   "_open_log": "Open Log",
 
-  "_log": "Log"
+  "_log": "Log",
+
+  "_schedule": "Schedule",
+
+  "_task": "Task",
+
+  "_interval_min": "Interval(min)",
+
+  "_task_arguments": "Task Arguments",
+
+  "_run_at": "Run At",
+
+  "_task_scheduler": "Task Scheduler",
+
+  "_no_schedule": "No Schedule",
+
+  "_base": "Base",
+
+  "_run_now": "Run Now"
 }
