@@ -117,7 +117,7 @@ class TaskSchedulerService extends BaseService {
     this.taskScheduler.addSchedule(schedule);
 
     this.sendDataToWindow(
-      this.responseChannel('schedule-added'),
+      this.responseChannel('schedule-created'),
       schedule.toJson()
     );
   }
