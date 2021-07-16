@@ -13,6 +13,10 @@
 
         <div class="app-dialog__section-title">{{ $t('_base') }}</div>
 
+        <el-form-item :label="$t('_name')" prop="name">
+          <el-input v-model="scheduleFormData.name"></el-input>
+        </el-form-item>
+
         <el-form-item :label="$t('_task')" prop="taskKey">
           <el-select v-model="scheduleFormData.taskKey" :disabled="tasks.length < 1">
             <el-option v-for="task in tasks"
@@ -22,6 +26,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item :label="$t('_mode')" prop="mode">
           <el-select v-model="scheduleFormData.mode">
             <el-option v-for="mode in modes"
@@ -31,13 +36,17 @@
             ></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item :label="$t('_interval_min')" prop="interval" v-if="scheduleFormData.mode === 1">
           <el-input v-model="scheduleFormData.interval">
+            <el-checkbox slot="append" v-model="scheduleFormData.repeat">{{ $t('_repeat') }}</el-checkbox>
             <el-checkbox slot="append" v-model="scheduleFormData.runImmediately">{{ $t('_run_now') }}</el-checkbox>
           </el-input>
         </el-form-item>
+
         <el-form-item :label="$t('_run_at')" prop="runAt" v-else-if="scheduleFormData.mode === 2">
           <el-input v-model="scheduleFormData.runAt">
+            <el-checkbox slot="append" v-model="scheduleFormData.repeat">{{ $t('_repeat') }}</el-checkbox>
             <el-checkbox slot="append" v-model="scheduleFormData.runImmediately">{{ $t('_run_now') }}</el-checkbox>
           </el-input>
         </el-form-item>
@@ -61,6 +70,7 @@
     >
       <el-button size="small"
         @click="createSchedule"
+        :disabled="createRecentlyClicked"
       >{{ $t('_add') }}</el-button>
       <el-button size="mini" type="danger"
         @click="$emit('update:show', false)"
@@ -88,12 +98,15 @@ export default {
 
   data() {
     return {
+      createRecentlyClicked: false,
+
       scheduleFormData: {
         taskKey: '',
         mode: 2,
         interval: '720',
         runAt: '14:00:00',
         runImmediately: false,
+        repeat: false,
         taskArguments: {}
       },
 
@@ -108,6 +121,9 @@ export default {
       }],
 
       scheduleFormRules: {
+        name: [
+          { validator: (rule, value, callback) => !!value ? callback() : callback(new Error(this.$t('_input_task_name'))), trigger: 'blur' }
+        ],
         taskKey: [
           { validator: (rule, value, callback) => !!this.getTaskConfig() ? callback() : callback(new Error(this.$t('_invalid_task'))), trigger: 'change' },
         ],
@@ -188,6 +204,7 @@ export default {
 
     ipcRenderer.on('task-scheduler-service:schedule-created', (event, data) => {
       this.$message({ message: this.$t('_schedule_created') });
+      this.$emit('update:show', false);
     });
 
     ipcRenderer.send('task-scheduler-service', {
@@ -227,6 +244,10 @@ export default {
     createSchedule() {
       this.$refs['scheduleForm'].validate(valid => {
         if (valid) {
+          this.createRecentlyClicked = true;
+
+          setTimeout(() => this.createRecentlyClicked = false, 1000);
+
           ipcRenderer.send('task-scheduler-service', {
             action: 'createSchedule',
             args: this.scheduleFormData

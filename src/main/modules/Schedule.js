@@ -7,6 +7,8 @@ import ScheduleTaskNotFoundError from '@/errors/ScheduleTaskNotFoundError';
 
 /**
  * @typedef {object} constructArguments
+ * @property {string} taskKey
+ * @property {string} name
  * @property {string} [id]
  * @property {number} [mode=2]
  * @property {number} [interval=3600000]
@@ -91,6 +93,13 @@ class Schedule extends EventEmitter {
    * @param {constructArguments} args
    */
   constructor(args) {
+    super();
+
+    /**
+     * @type {string}
+     */
+    this.name = args.name || ('Task ' + Date.now());
+
     /**
      * @type {number}
      */
@@ -124,7 +133,7 @@ class Schedule extends EventEmitter {
     /**
      * @type {string}
      */
-    this.taskKey = null;
+    this.taskKey = args.taskKey || null;
 
     /**
      * @type {ScheduleTask}
@@ -241,9 +250,82 @@ class Schedule extends EventEmitter {
    * @returns {void}
    */
   boot() {
-    this.state = Schedule.IDLE_STATE;
-
     this.planNextRun();
+  }
+
+  /**
+   *
+   * @param {{status:number, result:string}} param0
+   */
+  updateLatestRunResult({ status, result }) {
+    this.state = Schedule.IDLE_STATE
+    this.latestRunResult = status;
+    this.latestRunResultMessage = result;
+  }
+
+  /**
+   * Run current task
+   * @returns {Promise.<any,any>}
+   */
+  runTask() {
+    return new Promise((resolve, reject) => {
+      this.latestRunAt = moment().unix();
+
+      this.state = Schedule.PROCESSING_STATE;
+
+      this.emit('start', this);
+
+      /**
+       * Find task constructor
+       */
+      let TaskClass = this.taskScheduler.taskPool.getTask(this.taskKey);
+
+      if (!TaskClass) {
+        let error = new ScheduleTaskNotFoundError();
+
+        this.updateLatestRunResult({ status: Schedule.TASK_FAILURE_STATUS, result: error.message });
+
+        /**
+         * Fire error event
+         */
+        this.emit('error', error);
+
+        reject(error);
+
+        return;
+      }
+
+      /**
+       * Try to create task instance
+       */
+      try {
+        this.task = TaskClass.createTask(this.taskConstructorArguments);
+      } catch (error) {
+        this.updateLatestRunResult({ status: Schedule.TASK_FAILURE_STATUS, result: error.message });
+
+        this.emit('error', this);
+      }
+
+      /**
+       * Start task
+       */
+      this.task.start().then(result => {
+        this.updateLatestRunResult({ status: Schedule.TASK_COMPLETE_STATUS, result: (result && result.resultMessage) ? result.resultMessage : '_done'});
+
+        /**
+         * Fire complete event
+         */
+        this.emit('complete', this);
+
+        resolve(this.task);
+      }).catch(error => {
+        this.updateLatestRunResult({ status: Schedule.TASK_FAILURE_STATUS, result: error ? error.message : '_error' });
+
+        this.emit('error', this);
+
+        reject(error);
+      });
+    });
   }
 
   /**
@@ -257,61 +339,15 @@ class Schedule extends EventEmitter {
       return;
     }
 
-    this.latestRunAt = moment.now();
-
-    this.state = Schedule.PROCESSING_STATE;
-
-    this.emit('start', this);
-
-    try {
-      let TaskClass = this.taskScheduler.taskPool.getTask(this.taskKey);
-
-      if (!TaskClass) {
-        throw new ScheduleTaskNotFoundError();
-      }
-
-      /**
-       * Create task instance
-       */
-      this.task = TaskClass.createTask(this.taskConstructorArguments);
-
-      /**
-       * Start task
-       */
-      this.task.start().then(result => {
-        /**
-         * Set the schedule's result to complete status
-         */
-        this.latestRunResult = Schedule.TASK_COMPLETE_STATUS;
-
-        this.latestRunResultMessage = (result && result.resultMessage) ? result.resultMessage : '_done';
-
-        /**
-         * Fire complete event
-         */
-        this.emit('complete', this);
-
-        if (this.repeat) {
-          this.planNextRun();
-        }
-      });
-    } catch (error) {
-      /**
-       * Set the schedule's result to failure status
-       */
-      this.latestRunResult = Schedule.TASK_FAILURE_STATUS;
-
-      this.latestRunResultMessage = (error instanceof Error) ? error.message : '_failure';
-
-      /**
-       * Fire error event
-       */
-      this.emit('error', error);
-
+    this.runTask().then(task => {
+      //
+    }).catch(error => {
+      //
+    }).finally(() => {
       if (this.repeat) {
         this.planNextRun();
       }
-    }
+    });
   }
 
   /**
@@ -370,6 +406,7 @@ class Schedule extends EventEmitter {
    */
   toJson() {
     return {
+      name: this.name,
       taskKey: this.taskKey,
       state: this.state,
       mode: this.mode,

@@ -43,11 +43,13 @@ class TaskScheduler extends EventEmitter {
     this.configFile = path.join(GetPath.userData(), 'config', 'schedules');
 
     /**
-     * @type {object}
+     * @type {object[]}
      */
     this.config = {};
 
     this.initConfig();
+
+    this.restoreSchedules();
   }
 
   /**
@@ -73,6 +75,7 @@ class TaskScheduler extends EventEmitter {
 
     try {
       this.config = JSON.parse(content);
+      debug.log(`Schedules config loaded: ${content}`);
     } catch (error) {
       debug.log('Schedules config not found');
     }
@@ -147,9 +150,9 @@ class TaskScheduler extends EventEmitter {
    * @param {Schedule} schedule
    */
   bindScheduleListeners(schedule) {
-    schedule.on('start', this.handleScheduleStart);
-    schedule.on('complete', this.handleScheduleComplete);
-    schedule.on('error', this.handleScheduleError);
+    schedule.on('start', this.handleScheduleStart.bind(this));
+    schedule.on('complete', this.handleScheduleComplete.bind(this));
+    schedule.on('error', this.handleScheduleError.bind(this));
   }
 
   /**
@@ -165,8 +168,13 @@ class TaskScheduler extends EventEmitter {
    * @param {Schedule} schedule
    */
   addScheduleConfig(schedule) {
-    this.config[schedule.id] = schedule.toJson();
-    this.saveConfig();
+    for (let i = 0; i < this.config.length; i++) {
+      if (schedule.id === this.config[i].id) {
+        this.config[i] = schedule.toJson();
+        this.saveConfig();
+        break;
+      }
+    }
   }
 
   /**
@@ -175,9 +183,12 @@ class TaskScheduler extends EventEmitter {
    * @param {object} [data={}]
    */
   updateScheduleConfig(schedule, data = {}) {
-    if (this.config[schedule.id]) {
-      this.config[schedule.id] = Object.assign(schedule.toJson(), data);
-      this.saveConfig();
+    for (let i = 0; i < this.config.length; i++) {
+      if (schedule.id === this.config[i].id) {
+        this.config[i] = Object.assign(schedule.toJson(), data);
+        this.saveConfig();
+        break;
+      }
     }
   }
 
@@ -186,16 +197,21 @@ class TaskScheduler extends EventEmitter {
    * @param {Schedule} schedule
    */
   deleteScheduleConfig(schedule) {
-    delete this.config[schedule.id];
-    this.saveConfig();
+    for (let i = 0; i < this.config.length; i++) {
+      if (schedule.id === this.config[i].id) {
+        this.config.splice(i, 1);
+        this.saveConfig();
+        break;
+      }
+    }
   }
 
   /**
    * @param {Schedule} schedule
-   * @param {boolean} [notStart=false]
+   * @param {boolean} [dontStart=false]
    * @throws {Error}
    */
-  addSchedule(schedule, notStart = false) {
+  addSchedule(schedule, dontStart = false) {
     if (!this.schedules.has(schedule.id)) {
       schedule.setTaskScheduler(this);
 
@@ -206,7 +222,7 @@ class TaskScheduler extends EventEmitter {
       /**
        * Check if running the scheduler task immediately
        */
-      if (!notStart && schedule.runImmediately) {
+      if (!dontStart && schedule.runImmediately) {
         this.startSchedule(schedule.id);
       }
 
@@ -235,6 +251,20 @@ class TaskScheduler extends EventEmitter {
       let schedule = this.schedules.get(id);
 
       this.updateScheduleConfig(schedule, { stop: false });
+    }
+  }
+
+  /**
+   *
+   * @param {string} id
+   */
+  runScheduleTask(id) {
+    if (this.schedules.has(id)) {
+      let schedule = this.schedules.get(id);
+
+      schedule.runTask().catch(error => {
+        throw error;
+      });
     }
   }
 

@@ -1,11 +1,9 @@
 import { ipcMain } from 'electron';
 import BaseService from './BaseService';
 import TaskScheduler from '@/modules/TaskScheduler';
-import WindowManager from '@/modules/WindowManager';
-import {
-  debug
-} from '@/global';
 import Schedule from '@/modules/Schedule';
+import ScheduleTaskNotFoundError from '@/errors/ScheduleTaskNotFoundError';
+import ScheduleTaskInvalidArgumentError from '@/errors/ScheduleTaskInvalidArgumentError';
 
 class TaskSchedulerService extends BaseService {
   /**
@@ -112,7 +110,36 @@ class TaskSchedulerService extends BaseService {
   }
 
   createScheduleAction(args, event) {
-    let schedule = Schedule.createSchedule(args);
+    let task = this.taskScheduler.taskPool.getTask(args.taskKey);
+
+    if (!task) {
+      throw new ScheduleTaskNotFoundError();
+    }
+
+    let scheduleConstructorArguments = {
+      name: args.name,
+      taskKey: args.taskKey,
+      repeat: args.repeat,
+      runImmediately: args.runImmediately,
+    };
+
+    if (args.taskArguments) {
+      scheduleConstructorArguments.taskConstructorArguments = args.taskArguments;
+    }
+
+    if ([1, 2].indexOf(args.mode) < 0) {
+      throw new ScheduleTaskInvalidArgumentError('_invalid_mode');
+    } else {
+      scheduleConstructorArguments.mode = args.mode;
+
+      if (scheduleConstructorArguments.mode == 1) {
+        scheduleConstructorArguments.interval = args.interval;
+      } else if (scheduleConstructorArguments.mode == 2) {
+        scheduleConstructorArguments.runAt = args.runAt;
+      }
+    }
+
+    let schedule = Schedule.createSchedule(scheduleConstructorArguments);
 
     this.taskScheduler.addSchedule(schedule);
 
@@ -129,6 +156,10 @@ class TaskSchedulerService extends BaseService {
       this.responseChannel('schedule-deleted'),
       { id }
     );
+  }
+
+  runTaskAction({ id }, event) {
+    this.taskScheduler.runScheduleTask(id);
   }
 
   startScheduleAction({ id }, event) {
