@@ -238,7 +238,9 @@
 
   "_task": "Task",
 
-  "_interval_min": "Interval(min)",
+  "_interval": "Interval",
+
+  "_interval_min": "Interval (min)",
 
   "_task_arguments": "Task Arguments",
 
@@ -250,5 +252,37 @@
 
   "_base": "Base",
 
-  "_run_now": "Run Now"
+  "_run_now": "Run Now",
+
+  "_run_immediately": "Run Immediately",
+
+  "_repeat": "Repeat",
+
+  "_name": "Name",
+
+  "_state": "State",
+
+  "_latest_run_time": "Latest Run Time",
+
+  "_latest_run_result": "Latest Run Result",
+
+  "_next_run_time": "Next Run Time",
+
+  "_actions": "Actions",
+
+  "_run": "Run",
+
+  "_pause": "Pause",
+
+  "_delete": "Delete",
+
+  "_idle": "Idle",
+
+  "_not_start": "Not Start",
+
+  "_failure": "Failure",
+
+  "_complete": "Complete",
+
+  "_aborted": "Aborted"
 }

@@ -238,6 +238,8 @@
 
   "_task": "任务",
 
+  "_interval": "间隔",
+
   "_interval_min": "间隔（分钟）",
 
   "_task_arguments": "任务参数",
@@ -250,5 +252,37 @@
 
   "_base": "基础",
 
-  "_run_now": "立即运行"
+  "_run_now": "立即运行",
+
+  "_run_immediately": "立即运行",
+
+  "_repeat": "重复",
+
+  "_name": "名称",
+
+  "_state": "状态",
+
+  "_latest_run_time": "最近运行时间",
+
+  "_latest_run_result": "最近运行结果",
+
+  "_next_run_time": "下次运行时间",
+
+  "_actions": "操作",
+
+  "_run": "运行",
+
+  "_pause": "暂停",
+
+  "_delete": "删除",
+
+  "_idle": "等待",
+
+  "_not_start": "尚未开始",
+
+  "_failure": "失败",
+
+  "_complete": "完成",
+
+  "_aborted": "中止"
 }
