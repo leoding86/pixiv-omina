@@ -72,11 +72,26 @@ class ScheduleTaskPool extends EventEmitter {
   /**
    * Get a task
    * @param {string} key
-   * @returns {Function|null}
+   * @returns {valueStructure|null}
    */
   getTask(key) {
     if (this.taskPool.has(key)) {
       return this.taskPool.get(key);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get task constructor
+   * @param {string} key
+   * @returns {Function|null}
+   */
+  getTaskConstructor(key) {
+    let task = this.getTask(key);
+
+    if (task) {
+      return task.Task;
     } else {
       return null;
     }

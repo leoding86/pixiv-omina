@@ -149,6 +149,49 @@ class TaskSchedulerService extends BaseService {
     );
   }
 
+  saveScheduleAction(args, event) {
+    let task = this.taskScheduler.taskPool.getTask(args.taskKey);
+
+    if (!task) {
+      throw new ScheduleTaskNotFoundError();
+    }
+
+    let scheduleConstructorArguments = {
+      name: args.name,
+      taskKey: args.taskKey,
+      repeat: args.repeat,
+      runImmediately: args.runImmediately,
+    };
+
+    if (args.taskArguments) {
+      scheduleConstructorArguments.taskConstructorArguments = args.taskArguments;
+    }
+
+    if ([1, 2].indexOf(args.mode) < 0) {
+      throw new ScheduleTaskInvalidArgumentError('_invalid_mode');
+    } else {
+      scheduleConstructorArguments.mode = args.mode;
+
+      if (scheduleConstructorArguments.mode == 1) {
+        scheduleConstructorArguments.interval = args.interval;
+      } else if (scheduleConstructorArguments.mode == 2) {
+        scheduleConstructorArguments.runAt = args.runAt;
+      }
+    }
+
+    let schedule = this.taskScheduler.updateScheduleArgs(args.id, scheduleConstructorArguments);
+
+    this.sendDataToWindow(
+      this.responseChannel('schedule-saved'),
+      schedule.toJson()
+    );
+
+    this.sendDataToWindow(
+      this.responseChannel('schedule-updated'),
+      schedule.toJson()
+    );
+  }
+
   deleteScheduleAction({ id }, event) {
     this.taskScheduler.deleteSchedule(id);
 
@@ -160,6 +203,10 @@ class TaskSchedulerService extends BaseService {
 
   runTaskAction({ id }, event) {
     this.taskScheduler.runScheduleTask(id);
+  }
+
+  stopTaskAction({ id }) {
+    this.taskScheduler.stopScheduleTask(id);
   }
 
   startScheduleAction({ id }, event) {

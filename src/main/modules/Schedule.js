@@ -194,6 +194,18 @@ class Schedule extends EventEmitter {
 
   /**
    *
+   * @param {object} args
+   */
+  updateArgs(args) {
+    Object.keys(args).forEach(key => {
+      if (this.hasOwnProperty(key)) {
+        this[key] = args[key];
+      }
+    });
+  }
+
+  /**
+   *
    * @param {TaskScheduler} taskScheduler
    */
   setTaskScheduler(taskScheduler) {
@@ -278,7 +290,7 @@ class Schedule extends EventEmitter {
       /**
        * Find task constructor
        */
-      let TaskClass = this.taskScheduler.taskPool.getTask(this.taskKey);
+      let TaskClass = this.taskScheduler.taskPool.getTaskConstructor(this.taskKey);
 
       if (!TaskClass) {
         let error = new ScheduleTaskNotFoundError();
@@ -326,6 +338,12 @@ class Schedule extends EventEmitter {
         reject(error);
       });
     });
+  }
+
+  stopTask() {
+    if (this.task) {
+      this.task.stop();
+    }
   }
 
   /**
