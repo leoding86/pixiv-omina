@@ -272,6 +272,12 @@ export default {
   }
 }
 
+.download-list-item--pixiv_artwork {
+  .download-list-item-item__tag {
+    background: rgb(125, 125, 125);
+  }
+}
+
 .download-list-item--pixiv_ugoira {
   .download-list-item__tag {
     background: rgb(255, 170, 139);
@@ -290,7 +296,8 @@ export default {
   }
 }
 
-.download-list-item--pixiv_comic {
+.download-list-item--pixiv_comic_work,
+.download-list-item--pixiv_comic_episode {
   .download-list-item__tag {
     background: rgb(0, 135, 255);
   }
