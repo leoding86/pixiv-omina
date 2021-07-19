@@ -152,7 +152,7 @@ class TaskScheduler extends EventEmitter {
   bindScheduleListeners(schedule) {
     schedule.on('start', this.handleScheduleStart.bind(this));
     schedule.on('complete', this.handleScheduleComplete.bind(this));
-    schedule.on('error', this.handleScheduleError.bind(this));
+    schedule.on('error', this.handleScheduleError.bind(this, schedule));
   }
 
   /**
@@ -236,6 +236,37 @@ class TaskScheduler extends EventEmitter {
 
   /**
    *
+   * @param {string} id
+   * @returns {Schedule}
+   */
+  getSchedule(id) {
+    if (this.schedules.has(id)) {
+      return this.schedules.get(id);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   *
+   * @param {string} id
+   * @param {object} args
+   * @returns {Schedule}
+   */
+  updateScheduleArgs(id, args) {
+    let schedule = this.getSchedule(id);
+
+    delete args.id;
+
+    schedule.updateArgs(args);
+
+    this.updateScheduleConfig(schedule);
+
+    return schedule;
+  }
+
+  /**
+   *
    * @returns {Map.<string, Schedule}
    */
   getAllSchedules() {
@@ -262,9 +293,21 @@ class TaskScheduler extends EventEmitter {
     if (this.schedules.has(id)) {
       let schedule = this.schedules.get(id);
 
-      schedule.runTask().catch(error => {
-        throw error;
+      schedule.runTask().then(result => {
+        //
+      }).catch(err => {
+        debug.log(err);
       });
+    }
+  }
+
+  /**
+   *
+   * @param {string} id
+   */
+  stopScheduleTask(id) {
+    if (this.schedules.has(id)) {
+      this.schedules.get(id).stopTask();
     }
   }
 
