@@ -35,6 +35,7 @@
     </el-form-item>
 
     <el-form-item :label="$t('_reload_theme')">
+      <el-button @click="openThemeFile">{{ $t('_open_file') }}</el-button>
       <el-button @click="reloadTheme">{{ $t('_reload') }}</el-button>
     </el-form-item>
 
@@ -112,6 +113,12 @@ export default {
     openLogs() {
       ipcRenderer.send('setting-service', {
         action: 'openLogs'
+      });
+    },
+
+    openThemeFile() {
+      ipcRenderer.send('theme-service', {
+        action: 'openThemeFile'
       });
     }
   }
