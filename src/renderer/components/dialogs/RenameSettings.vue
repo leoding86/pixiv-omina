@@ -4,7 +4,7 @@
   >
     <el-divider
       content-position="left"
-    >Works on Pixiv main site rename settings</el-divider>
+    >Filename formats for Pixiv</el-divider>
 
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_ugoira') }}</span>
@@ -34,7 +34,7 @@
 
     <el-divider
       content-position="left"
-    >Works on Pixiv Comic rename setting</el-divider>
+    >Filename format for Pixiv Comic</el-divider>
 
     <el-form-item :label-width="formLabelWidth">
       <span slot="label">{{ $t('_format_pixiv_comic') }}</span>
