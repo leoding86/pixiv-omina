@@ -355,8 +355,6 @@ class DownloadManager extends EventEmitter {
       workDownloader.willRecycle();
 
       workDownloader.stop();
-
-      workDownloader = null;
     }
 
     this.deattachListenersFromDownloader(workDownloader);
