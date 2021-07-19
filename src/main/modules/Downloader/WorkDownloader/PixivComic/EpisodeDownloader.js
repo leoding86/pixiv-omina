@@ -17,6 +17,8 @@ class EpisodeDownloader extends WorkDownloader {
     this.pageIndex = 0;
 
     this.tagColor = 'rgb(255, 196, 0)';
+
+    this.context = {};
   }
 
   /**
@@ -31,6 +33,7 @@ class EpisodeDownloader extends WorkDownloader {
     downloader.saveTo = saveTo;
     downloader.options = Object.assign({}, options);
     downloader.provider = provider;
+    downloader.context.id = provider.context.id;
 
     return downloader;
   }
