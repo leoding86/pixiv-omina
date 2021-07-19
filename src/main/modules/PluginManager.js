@@ -299,6 +299,16 @@ class PluginManager extends EventEmitter {
   }
 
   /**
+   *
+   * @param {BasePlugin} plugin
+   */
+  deleteInstalledTask(plugin) {
+    if (plugin.taskConfig && plugin.taskConfig.key) {
+      ScheduleTaskPool.getDefault().deleteTask(plugin.taskConfig.key);
+    }
+  }
+
+  /**
    * Reload plugin
    * @param {string} id
    * @throws {Error}
@@ -311,6 +321,8 @@ class PluginManager extends EventEmitter {
     }
 
     if (plugin) {
+      this.deleteInstalledTask(plugin);
+
       plugin.uninstall();
 
       let reloadedPlugin = this.createPlugin(plugin.entryFile);
@@ -346,12 +358,13 @@ class PluginManager extends EventEmitter {
     if (plugin) {
       DownloadAdapter.removeProvider(plugin);
 
-      if (plugin.taskConfig && plugin.taskConfig.key) {
-        ScheduleTaskPool.getDefault().deleteTask(plugin.taskConfig.key);
-      }
+      this.deleteInstalledTask(plugin);
     }
 
     try {
+      /**
+       * The method uninstall can be overrided
+       */
       plugin.uninstall();
     } catch (e) {
       //
