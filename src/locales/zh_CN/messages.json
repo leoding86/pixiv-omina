@@ -284,5 +284,7 @@
 
   "_complete": "完成",
 
-  "_aborted": "中止"
+  "_aborted": "中止",
+
+  "_open_file": "打开文件"
 }

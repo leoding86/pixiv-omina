@@ -284,5 +284,7 @@
 
   "_complete": "Complete",
 
-  "_aborted": "Aborted"
+  "_aborted": "Aborted",
+
+  "_open_file": "Open File"
 }
