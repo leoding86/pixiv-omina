@@ -2,7 +2,7 @@ import BaseService from '@/services/BaseService';
 import SettingStorage from '@/modules/SettingStorage';
 import ThemeManager from '@/modules/ThemeManager';
 import { debug } from '@/global';
-import { ipcMain } from 'electron';
+import { ipcMain, shell } from 'electron';
 
 class ThemeService extends BaseService {
   /**
@@ -90,6 +90,13 @@ class ThemeService extends BaseService {
     } catch (e) {
       debug.log(e);
     }
+  }
+
+  /**
+   * Open theme file
+   */
+  openThemeFileAction() {
+    shell.openItem(this.themeManager.getThemeCssFile(this.settingStorage.getSetting('singleUserMode')));
   }
 }
 
