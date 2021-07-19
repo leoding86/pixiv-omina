@@ -31,8 +31,10 @@
         >
           <template slot-scope="scope">
             <span>
-              {{ statusFormatter(scope.row.latestRunResult) }} {{ scope.row.latestRunResult }}
-              <el-popover :content="scope.row.latestRunResultMessage">
+              {{ statusFormatter(scope.row.latestRunResult) }}
+              <el-popover :content="scope.row.latestRunResultMessage" v-if="scope.row.latestRunResult === 1"
+                trigger="hover"
+              >
                 <i slot="reference" class="el-icon-warning"></i>
               </el-popover>
             </span>
@@ -55,8 +57,9 @@
           width="180px"
         >
           <template slot-scope="scope">
-            <el-link type="primary" style="margin: 0 5px" @click="runTask(scope.row)">{{ $t('_run') }}</el-link>
-            <el-link type="warning" style="margin: 0 5px" @click="pauseTask(scope.row)">{{ $t('_pause') }}</el-link>
+            <el-link type="primary" style="margin: 0 5px" @click="runTask(scope.row)" v-if="[0, 3].indexOf(scope.row.state) > -1">{{ $t('_run') }}</el-link>
+            <el-link type="primary" style="margin: 0 5px" @click="stopTask(scope.row)" v-else-if="[1, 2].indexOf(scope.row.state) > -1">{{ $t('_stop') }}</el-link>
+            <el-link type="warning" style="margin: 0 5px" @click="editSchedule(scope.row)">{{ $t('_edit') }}</el-link>
             <el-link type="danger" style="margin: 0 5px" @click="deleteSchedule(scope.row)">{{ $t('_delete') }}</el-link>
           </template>
         </el-table-column>
@@ -76,8 +79,9 @@
     </div>
 
     <schedule-dialog
-      v-if="showAddScheduleDialog"
-      :show.sync="showAddScheduleDialog"
+      v-if="showScheduleDialog"
+      :scheduleConfig="selectedSchedule"
+      :show.sync="showScheduleDialog"
     ></schedule-dialog>
   </el-dialog>
 </template>
@@ -103,7 +107,8 @@ export default {
   data() {
     return {
       schedules: [],
-      showAddScheduleDialog: false
+      showScheduleDialog: false,
+      selectedSchedule: null
     }
   },
 
@@ -148,7 +153,7 @@ export default {
 
   methods: {
     openAddSchedulerDialog() {
-      this.showAddScheduleDialog = true;
+      this.showScheduleDialog = true;
     },
 
     dateFormatter(row, column, cellValue, index) {
@@ -172,8 +177,8 @@ export default {
       }
     },
 
-    statusFormatter(row, column, cellValue) {
-      switch (cellValue) {
+    statusFormatter(result) {
+      switch (result) {
         case 0:
           return this.$t('_not_start');
         case 1:
@@ -182,6 +187,8 @@ export default {
           return this.$t('_complete');
         case 3:
           return this.$t('_aborted');
+        default:
+          return this.$t('_unkown');
       }
     },
 
@@ -194,7 +201,21 @@ export default {
       });
     },
 
-    pauseTask(schedule) {
+    stopTask(schedule) {
+      ipcRenderer.send("task-scheduler-service", {
+        action: 'stopTask',
+        args: {
+          id: schedule.id
+        }
+      });
+    },
+
+    editSchedule(schedule) {
+      this.selectedSchedule = schedule;
+      this.showScheduleDialog = true;
+    },
+
+    pauseSchedule(schedule) {
       if (window.confirm(this.$t('_pause_task') + ' ' + schedule.name + '?')) {
         console.log('do delete');
       }

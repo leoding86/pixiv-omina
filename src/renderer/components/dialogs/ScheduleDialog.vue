@@ -18,13 +18,14 @@
         </el-form-item>
 
         <el-form-item :label="$t('_task')" prop="taskKey">
-          <el-select v-model="scheduleFormData.taskKey" :disabled="tasks.length < 1">
+          <el-select v-if="tasks.length > 0" v-model="scheduleFormData.taskKey">
             <el-option v-for="task in tasks"
               :key="task.key"
               :label="task.name"
               :value="task.key"
             ></el-option>
           </el-select>
+          <span v-else>{{ $t('_no_task') }}</span>
         </el-form-item>
 
         <el-form-item :label="$t('_mode')" prop="mode">
@@ -68,9 +69,13 @@
       slot="footer"
       class="dialog-footer"
     >
-      <el-button size="small"
+      <el-button size="small" v-if="scheduleId"
+        @click="saveSchedule"
+        :disabled="submitRecently"
+      >{{ $t('_save') }}</el-button>
+      <el-button size="small" v-else
         @click="createSchedule"
-        :disabled="createRecentlyClicked"
+        :disabled="submitRecently"
       >{{ $t('_add') }}</el-button>
       <el-button size="mini" type="danger"
         @click="$emit('update:show', false)"
@@ -98,9 +103,10 @@ export default {
 
   data() {
     return {
-      createRecentlyClicked: false,
+      submitRecently: false,
 
       scheduleFormData: {
+        name: this.$t('_untitled'),
         taskKey: '',
         mode: 2,
         interval: '720',
@@ -109,6 +115,8 @@ export default {
         repeat: false,
         taskArguments: {}
       },
+
+      scheduleId: null,
 
       avaliableTasks: [],
 
@@ -200,10 +208,27 @@ export default {
   created() {
     ipcRenderer.on('task-scheduler-service:all-tasks-gotten',(event, data) => {
       this.avaliableTasks = data;
+
+      if (this.scheduleConfig) {
+        Object.keys(this.scheduleFormData).forEach(key => {
+          if (this.scheduleConfig[key]) {
+            this.$set(this.scheduleFormData, key, this.scheduleConfig[key]);
+          }
+        });
+      }
+
+      if (this.scheduleConfig.id) {
+        this.scheduleId = this.scheduleConfig.id;
+      }
     });
 
     ipcRenderer.on('task-scheduler-service:schedule-created', (event, data) => {
       this.$message({ message: this.$t('_schedule_created') });
+      this.$emit('update:show', false);
+    });
+
+    ipcRenderer.on('task-scheduler-service:schedule-saved', (event, data) => {
+      this.$message({ message: this.$t('_schedule_saved') });
       this.$emit('update:show', false);
     });
 
@@ -214,8 +239,8 @@ export default {
 
   destroyed() {
     ipcRenderer.removeAllListeners('task-scheduler-service:all-tasks-gotten');
-
-    ipcRenderer.removeAllListeners('task-scheduler-service:schedule-added');
+    ipcRenderer.removeAllListeners('task-scheduler-service:schedule-created');
+    ipcRenderer.removeAllListeners('task-scheduler-service:schedule-saved');
   },
 
   methods: {
@@ -244,13 +269,35 @@ export default {
     createSchedule() {
       this.$refs['scheduleForm'].validate(valid => {
         if (valid) {
-          this.createRecentlyClicked = true;
+          this.submitRecently = true;
 
-          setTimeout(() => this.createRecentlyClicked = false, 1000);
+          setTimeout(() => this.submitRecently = false, 1000);
 
           ipcRenderer.send('task-scheduler-service', {
             action: 'createSchedule',
             args: this.scheduleFormData
+          });
+        } else {
+          this.$message({
+            type: 'error',
+            message: this.$t('_please_check_settings'),
+          });
+
+          return false;
+        }
+      })
+    },
+
+    saveSchedule() {
+      this.$refs['scheduleForm'].validate(valid => {
+        if (valid) {
+          this.submitRecently = true;
+
+          setTimeout(() => this.submitRecently = false, 1000);
+
+          ipcRenderer.send('task-scheduler-service', {
+            action: 'saveSchedule',
+            args: Object.assign({}, this.scheduleFormData, { id: this.scheduleId })
           });
         } else {
           this.$message({
