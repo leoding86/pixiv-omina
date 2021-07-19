@@ -110,22 +110,24 @@ export default {
 .footer-container {
   $height: 25px;
 
-  display: flex;
   height: $height;
-  overflow: hidden;
 
   .footer-left {
-    //
+    margin-right: 110px; /* to compensate for the overall width of .footer-right */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .footer-right {
-    flex: 1;
+    bottom: 0;
     text-align: right;
+    position: absolute;
+    right: 8px; /* equal to side padding of .footer-btn */
   }
 
   .footer-status {
     display: inline-block;
-    max-width: 350px;
     height: $height;
     line-height: $height;
     vertical-align: top;
