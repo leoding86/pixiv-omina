@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import BaseTask from '@/modules/Task/BaseTask';
-import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
+import UgoiraConvertTask2 from '@/modules/Task/UgoiraConvertTask2';
 
 /**
  * This manager used to handle non-downloading task, like convert ugoira to gif, etc.
@@ -24,7 +24,7 @@ class TaskManager extends EventEmitter {
   }
 
   initTaskMaps() {
-    this.taskMaps[UgoiraConvertTask.name] = UgoiraConvertTask;
+    this.taskMaps[UgoiraConvertTask2.name] = UgoiraConvertTask2;
   }
 
   /**

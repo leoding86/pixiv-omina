@@ -3,7 +3,7 @@ import GeneralArtworkProvider from '@/modules/Downloader/Providers/Pixiv/General
 import Request from '@/modules/Request';
 import SettingStorage from '@/modules/SettingStorage';
 import TaskManager from '@/modules/TaskManager';
-import UgoiraConvertTask from '@/modules/Task/UgoiraConvertTask';
+import UgoiraConvertTask2 from '@/modules/Task/UgoiraConvertTask2';
 import UgoiraProvider from '@/modules/Downloader/Providers/Pixiv/UgoiraProvider';
 import WorkDownloader from '@/modules/Downloader/WorkDownloader';
 import WorkDownloaderUnstoppableError from '../../WorkDownloaderUnstoppableError';
@@ -177,8 +177,12 @@ class UgoiraDownloader extends WorkDownloader {
            * Check if convert ugoira to gif, if not then set downloader complete.
            */
           if (SettingStorage.getDefault().getSetting('convertUgoiraToGif')) {
-            TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
-              file: file,
+            // TaskManager.getDefault().addTaskPayload(UgoiraConvertTask.name, {
+            //   file: file,
+            //   saveFile: path.join(this.saveFolder, this.saveFilename) + '.gif'
+            // });
+            TaskManager.getDefault().addTaskPayload(UgoiraConvertTask2.name, {
+              file,
               saveFile: path.join(this.saveFolder, this.saveFilename) + '.gif'
             });
             this.setFinish('Download complete, GIF generation task has send to task');
