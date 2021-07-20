@@ -286,5 +286,15 @@
 
   "_aborted": "Aborted",
 
-  "_open_file": "Open File"
+  "_open_file": "Open File",
+
+  "_edit": "Edit",
+
+  "_schedule_saved": "Schedule Saved",
+
+  "_no_task": "No Task",
+
+  "_untitled": "Untitled",
+
+  "_gif_convert_workers": "GIF Convert Workers"
 }

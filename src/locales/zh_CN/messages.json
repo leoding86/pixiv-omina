@@ -286,5 +286,15 @@
 
   "_aborted": "中止",
 
-  "_open_file": "打开文件"
+  "_open_file": "打开文件",
+
+  "_edit": "编辑",
+
+  "_schedule_saved": "计划任务已保存",
+
+  "_no_task": "无可用任务",
+
+  "_untitled": "无标题",
+
+  "_gif_convert_workers": "GIF转化进程数"
 }
