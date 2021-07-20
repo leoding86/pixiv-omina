@@ -54,7 +54,9 @@ function defaultSetting() {
 
     convertUgoiraToGif: true,
 
-    singleUserMode: false
+    singleUserMode: false,
+
+    gifConvertWorkers: 3
   }
 }
 

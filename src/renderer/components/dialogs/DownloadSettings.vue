@@ -14,6 +14,13 @@
     >
       <el-switch v-model="scopedSettings.convertUgoiraToGif"></el-switch>
     </el-form-item>
+
+    <el-form-item
+      :label="$t('_gif_convert_workers')"
+      prop="gifConvertWorkers"
+    >
+      <el-input v-model="scopedSettings.gifConvertWorkers"></el-input>
+    </el-form-item>
   </el-form>
 </template>
 
@@ -33,6 +40,7 @@ export default {
       scopedSettings: {
         convertUgoiraToGif: true,
         autostartDownload: true,
+        gifConvertWorkers: 3,
         saveTo: ''
       }
     };
@@ -52,6 +60,10 @@ export default {
 
       Object.keys(this.scopedSettings).forEach(key => {
         if (value[key] !== undefined) {
+          if (key === 'gifConvertWorkers' && !/^[1-9]\d*$/.test(value[key])) {
+            value[key] = 1;
+          }
+
           updatedSettings[key] = value[key];
         }
       });
