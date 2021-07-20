@@ -32,7 +32,7 @@
             :content="$t('_paused')"
           >
             <el-button
-              :type="filter === 'paused' ? 'primary' : 'default'"
+              :type="filter === 'stop' ? 'primary' : 'default'"
               size="small"
               icon="el-icon-video-pause"
               @click="filterDownloads('stop')"
