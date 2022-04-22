@@ -258,6 +258,15 @@ class Application {
      * Because services are designed for communicating with the windows
      */
     this.serviceContainer = ServiceContainer.getContainer();
+
+    /**
+     * Handle any argments sent to first instance
+     * We wait for the page to load to make sure new downloads aren't mistaken
+     * as cached and cause the restore window to show unintentionally
+     */
+    this.mainWindow.webContents.on('did-finish-load', () => {
+      this.#handleArguments(process.argv);
+    });
   }
 
   onActivate() {
@@ -271,12 +280,8 @@ class Application {
     }
   }
 
-  onSecondInstance(event, commandLine, workingDirectory) {
-    WindowManager.getWindow('app').webContents.send('debug:log', process.argv);
-    WindowManager.getWindow('app').webContents.send('debug:log', event);
-    WindowManager.getWindow('app').webContents.send('debug:log', commandLine);
-    WindowManager.getWindow('app').webContents.send('debug:log', workingDirectory);
-
+  // Helper function to parse urls and send them to download service
+  #handleArguments(commandLine) {
     commandLine.forEach(line => {
       if (/^pixiv-omina:/.test(line)) {
         ServiceContainer.getService('debug').sendStatus(`Get line data: ${line}`);
@@ -290,6 +295,16 @@ class Application {
         });
       }
     });
+  }
+    
+
+  onSecondInstance(event, commandLine, workingDirectory) {
+    WindowManager.getWindow('app').webContents.send('debug:log', process.argv);
+    WindowManager.getWindow('app').webContents.send('debug:log', event);
+    WindowManager.getWindow('app').webContents.send('debug:log', commandLine);
+    WindowManager.getWindow('app').webContents.send('debug:log', workingDirectory);
+
+    this.#handleArguments(commandLine);
 
     if (this.mainWindow !== null) {
       if (this.mainWindow.isMinimized()) {
