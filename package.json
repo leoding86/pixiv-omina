@@ -41,7 +41,8 @@
     "electron-webpack": "^2.7.4",
     "electron-webpack-vue": "^2.3.0",
     "node-sass": "^4.13.0",
-    "sass-loader": "^8.0.0"
+    "sass-loader": "^8.0.0",
+    "webpack": "~4.35.3"
   },
   "build": {
     "appId": "pixiv_omina.leo",
