@@ -1,0 +1,300 @@
+{
+  "_initializing_and_checking_login_status": "Giriş durumunuz kontrol ediliyor",
+
+  "_download": "İndir",
+
+  "_all": "Tümü",
+
+  "_downloading": "İndiriliyor",
+
+  "_finished": "Tamamlandı",
+
+  "_login_pixiv": "PIXIV'E GİRİŞ YAP",
+
+  "_status": "Durum",
+
+  "_there_is_no_download": "Şuan hiç indirmen yok",
+
+  "_download_is_already_exists_delete_it_and_try_again": "Bu indirme zaten var, indirmeyi sil ve yeniden dene",
+
+  "_this_is_not_a_valid_url": "Bu indşrme için uygun bir url değildir",
+
+  "_you_need_login_first": "İlk önce giriş yapman gerek",
+
+  "_you_are_logined": "Giriş yaptınız",
+
+  "_settings": "Ayarlar",
+
+  "_general": "Genel",
+
+  "_rename": "Yeniden adlandır",
+
+  "_proxy": "Proxy",
+
+  "_about": "Hakkında",
+
+  "_help": "Yardım",
+
+  "_close": "Kapat",
+
+  "_save": "Kaydet",
+
+  "_pixiv_valid_rename_placeholders": "Pixiv için kullanılabilir adlandırmalar",
+
+  "_pixiv_comic_valid_rename_placeholders": "Pixiv Comic için kullanabiilir adlandırmalar",
+
+  "_pixiv_novel_valid_rename_placeholder": "Pixiv Novel için kullanabiilir adlandırmalar",
+
+  "_language": "Dil",
+
+  "_close_to_tray": "Tray'i kapat",
+
+  "_show_notification": "Bildirimleri göster",
+
+  "_user_agent": "User Agent",
+
+  "_save_to": "Şuraya kaydet",
+
+  "_save_ugoira_in_subfolder": "Ugoira'yı alt klasöre kaydet",
+
+  "_format_ugoira": "Ugoira adlandırması",
+
+  "_format_manga": "Manga adlandırması",
+
+  "_format_manga_image": "Manga resim formatı",
+
+  "_save_illust_in_subfolder": "İlustirasyonları alt klasöre kaydet",
+
+  "_format_illust": "Çizim adlandırması",
+
+  "_format_illust_image": "İlustirasyon resim formatı",
+
+  "_enable_proxy": "Proxy'yi etkinleştir",
+
+  "_proxy_server": "Proxy sunucusu",
+
+  "_enable_auth": "Doğrulamayı aç",
+
+  "_username": "Kullanıcı adı",
+
+  "_password": "Parola",
+
+  "_error_ocurred_when_checking_version": "Versiyonu kontrol ederken bir hata oluştu",
+
+  "_checking": "Kontrol ediliyor",
+
+  "_new_version_avaliable": "Yeni version mevcut",
+
+  "_It_s_up_to_date": "Son sürümünde",
+
+  "_version": "Versiyon",
+
+  "_add_download": "Yeni indirme",
+
+  "_cancel": "Geri",
+
+  "_add": "Ekle",
+
+  "_dev_tools": "Geliştirici araçları",
+
+  "_report": "Bildir",
+
+  "_settings_saved": "Ayarlar kaydedildi",
+
+  "_please_input_url": "Lütfen bir url girin",
+
+  "view": "bak",
+
+  "_save_illustration_to": "İlustirasyonu şuraya kaydet",
+
+  "_save_ugoira_to": "Ugoira'yı şuraya kaydet",
+
+  "_save_manga_to": "Mangayı şuraya kaydet",
+
+  "_folders_for_saving_ugoira": "Ugoira kaydedilen klasör(ler)",
+
+  "_folders_for_saving_illustration": "Çizim kaydedilen klasör(ler)",
+
+  "_folders_for_saving_manga": "Manga kaydedilen klasör(ler)",
+
+  "_the_path_wills_suffix_to_download_location": "Yollar, indirme konumunun sonuna eklenir",
+
+  "_you_can_add_forward_slashs_to_save_images_in_subfolder_eg": "Görüntüleri alt klasöre kaydetmek için eğik çizgi Kullanın. Örneğin",
+
+  "_start_download_while_startup": "Başlangıçta indirmeleri başlat",
+
+  "_format_pixiv_comic": "Çizgi romanı yeniden adlandır",
+
+  "_works_on_pixiv_main_site_rename_settings": "Pixiv ana sitesindeki yeniden adlandırmalar",
+
+  "_works_on_pixiv_comic_rename_setting": "Pixiv Comic sitesindeki yeniden adlandırmalar",
+
+  "_reset": "Sıfırlar",
+
+  "_url": "URL",
+
+  "_bookmark": "Yer imileri",
+
+  "_pages": "Sayfala",
+
+  "_mode": "Mod",
+
+  "_bookmark_type": "Tür",
+
+  "_public": "Herkes",
+
+  "_private": "Gizli",
+
+  "_convert_ugoira_to_gif": "Ugoira'ları gif'e dönüştür",
+
+  "_work_type": "Çalışma türü",
+
+  "_ugoira": "Ugoira",
+
+  "_illustration": "İllüstrasyon",
+
+  "_manga": "Manga",
+
+  "_jobs": "İşler",
+
+  "_unfinished_downloads_found": "Tamamlanmamış indirmeler bulundu",
+
+  "_clear_path": "Kayıt yolunu temizle",
+
+  "_restore": "Yenile",
+
+  "_don_t_change": "Değiştirme",
+
+  "_restore_downloads": "İndirmeleri yenile",
+
+  "_single_user_mode": "Tek kullanıcı modu",
+
+  "_save_settings_and_other_data_in_installation_folder_if_it_s_enabled": "Etkinleştirilmişse, ayarları ve diğer verileri yükleme klasörüne kaydedin",
+
+  "_clear_and_close": "Temizle ev kapat",
+
+  "_clear_cached_downloads_and_close": "Önbelleğe alınmış indirmeleri temizle ve kapat",
+
+  "_try_again": "Giriş başarısız. Lütfen tekrar deneyin",
+
+  "_network_error": "İstek hatası. Ağınız Pixiv'e bağlanamıyor.",
+
+  "_you_don_t_have_permission_for_saving_data_in_installation_directory_install_application_in_other_directory_which_you_have_write_permission_or_run_application_as_administrator_might_fix_it":
+    "Kurulum dizinine veri kaydetmek için yazma izniniz yok. Uygulamayı yazma izniniz olan dizine yükleyin veya uygulamayı yönetici olarak çalıştırın, sorunu çözebilir",
+
+  "_format_novel": "Roman adlandırması",
+
+  "_pending": "Beklemede",
+
+  "_processing": "İşleniyor",
+
+  "_error": "Hata",
+
+  "_finish": "Tamamlandı",
+
+  "_stopping": "Durdurulanlar",
+
+  "_stop": "Durdur",
+
+  "_plugins": "Eklentiler",
+
+  "_paused": "Durduruldu",
+
+  "_initializing": "Başlatılıyor",
+
+  "_no_plugin_installed": "Herhangi bir eklenti bulunamadı",
+
+  "_logined": "Giriş yapıldı",
+
+  "_not_logined": "Giriş yapılmadı",
+
+  "_feedback": "Geri bildirim",
+
+  "_toggle_development_tools": "Geliştirme araçlarını aç",
+
+  "_close_this_window_after_you_logined": "Giriş yaptıktan sonra buraya tıklayın",
+
+  "_plugin_reloaded": "Eklenti yenien yüklendi",
+
+  "_remove_plugin": "Eklenti yüklendi mi?",
+
+  "_login": "Giriş yap",
+
+  "_reload": "Yenile",
+
+  "_remove": "Kaldır",
+
+  "_load_temporary_plugin": "Geçici eklenti yükle",
+
+  "_reload_theme": "Temayı yenile",
+
+  "_install_plugin": "Eklenti yükle",
+
+  "_open_log": "Günlüğü Aç",
+
+  "_log": "Günlük",
+
+  "_schedule": "Program",
+
+  "_task": "Görevler",
+
+  "_interval": "Aralık",
+
+  "_interval_min": "Aralık (dakika)",
+
+  "_task_arguments": "Görev Bağımsız Değişkenleri",
+
+  "_run_at": "Çalıştır",
+
+  "_task_scheduler": "Görev programlayıcısı",
+
+  "_no_schedule": "Herhangi bir program yok",
+
+  "_base": "Temel",
+
+  "_run_now": "Şimdi çalıştır",
+
+  "_run_immediately": "Hemen Çalıştır",
+
+  "_repeat": "Tekrarla",
+
+  "_name": "Ad",
+
+  "_state": "Durum",
+
+  "_latest_run_time": "Son çalıştırma saati",
+
+  "_latest_run_result": "Son çalışma sonucu",
+
+  "_next_run_time": "Sonraki Çalışma saati",
+
+  "_actions": "Hareketler",
+
+  "_run": "Çalıştır",
+
+  "_pause": "Durdur",
+
+  "_delete": "Sil",
+
+  "_idle": "Beklemede",
+
+  "_not_start": "Başlatma",
+
+  "_failure": "Arıza",
+
+  "_complete": "Tamamlandı",
+
+  "_aborted": "İptal edildi",
+
+  "_open_file": "Dosya aç",
+
+  "_edit": "Düzenle",
+
+  "_schedule_saved": "Program Kaydedildi",
+
+  "_no_task": "Görev yok",
+
+  "_untitled": "Başlıksız",
+
+  "_gif_convert_workers": "GIF Dönüştürme İşçileri"
+}
