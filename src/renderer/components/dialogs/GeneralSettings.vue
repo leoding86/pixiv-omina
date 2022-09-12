@@ -63,7 +63,8 @@ export default {
 
       avaliableLocales: {
         'en': 'English',
-        'zh_CN': '简体中文'
+        'zh_CN': '简体中文',
+        'tr-TR': 'Türkçe'
       },
 
       settingsRule: {

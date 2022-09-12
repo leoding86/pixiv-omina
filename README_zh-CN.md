@@ -1,4 +1,4 @@
-### 简体中文 | [**English**](https://github.com/leoding86/pixiv-omina)
+### 简体中文 | [**English**](https://github.com/leoding86/pixiv-omina) | [**Türkçe**](https://github.com/Tarik366/pixiv-omina/blob/master/README_tr-TR.md)
 
 ---
 
