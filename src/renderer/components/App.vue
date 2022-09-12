@@ -688,7 +688,7 @@ export default {
 #header {
   height: 32px;
   padding: 10px;
-  background: #efefef;
+  background: #222;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,.15);
 }
 
@@ -697,13 +697,14 @@ export default {
   box-sizing: border-box;
   position: relative;
   overflow-y: auto;
+  background-color: #222;
 }
 
 #footer {
   position: relative;
   height: 25px;
   padding: 0 10px;
-  background: #eee;
+  background: #222;
   z-index: 999999;
 }
 
@@ -711,7 +712,7 @@ export default {
   display: table;
   position: absolute;
   z-index: 999;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(25, 25, 25, 0.7);
   left: 0;
   top: 0;
   width: 100%;

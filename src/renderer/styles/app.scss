@@ -12,20 +12,35 @@ html, body {
 }
 
 body {
-  background: #f9f9f9;
+  background: #222222;
+  color: #009dff;
 }
 
 .el-button {
+  background: #222222;
+  color: white;
   [class*=" el-icon-"], [class^=el-icon-] {
     transform: scale(1.5);
   }
+  &:hover {
+    background: #555;
+  }
+
 }
 
 .el-button--default {
   [class*=" el-icon-"], [class^=el-icon-] {
-    color: #dedede;
-    // text-shadow: 0 -1px 0 #6d6d6d;
+    color: #009dff;
+    text-shadow: 0 -1px 0 #6d6d6d;
   }
+}
+
+#app {
+  background: #222222; 
+}
+
+#header {
+  background: #333333 !important;
 }
 
 .el-button--icon {
@@ -69,10 +84,11 @@ body {
   border-radius: 5px;
   overflow: hidden;
 
+
   .el-dialog__header {
     padding: 10px 20px;
-    border-bottom: 2px solid #e9e9e9;
-    background: #e9e9e9;
+    border-bottom: 2px solid #009dff;
+    background: #222222;
   }
 
   .el-dialog__headerbtn {
@@ -83,6 +99,7 @@ body {
   .el-dialog__title {
     font-size: 14px;
     font-weight: 700;
+    color: #009dff;
   }
 
   .el-form-item__label {
@@ -92,11 +109,13 @@ body {
 
   .el-dialog__body {
     padding: 0 0 10px 0;
+    color: white;
+    background: #222222;
   }
 
   .el-dialog__footer {
     padding: 10px 20px;
-    background: #f9f9f9;
+    background: #222222;
   }
 
   .el-form-item:last-child {
@@ -113,7 +132,7 @@ body {
 }
 
 .app-dialog__section-title {
-  background: #F5F7FA;
+  background: #222222;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
@@ -130,4 +149,53 @@ body {
 .header__download-filter {
   margin-left: 15px;
   vertical-align: top;
+}
+
+.el-select {
+  background: #333333;
+  color: #009dff;
+}
+
+.el-tabs__item {
+  color: white;
+}
+
+.el-tabs__nav-wrap::after {
+  background-color: #222222;
+}
+
+.el-input__inner, .el-textarea__inner {
+  background-color: #222222;
+  color: white;
+}
+
+.el-input.is-disabled .el-input__inner {
+  background-color: #333333;
+  color: white;
+}
+
+.el-form-item__label {
+  color: white !important;
+}
+
+.el-switch__core {
+  background: #333333;
+
+}
+
+.el-divider__text {
+  background-color: #222222;
+  color: white;
+}
+
+#footer {
+  background-color: #333 !important;
+  color: white !important;
+}
+.footer-container .footer-btn, .footer-container .footer-status, .footer-container .footer-btn a {
+  color: white !important;
+  &:hover {
+    color: #009dff;
+    background-color: #333;
+  }
 }

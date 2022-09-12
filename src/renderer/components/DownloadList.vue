@@ -191,8 +191,8 @@ export default {
   margin: 10px 0;
   padding: 15px 10px;
   border-radius: 5px;
-  background: #fff;
-  border: 2px solid #fff;
+  background: #222;
+  border: 2px solid #333;
   // border: 1px solid #dadada;
   // box-shadow: 0 1px 1px #dedede;
 
@@ -207,7 +207,7 @@ export default {
 
   &--selected {
     border: 2px solid #409EFF;
-    background: #f9fcff;
+    background: #333;
   }
 }
 
@@ -218,7 +218,7 @@ export default {
   height: 100%;
   top: 0;
   left: 0;
-  background: #fff;
+  background: #222;
   opacity: 0.3;
 }
 
@@ -245,10 +245,10 @@ export default {
 
   a {
     text-decoration: none;
-    color: #3c3c3c;
+    color: #999;
 
     &:hover {
-      color: #000;
+      color: #fff;
     }
   }
 }

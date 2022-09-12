@@ -144,14 +144,14 @@ export default {
     padding: 0 8px;
     cursor: pointer;
     vertical-align: top;
-    color: #333;
+    color: #fff;
 
     &:hover {
-      background: #c6c6c6;
+      background: #222;
     }
 
     a {
-      color: #333;
+      color: #fff;
       text-decoration: none;
     }
 
